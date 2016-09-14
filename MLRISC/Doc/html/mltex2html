@@ -844,10 +844,10 @@ sub math
    # subscript/superscripts
    $math =~ s|_([^{])|<sub>\1</sub>|g;
    $math =~ s|\^([^{])|<sup>\1</sup>|g;
-   $math =~ s|_{($PARAM)}|<sub>\1</sub>|g;
-   $math =~ s|^{($PARAM)}|<sup>\1</sup>|g;
-   $math =~ s|\\sb{($PARAM)}|<sub>\1</sub>|g;
-   $math =~ s|\\sp{($PARAM)}|<sup>\1</sup>|g;
+   $math =~ s|_\{($PARAM)}|<sub>\1</sub>|g;
+   $math =~ s|^\{($PARAM)}|<sup>\1</sup>|g;
+   $math =~ s|\\sb\{($PARAM)}|<sub>\1</sub>|g;
+   $math =~ s|\\sp\{($PARAM)}|<sup>\1</sup>|g;
 
    # other stuff 
    $math =~ s|\\edge\{($PARAM)\}|&rarr<sub>\1</sub>|g;
@@ -1000,6 +1000,7 @@ newcommand("tableofcontents", 0, \&tableofcontents);
 # Import style file
 #
 ############################################################################
+use lib '.';
 require "mltex.thm";
 
 ############################################################################
@@ -1266,7 +1267,7 @@ sub processSection
 
      # Verbatim mode handling
      if ($MODE eq "verbatim")
-     {  if (s|\\end{verbatim}|$ENDPRE|) { leaveMode("verbatim"); }
+     {  if (s|\\end\{verbatim\}|$ENDPRE|) { leaveMode("verbatim"); }
         else 
         { s/</&lt;/g;
           s/>/&gt;/g;
@@ -1276,7 +1277,7 @@ sub processSection
      }
 
      if ($MODE eq "alltt")
-     {  if (s|\\end{alltt}|$ENDALLTT|) { leaveMode("alltt"); };
+     {  if (s|\\end\{alltt\}|$ENDALLTT|) { leaveMode("alltt"); };
         push @TEXT, $_;
         next;
      }
@@ -1296,16 +1297,16 @@ sub processSection
      }
  
      # special formatting environments 
-     if (s|\\begin{SML}|$BEGINPRE|) { enterMode("sml"); };
-     if (s|\\end{SML}|$ENDPRE|) { leaveMode("sml"); };
-     if (s|\\begin{code}|$BEGINPRE|) { enterMode("code"); };
-     if (s|\\end{code}|$ENDPRE|) { leaveMode("code"); };
-     if (s|\\begin{verbatim}|$BEGINPRE|) { enterMode("verbatim"); };
-     if (s|\\begin{alltt}|$BEGINALLTT|) { enterMode("alltt"); };
+     if (s|\\begin\{SML\}|$BEGINPRE|) { enterMode("sml"); };
+     if (s|\\end\{SML\}|$ENDPRE|) { leaveMode("sml"); };
+     if (s|\\begin\{code\}|$BEGINPRE|) { enterMode("code"); };
+     if (s|\\end\{code\}|$ENDPRE|) { leaveMode("code"); };
+     if (s|\\begin\{verbatim\}|$BEGINPRE|) { enterMode("verbatim"); };
+     if (s|\\begin\{alltt\}|$BEGINALLTT|) { enterMode("alltt"); };
 
      # method
-     if (s|\\begin{methods}|<dl><dt><tt>|) { enterMode("methods"); };
-     if (s|\\end{methods}|</tt></dl>|) { leaveMode("methods"); };
+     if (s|\\begin\{methods\}|<dl><dt><tt>|) { enterMode("methods"); };
+     if (s|\\end\{methods\}|</tt></dl>|) { leaveMode("methods"); };
      s|\&|</tt><dd>|g if $MODE eq "methods";
      s|\\\\|<dt><tt>|g if $MODE eq "methods";
 
@@ -1314,19 +1315,19 @@ sub processSection
      s|\\item|<li>|;
   
      # Tables
-     s|\\begin{tabular}{($PARAM)}|&begintab($1,"")|oge;
-     s|\\end{tabular}|&endtab()|oge;
+     s|\\begin\{tabular\}\{($PARAM)\}|&begintab($1,"")|oge;
+     s|\\end\{tabular\}|&endtab()|oge;
      
-     s|\\begin{Table}{($PARAM)}{($PARAM)}|&begintab($1,$2)|oge;
-     s|\\end{Table}|&endtab()|oge;
+     s|\\begin\{Table\}\{($PARAM)\}\{($PARAM)\}|&begintab($1,$2)|oge;
+     s|\\end\{Table\}|&endtab()|oge;
 
      s|\&|&addtab()|oge if $MODE eq "tabular";
      s|\\\\|&tabnewline()|oge if $MODE eq "tabular";
      s|\\\\|&newline()|oge if $MODE eq "latex";
   
      # SML mode handling
-     s|\\sml{($PARAM)}|&sml($1)|oge;
-     s|\\code{($PARAM)}|<tt>\1</tt>|g;
+     s|\\sml\{($PARAM)\}|&sml($1)|oge;
+     s|\\code\{($PARAM)\}|<tt>\1</tt>|g;
      if ($MODE eq "sml") { $_ = smldisplay($_); }
   
      # Math mode handling
@@ -1342,27 +1343,27 @@ sub processSection
 
      if (s|\\\[\s*$|<dl><dt><dd>|) { enterMode("displaymath"); }
      if (s|\\\]|</dl>|) { leaveMode("displaymath"); }
-     if (s|\\begin{eqnarray\*}|<dl><dt><dd>|) { enterMode("eqnarray*"); }
-     if (s|\\end{eqnarray\*}|</dl>|) { leaveMode("eqnarray*"); }
-     if (s|\\begin{eqnarray}|<dl><dt><dd>|) { enterMode("eqnarray"); }
-     if (s|\\end{eqnarray}|</dl>|) { leaveMode("eqnarray"); }
+     if (s|\\begin\{eqnarray\*\}|<dl><dt><dd>|) { enterMode("eqnarray*"); }
+     if (s|\\end\{eqnarray\*\}|</dl>|) { leaveMode("eqnarray*"); }
+     if (s|\\begin\{eqnarray\}|<dl><dt><dd>|) { enterMode("eqnarray"); }
+     if (s|\\end\{eqnarray\}|</dl>|) { leaveMode("eqnarray"); }
 
      # How to handle environment
-     s|~?\\begin{($ENV0)}|&beginenv($1)|oge;
-     s|~?\\begin{($ENV1)}{($PARAM)}|&beginenv($1,$2)|oge;
-     s|~?\\begin{($ENV2)}{($PARAM)}{($PARAM)}|&beginenv($1,$2,$3)|oge;
-     s|~?\\end{($PARAM)}|&endenv($1)|oge;
+     s|~?\\begin\{($ENV0)\}|&beginenv($1)|oge;
+     s|~?\\begin\{($ENV1)\}\{($PARAM)\}|&beginenv($1,$2)|oge;
+     s|~?\\begin\{($ENV2)\}\{($PARAM)\}\{($PARAM)\}|&beginenv($1,$2,$3)|oge;
+     s|~?\\end\{($PARAM)\}|&endenv($1)|oge;
 
      # How to handle commands
      s/~?\\($COMMAND0)(\{\}|\b)/&command($1)/oge;
-     s|~?\\($COMMAND1){($PARAM)}|&command($1,$2)|oge;
-     s|~?\\($COMMAND2){($PARAM)}{($PARAM)}|&command($1,$2,$3)|oge;
-     s|~?\\($COMMAND3){($PARAM)}{($PARAM)}{($PARAM)}|&command($1,$2,$3,$4)|oge;
+     s|~?\\($COMMAND1)\{($PARAM)\}|&command($1,$2)|oge;
+     s|~?\\($COMMAND2)\{($PARAM)\}\{($PARAM)\}|&command($1,$2,$3)|oge;
+     s|~?\\($COMMAND3)\{($PARAM)\}\{($PARAM)\}\{($PARAM)\}|&command($1,$2,$3,$4)|oge;
 
      # Math mode stuff
      s|\\_|_|g;
-     s|\\{|{|g;
-     s|\\}|}|g;
+     s|\\\{|{|g;
+     s|\\\}|}|g;
 
      # Indentation
      s|\\noindent ||g;
@@ -1407,16 +1408,16 @@ sub processDocument
       s|\\\\|&newline()|oge if $MODE eq "latex";
 
       # How to handle environment
-      s|~?\\begin{($ENV0)}|&beginenv($1)|oge;
-      s|~?\\begin{($ENV1)}{($PARAM)}|&beginenv($1,$2)|oge;
-      s|~?\\begin{($ENV2)}{($PARAM)}{($PARAM)}|&beginenv($1,$2,$3)|oge;
-      s|~?\\end{($PARAM)}|&endenv($1)|oge;
+      s|~?\\begin\{($ENV0)}|&beginenv($1)|oge;
+      s|~?\\begin\{($ENV1)}\{($PARAM)}|&beginenv($1,$2)|oge;
+      s|~?\\begin\{($ENV2)}\{($PARAM)}\{($PARAM)}|&beginenv($1,$2,$3)|oge;
+      s|~?\\end\{($PARAM)}|&endenv($1)|oge;
 
       # How to handle commands
       s/~?\\($COMMAND0)(\{\}|\b)/&command($1)/oge;
-      s|~?\\($COMMAND1){($PARAM)}|&command($1,$2)|oge;
-      s|~?\\($COMMAND2){($PARAM)}{($PARAM)}|&command($1,$2,$3)|oge;
-      s|~?\\($COMMAND3){($PARAM)}{($PARAM)}{($PARAM)}|&command($1,$2,$3,$4)|oge;
+      s|~?\\($COMMAND1)\{($PARAM)}|&command($1,$2)|oge;
+      s|~?\\($COMMAND2)\{($PARAM)}\{($PARAM)}|&command($1,$2,$3)|oge;
+      s|~?\\($COMMAND3)\{($PARAM)}\{($PARAM)}\{($PARAM)}|&command($1,$2,$3,$4)|oge;
 
       push @TEXT, $_;
    }
