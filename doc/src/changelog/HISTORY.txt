@@ -96,6 +96,16 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //== Recent updates
 
 //--------------------------------------------------------------------
+[2022/06/05]::
++
+Fixed bug bugref:312[] (`CM.make` is unable to handle filenames that
+contain a backslash).  We have changed the semantics of paths given
+to the functions in the `CM` structure to be interpreted using the
+native pathname syntax (instead of *CM*'s generic syntax).
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2022/06/01]::
 +
 Fixed bug bugref:284[] (Compiler bug: Contract: UsageMap on 132).

@@ -1,7 +1,9 @@
-(*
- * Operations over abstract names for CM source files.
+(* srcpath.sml
  *
- * Copyright (c) 2000 by Lucent Technologies, Bell Laboratories
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
+ *
+ * Operations over abstract names for CM source files.
  *
  * Author: Matthias Blume
  *)
@@ -224,7 +226,7 @@ structure SrcPath :> SRCPATH = struct
 	fun arc a =
 	    if a = P.currentArc then "."
 	    else if a = P.parentArc then ".."
-	    else if a = "." then dot 
+	    else if a = "." then dot
 	    else if a = ".." then dotdot
 	    else ta a
 	fun e_ac ([], context, _, a) = e_c (context, a, NONE)
@@ -267,7 +269,7 @@ structure SrcPath :> SRCPATH = struct
 	  | NONE =>
 	      { name = a, look = fn () => #get_free e (a, err),
 		encode = fn _ => NONE }
-	
+
     val encode_prefile = encode0 false
     val encode = encode_prefile o pre
 
@@ -539,7 +541,7 @@ structure SrcPath :> SRCPATH = struct
 	    StringMap.insert (m, anchor,
 			      (fn () => augElab arcs (elab_dir context),
 			       fn brack => encode0 brack pf))
-			      
+
     in
 	{ get_free = #get_free env, set_free = #set_free env,
 	  reset = #reset env, is_set = #is_set env,
@@ -652,7 +654,7 @@ structure SrcPath :> SRCPATH = struct
 
 		    fun say l = TextIO.output (TextIO.stdErr, concat l)
 		in
-		    if arc0 = "" then file (ROOT "", arcs) 
+		    if arc0 = "" then file (ROOT "", arcs)
 		    else
 			case String.sub (arc0, 0) of
 			    #"%" => file (ROOT (xtr ()), arcs)

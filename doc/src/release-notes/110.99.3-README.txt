@@ -87,6 +87,8 @@ for more details.
 | SExp: parsing the output of the printer produces a different SExp
 | [.bug]#310#
 | Error when REPL tries to print value of type `Posix.FileSys.ST.stat`
+| [.bug]#312#
+| `CM.make` is unable to handle filenames that contain a backslash
 |=======
 
 The following unnumbered bug was also fixed:

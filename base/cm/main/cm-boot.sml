@@ -1,6 +1,6 @@
 (* cm-boot.sml
  *
- * COPYRIGHT (c) 2017 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *
  * This is the module that actually puts together the contents of the
@@ -166,11 +166,13 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 	  fun resetPathConfig () = SrcPath.reset_anchors penv
 	  (* get the current binding for an anchor *)
 	  fun getAnchor a () = SrcPath.get_anchor (penv, a)
-
-	  fun mkStdSrcPath s =
+          (* make a source path from a string using the host OS pathname
+           * conventions.
+           *)
+	  fun mkNativeSrcPath s =
 	      SrcPath.file
-	        (SrcPath.standard { err = fn s => raise Fail s, env = penv }
-				  { context = SrcPath.cwd (), spec = s })
+	        (SrcPath.native { err = fn s => raise Fail s, env = penv }
+                                { context = SrcPath.cwd (), spec = s })
 
 	  fun getPending () =
 	      map (Symbol.describe o #1)
@@ -233,7 +235,7 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 	  and slave_parse_arg x = parse_arg0 true x
 
 	  and autoload s = let
-	      val p = mkStdSrcPath s
+	      val p = mkNativeSrcPath s
 	  in
 	      (case Parse.parse (parse_arg (al_greg, NONE, p)) of
 		   NONE => false
@@ -290,10 +292,10 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 		  Servers.withServers (fn () => allgroups gp)
 	      end
 	      fun stabilize_dummy_runner gp g = true
-	      fun phase1 () = run mkStdSrcPath NONE
+	      fun phase1 () = run mkNativeSrcPath NONE
 				  stabilize_recomp_runner root
 	      fun phase2 () = (Compile.reset ();(* a bit too draconian? *)
-			       run mkStdSrcPath (SOME recursively)
+			       run mkNativeSrcPath (SOME recursively)
 				   stabilize_dummy_runner root)
 	  in
 	      (* Don't bother with the 2-phase thing if there are
@@ -311,11 +313,11 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 		  phase1 () andalso phase2 ()
 	  end
 
-	  val recomp = run mkStdSrcPath NONE recomp_runner
-	  val make = run mkStdSrcPath NONE (make_runner true)
+	  val recomp = run mkNativeSrcPath NONE recomp_runner
+	  val make = run mkNativeSrcPath NONE (make_runner true)
 
 	  fun to_portable s = let
-	      val gp = mkStdSrcPath s
+	      val gp = mkNativeSrcPath s
 	      fun nativesrc s = let
 		  val p = SrcPath.standard
 			      { err = fn s => raise Fail s, env = penv }
@@ -327,9 +329,8 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 				    nativesrc = nativesrc }
 	  in
 	      Option.map
-		  (mkres o ToPortable.export)
-		  (Parse.parse (parse_arg
-				    (GroupReg.new (), NONE, mkStdSrcPath s)))
+                (mkres o ToPortable.export)
+                (Parse.parse (parse_arg (GroupReg.new (), NONE, mkNativeSrcPath s)))
 	  end
 
 	  fun sources archos group =
@@ -375,7 +376,7 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 				   addSources (#subgroups n, sources,
 					       insert (a, p, x), v))
 
-		  val p = mkStdSrcPath group
+		  val p = mkNativeSrcPath group
 		  val gr = GroupReg.new ()
 		  val x0 = { class = "cm", derived = false }
 		  fun doit () =
@@ -403,9 +404,9 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 		      { base, ext = NONE } => extendTarget ()
 		    | { base, ext = SOME e } =>
 		      if e = hsfx then target else extendTarget ()
-	      val spopt = Option.map mkStdSrcPath setup
-	      val pp = mkStdSrcPath project
-	      val wp = mkStdSrcPath wrapper
+	      val spopt = Option.map mkNativeSrcPath setup
+	      val pp = mkNativeSrcPath project
+	      val wp = mkNativeSrcPath wrapper
 	      val ts = TStamp.fmodTime target
 	      val gr = GroupReg.new ()
 	      fun do_cmfile p =
@@ -597,7 +598,7 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 				   work = readpidmap,
 				   cleanup = fn _ => () }
 
-	      val initgspec = mkStdSrcPath BtNames.initgspec
+	      val initgspec = mkNativeSrcPath BtNames.initgspec
 	      val ginfo = { param = { fnpolicy = fnpolicy,
 				      penv = penv,
 				      symval = SSV.symval,
