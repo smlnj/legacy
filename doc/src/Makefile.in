@@ -1,6 +1,6 @@
 # Makefile for SML/NJ documentation
 #
-# COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+# COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
 # All rights reserved.
 #
 # @configure_input@
@@ -42,15 +42,55 @@ IMAGE_FILES =		$(notdir $(wildcard images/*.png images/*jpg))
 IMAGE_DST_FILES =	$(addprefix $(IMAGES_DST)/,$(IMAGE_FILES))
 
 .PHONY:		doc
-doc:		html $(DOC_DIR) readmes smlnj-lib-doc
+doc:		links html $(DOC_DIR) readmes smlnj-lib-doc
 
 .PHONY:		html
-html:
+html:		links
 		(cd man; $(MAKE) man)
 		for dir in $(DOC_SUBDIRS) ; do \
 		  (cd $$dir; $(MAKE) doc); \
 		done
 
+# links to documentation directories
+#
+LINKS =		smlnj-lib \
+		manuals/cm \
+		manuals/asdl \
+		manuals/ml-lpt \
+		manuals/ml-yacc \
+		manuals/ml-lex \
+		manuals/nlffi \
+		manuals/ml-burg
+
+.PHONY:		links
+links:		$(LINKS)
+
+smlnj-lib:
+	- ln -s ../../smlnj-lib/Doc smlnj-lib
+
+manuals/cm:
+	- (cd manuals; ln -s ../../../base/cm/Doc cm)
+
+manuals/asdl:
+	- (cd manuals; ln -s ../../../asdl/doc/manual-3.0 asdl)
+
+manuals/ml-lpt:
+	- (cd manuals; ln -s ../../../ml-lpt/doc ml-lpt)
+
+manuals/ml-yacc:
+	- (cd manuals; ln -s ../../../ml-yacc/doc ml-yacc)
+
+manuals/ml-lex:
+	- (cd manuals; ln -s ../../../ml-lex/doc ml-lex)
+
+manuals/nlffi:
+	- (cd manuals; ln -s ../../../nlffi/lib/Doc/manual nlffi)
+
+manuals/ml-burg:
+	- (cd manuals; ln -s ../../../ml-burg/doc ml-burg)
+
+# make the documentation directory
+#
 $(DOC_DIR):
 	mkdir -p $(DOC_DIR)
 
@@ -64,7 +104,7 @@ readmes:
 # configure and make the SML/NJ Library documentation
 #
 .PHONY:		smlnj-lib-doc
-smlnj-lib-doc:	smlnj-lib/configure
+smlnj-lib-doc:	links smlnj-lib/configure
 	(cd smlnj-lib && configure \
 	  --with-smlnj-root="@ROOT_DIR@/.." \
 	  --with-output-dir="$(HTML_DST_ROOT)/smlnj-lib" \
@@ -79,3 +119,4 @@ smlnj-lib/configure:
 include @MK_DIR@/clean-rules.gmk
 
 CLEAN_SUBDIRS =	$(DOC_SUBDIRS) smlnj-lib
+DISTCLEAN_FILES = $(LINKS)
