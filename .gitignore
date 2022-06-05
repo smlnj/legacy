@@ -91,3 +91,36 @@ latex.out/
 
 # macOS finder
 .DS_Store
+
+## Repo-specific files
+
+asdl/Makefile
+asdl/examples/Makefile
+asdl/doc/Makefile
+asdl/doc/manual-2.0/Makefile
+asdl/doc/manual-3.0/Makefile
+asdl/src/Makefile
+asdl/src/tests/basics/Makefile
+asdl/src/tests/options/Makefile
+asdl/src/tests/primitives/Makefile
+asdl/src/tests/sequences/Makefile
+asdl/src/tests/Makefile
+asdl/src/gen/fragments/Makefile
+asdl/src/asdlgen/Makefile
+asdl/src/lib/cxx/Makefile
+asdl/src/lib/Makefile
+doc/mk/doc-rules.gmk
+doc/Makefile
+doc/src/Makefile
+doc/src/changelog/Makefile
+doc/src/extensions/Makefile
+doc/src/install-notes/Makefile
+doc/src/man/Makefile
+doc/src/manuals/Makefile
+doc/src/release-notes/Makefile
+doc/src/smlnj-guide/Makefile
+smlnj-lib/Doc/tools/gen-pages/Makefile
+smlnj-lib/Doc/tools/gen-pages/config.sml
+smlnj-lib/Doc/tools/gen-pages/gen-pages.*
+smlnj-lib/Doc/tools/make-index/Makefile
+smlnj-lib/Doc/tools/make-index/make-index.*
