@@ -1,0 +1,171 @@
+Notes on the rudimentary SML/NJ C interface rooted at this directory.
+
+This file provides installation instructions and details on adding
+ML-callable C functions to the SML/NJ runtime system using the SML/NJ C 
+interface.  With this interface one can call C functions that are 
+passed (and return) integers, floats, doubles, arrays, structs and unions,
+and functions.  C functions may also return arbitrary C pointers to ML which 
+the ML program may supply as arguments to C functions at later times.
+
+The file 'smlnj-c.ps' is a paper in the './doc' directory describes the 
+design, implementation, and operation of the C interface.  It contains
+examples of calling C functions from SML/NJ.  
+
+Direct bugs, comments, questions to 'sml-nj@research.bell-labs.com'
+
+
+1 Installation
+--------------
+
+The interface consists of two parts: a C part in the SML/NJ runtime and
+an ML part that must be explicitly loaded (into SML/NJ running with 
+the C-interface runtime).  The C part is already contained in SML/NJ's
+C runtime, but must be explicitly configured.
+
+1.1 Building the C-interface runtime
+------------------------------------
+
+The runtime system contains the C interface in the 
+'src/runtime/c-libs/smlnj-ccalls' directory.  You must explicitly 
+build a runtime that supports this interface as follows:
+If the file 'runtime/objs/mk.<arch>-<os>-ccalls' does not
+exist, create one by:
+
+	(0) cloning 'mk.<arch>-<os>' as 'mk.<arch>-<os>-ccalls'
+	(1) adding -DC_CALLS to the makefile's DEF variable
+	(2) making sure the makefile defines XCLIBS as:
+		XCLIBS = ../c-libs/smlnj-ccalls/libsmlnj-ccalls.a
+	(3) making sure XCLIBS is passed to 'make' for the 'all:' 
+	    target as:
+		XCLIBS="$(XCLIBS)"
+
+A sample makefile (mk.mipseb-irix5-c-calls) is attached to this file.
+
+Build a C-interface runtime by issuing the command
+	make -f mk.<arch>-<os>-ccalls
+in the 'runtime/objs' directory.  Move the resulting 'run.<arch>-<os>'
+file to the appropriate directory (usually 'bin/.run').
+
+The second part of the SML/NJ-C interface is a library of ML code that 
+declares data types for constructing data that can be passed to C functions.  
+This part also provides the facilities for registering the C functions that 
+ML can call.  This part of the interface must be loaded into the SML/NJ system
+before C functions can be registered and then called.
+
+
+1.2 Installing the SML Interface Library
+----------------------------------------
+
+The ML interface library resides in this directory.  The important files
+are: 'c-calls.sig.sml', 'c-calls.sml', and 'cc-info.<compiler>.sml'.
+The 'c-calls' files are the interface.  The interface is a functor
+(CCalls) parameterized by info about the underlying C compiler (via
+the 'cc-info.<compiler>.sml' files).  
+
+cc-info files are SML structures that supply the C interface
+(CCalls functor) with information about the C compiler.
+
+The shell script gen-cc-info can be used to automatically generate
+a cc-info.<compiler>.sml for given compiler.  Usage: 
+	 gen-cc-info cc-to-use name-for-structure >oufile
+ i.e.: % gen-cc-info gcc GCCInfoX86Linux >cc-info.x86-linux.sml
+
+(make sure you're running on the named platform when you give the
+gen-cc-info command!).
+
+Alternately, cc-info files can be made manually.  See, for example,
+cc-info.defaults.sml (should be good for most 32-bit platforms) 
+or cc-info.mipseb-irix5.sml
+
+The 'sources.cm' file allows the SML/NJ Compilation Manager (CM) to
+build the interface.  At an sml-cm prompt, do a 'CM.make()'.
+
+Alternately, the file 'load.sml' shows how to put it all together.  
+"Using" it at the top level creates an instance on an interface 
+(and utility functions used by that interface).
+
+
+2 Usage
+-------
+
+2.1 Adding C Functions
+----------------------
+
+Installation of the runtime as described above links in the C functions 
+in 'src/runtime/c-libs/c-calls/cutil.c'.  The C functions defined 
+in 'cutil.c' are bound to names that ML programs can find through 
+the file 'cutil-cfuns.c'.  Each function imported to SML/NJ from 
+'cutil.c' has a line such as:
+
+	C_CALLS_CFUNC("ptos",	ptos,	char *,	(void *))
+
+in 'cutil-cfuns.h'.  This line registers the C function 'ptos'
+with name 'ptos', return type 'int', and arg type(s) 'char *'
+with the SML-NJ runtime.  A C_CALLS_CFUNC line must exist for every 
+user C function callable from ML.  
+
+The file 'cutil-cfuns.h' must be included by the file 'cfun-list.h'.
+When adding a set of related functions, it is useful to place their
+C_CALLS_FUNC entries in a '*-cfuns.h' file and to then include this
+file from 'cfun-list.h'.  For example, to add a new file 'f.c' of C 
+functions, create a file 'f-cfuns.h' with C_CALLS_CFUNC definitions for 
+all functions exported by 'f.c'.  Add a '#include "f-cfuns.h"' to 
+'cfun-list.h'.  Edit 'makefile' to build 'f.o', i.e. add 'f.o' to the 
+makefile's C_CALLS_OBJS variable and add a rule for 'f.o' 
+(see, for example, the rule for 'cutil.o').
+
+
+2.2 Linking in C libraries
+--------------------------
+
+Adding a C function may require linking against some C library
+not currently linked against by the SML-NJ runtime.  These libraries
+can be linked against as follows.
+
+Edit 'src/runtime/objs/mk.<arch>-<os>-calls' and alter the LD_LIBS variable
+to include the desired libraries.  For example, 
+
+	LD_LIBS =	-lX11 -lm -lmalloc
+
+links in the malloc, math and X11 libs.
+
+
+2.3 Calling C Functions from ML
+-------------------------------
+
+Refer to the paper 'smlnj-c.ps' for instructions on registering and 
+calling C functions that have been added to the runtime system.
+
+The file 'cutil.sml' in this directory provides a few examples.
+
+
+3.0 Sample "mk.<arch>-<os>-ccalls" file.
+----------------------------------------
+
+# mk.mipseb-irix5-ccalls
+#
+
+SHELL	= /bin/sh
+
+CC =		cc -xansi -D__STDC__
+CPP =		/usr/lib/acpp
+CFLAGS =	-O
+AS =		/bin/as -nocpp
+RANLIB =	ar ts
+
+#XOBJS =	xmonitor.o
+#LD_LIBS =	-lX11_s -lmalloc
+#BASE_DEFS =	-DHEAP_MONITOR
+XOBJS =
+XLIBS =
+XCLIBS =         ../c-libs/smlnj-ccalls/libsmlnj-ccalls.a
+LD_LIBS =	-lmalloc
+BASE_DEFS =
+DEFS =		$(BASE_DEFS) -DHOST_MIPS -DTARGET_MIPS -DOPSYS_UNIX -DOPSYS_IRIX5 -DCALLEESAVE=3 -DC_CALLS
+TARGET =	MIPS
+VERSION	=	v-mipseb-irix5
+RUNTIME =	run.mipseb-irix5
+
+all:
+	(make RUNTIME="$(RUNTIME)" VERSION="$(VERSION)" CC="$(CC)" CPP="$(CPP)" CFLAGS="$(CFLAGS)" AS="$(AS)" RANLIB="$(RANLIB)" TARGET=$(TARGET) DEFS="$(DEFS)" XOBJS="$(XOBJS)" XLIBS="$(XLIBS)" LD_LIBS="$(LD_LIBS)" XCLIBS="$(XCLIBS)" $(RUNTIME))
+

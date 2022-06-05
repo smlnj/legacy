@@ -1,0 +1,19 @@
+
+This directory contains the source code for 
+tactic trees in exene.  
+
+	load : this file loads all of the source files into eXene. 
+
+	SML code : 
+
+	tree.sig, tree.sml   : low-level implementation of trees. 
+	support.sig          : the signature of the tactic tree support structure. 
+	ttree.sig, ttree.sml : tactic tree implementation. 
+	
+
+	SML + eXene code : 
+
+	manager.sig, manager.sml         : builds the X-window interface for tactic trees.
+	interactive.sig, interactive.sml : provides an interactive  means of using manager.sml
+               
+

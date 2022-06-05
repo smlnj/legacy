@@ -1,0 +1,22 @@
+
+fun put (fname,DrawMaster.DMSG{oper = DrawMaster.DOP_PutImage{
+                   dst_pt = PT{x,y},
+                   size = SIZE{wid,ht},
+                   depth,
+                   lpad ,
+                   format,
+                   data 
+                 },...  }) = let
+     val outs = open_out fname
+     in
+       output(outs,implode["dstpt=",makestring x,", ",makestring y,"\n"]);
+       output(outs,implode["size=",makestring wid,", ",makestring ht,"\n"]);
+       output(outs,implode["depth=",makestring depth,"\n"]);
+       output(outs,implode["lpad=",makestring lpad,"\n"]);
+       output(outs,implode["data=\n",data,"\n"]);
+       close_out outs
+     end
+  | put _ = ()
+
+fun putr(RECT{x,y,wid,ht}) = CIO.print("ht = "^(makestring ht)^"\n")
+

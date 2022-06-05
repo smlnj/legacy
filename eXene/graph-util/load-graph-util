@@ -1,0 +1,16 @@
+
+app use [
+    "bitmap-io-sig.sml",
+    "bitmap-io.sml",
+    "ellipse-sig.sml",
+    "ellipse.sml",
+    "spline-sig.sml",
+    "spline.sml",
+    "rounded-rect-sig.sml",
+    "rounded-rect.sml",
+    "box.sml",
+    "band.sml",
+    "scan-convert.sml",
+    "region-sig.sml",
+    "region.sml"
+  ];

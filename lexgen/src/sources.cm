@@ -1,0 +1,40 @@
+(* sources.cm
+ *
+ * COPYRIGHT (c) 2005 
+ * John Reppy (http://www.cs.uchicago.edu/~jhr)
+ * Aaron Turon (adrassi@gmail.com)
+ * All rights reserved.
+ *
+ *)
+
+Library
+  structure Main
+is
+
+  $/basis.cm
+  $/smlnj-lib.cm
+  $/pp-lib.cm
+  $/ml-yacc-lib.cm
+
+  FrontEnds/lex-spec.sml
+
+(*  FrontEnds/ml-lex/ml-lex.lex : MLLex *)
+  FrontEnds/ml-lex/ml-lex.lex.sml 
+  FrontEnds/ml-lex/ml-lex.yacc : MLYacc
+  FrontEnds/ml-lex/ml-lex-input.sml
+
+  BackEnds/lex-output-spec.sml
+  BackEnds/output-sig.sml
+  BackEnds/expand-file.sml
+
+  BackEnds/Dot/dot-output.sml
+  BackEnds/Dump/dump-output.sml
+  BackEnds/Match/match.sml
+
+  BackEnds/SML/ml.sml
+  BackEnds/SML/sml-fun-output.sml
+
+  lex-gen.sml
+  reg-exp-sig.sml
+  reg-exp.sml
+  main.sml

@@ -1,0 +1,12 @@
+(* load the ML viewer test *)
+
+
+app (use o library) [
+    "name-sig.sml", "name.sml"
+  ];
+
+use "load";
+use "test.sml";
+
+val glove = "135.104.21.111:0.0";
+

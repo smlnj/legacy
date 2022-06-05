@@ -1,0 +1,8 @@
+(* load file for BadBricks program *)
+app use [
+  "util.sml",
+  "brickview.sml",
+  "brick.sml",
+  "wall.sml",
+  "badbricks.sml"
+];

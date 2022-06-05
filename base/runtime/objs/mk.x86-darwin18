@@ -1,0 +1,46 @@
+# mk.x86-darwin
+#
+# COPYRIGHT (c) 2018 The SML/NJ Fellowship
+#
+# Makefile for macOS 10.14 Mojave.  Note that we assume that the SDK
+# variable is set on the make command line.
+#
+
+# Normally, the SDK variable is set on the command line (by install.sh),
+# but if it is not, then we assume that the 10.13 SDK is in the usual place.
+#
+ifeq ($(origin SDK), undefined)
+  DEVDIR = $(shell xcode-select -p)
+  SDK = $(DEVDIR)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk
+endif
+
+SYSROOT =	-isysroot $(SDK) -mmacosx-version-min=10.7
+
+# the /usr/bin/as command does _not_ accept the -mmacosx-version-min
+# command-line option prior to MacOS X 10.10 (Yosimite)
+ifeq ($(AS_ACCEPTS_SDK),yes)
+  AS_SDK =	$(SYSROOT)
+endif
+
+SHELL =		/bin/sh
+
+MAKE =		make
+AS =		/usr/bin/as -arch i386 $(AS_SDK)
+CC =		cc -m32 -std=c99
+CFLAGS =	-g -O2 -D_DARWIN_C_SOURCE $(SYSROOT)
+CPP =           cc -x assembler-with-cpp -E -P -std=c99
+XOBJS =
+XLIBS =         ../c-libs/dl/libunix-dynload.a
+LD_LIBS =
+XDEFS =
+BASE_DEFS =
+DEFS		= $(XDEFS) $(BASE_DEFS) -DARCH_X86 -DDSIZE_32 \
+		-DOPSYS_UNIX -DOPSYS_DARWIN -DGNU_ASSEMBLER -DDLOPEN -DINDIRECT_CFUNC
+TARGET =	X86
+VERSION =	v-x86-darwin
+RUNTIME =	run.x86-darwin
+RUNTIMEX =	runx.x86-darwin
+
+all:
+	($(MAKE) RUNTIME="$(RUNTIME)" VERSION="$(VERSION)" CC="$(CC)" CFLAGS="$(CFLAGS)" CPP="$(CPP)" AS="$(AS)" TARGET=$(TARGET) DEFS="$(DEFS)" XOBJS="$(XOBJS)" XLIBS="$(XLIBS)" LD_LIBS="$(LD_LIBS)" $(RUNTIME))
+	($(MAKE) RUNTIME="$(RUNTIMEX)" VERSION="$(VERSION)" CC="$(CC)" CFLAGS="$(CFLAGS)" CPP="$(CPP)" TARGET=$(TARGET) DEFS="$(DEFS)" XOBJS="$(XOBJS)" XLIBS="$(XLIBS)" LD_LIBS="$(LD_LIBS)" LDFLAGS="-Xlinker -r" $(RUNTIMEX))

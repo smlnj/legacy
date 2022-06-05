@@ -1,0 +1,9 @@
+fun loadSubsys s = (System.Directory.cd ("../"^s); use "load");
+
+app loadSubsys [
+  "util",
+  "graph",
+  "text-view",
+  "graph-view",
+  "main"
+];

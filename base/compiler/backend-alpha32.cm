@@ -1,0 +1,40 @@
+(* backend-alpha32.cm
+ *
+ * (C) 2001 Lucent Technologies, Bell Labs
+ *
+ *
+ * The Alpha-specific part (backend) of the compiler.
+ *
+ * The present file is a group which gets referred to by the actual library
+ * file in system/smlnj/viscomp/alpha32.cm.
+ *)
+Group
+
+	structure Alpha32Backend
+
+        structure Alpha32CG
+        structure Alpha32CpsRegs
+        structure Alpha32Instr
+	structure Alpha32Props
+	structure Alpha32CFG
+	structure Alpha32AsmEmitter
+is
+
+TopLevel/backend/alpha32.sml
+
+CodeGen/alpha32/alpha32CG.sml
+CodeGen/alpha32/alpha32CpsRegs.sml
+CodeGen/alpha32/alpha32MLTree.sml
+CodeGen/alpha32/alpha32PseudoInstrs.sml
+CodeGen/alpha32/alpha32gen.sml
+CodeGen/alpha32/alpha32spec.sml
+
+$smlnj/basis/basis.cm
+$smlnj/smlnj-lib/smlnj-lib.cm
+$smlnj/viscomp/basics.cm
+$smlnj/viscomp/core.cm
+$smlnj/MLRISC/Control.cm
+$smlnj/MLRISC/MLRISC.cm
+$smlnj/MLRISC/MLTREE.cm
+$smlnj/MLRISC/ALPHA.cm
+$smlnj/MLRISC/Graphs.cm

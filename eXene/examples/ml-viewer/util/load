@@ -1,0 +1,16 @@
+(*fun library s = "/usr/addon/sml/smlnj-lib-0.1/"^s;*)
+fun library s = "../library/"^s;
+
+
+app (use o library) [
+    "list-util-sig.sml",	"list-util.sml",
+    "list-format-sig.sml",	"list-format.sml",
+    "ord-key-sig.sml",
+    "dict-sig.sml",
+    "splaytree-sig.sml",	"splaytree.sml",
+				"splay-dict.sml",
+    "name-sig.sml",		"name.sml"
+  ];
+
+use "mlyacc-base.sml";
+use "get.sml";

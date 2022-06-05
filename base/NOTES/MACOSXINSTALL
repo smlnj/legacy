@@ -1,0 +1,53 @@
+Installation instructions for SML/NJ under macOS
+--------------------------------------------------
+
+We provide a disk image containing an installer package
+for SML/NJ.  The package contains a full installation
+including nearly all optional components.  (We only
+exclude "mlrisc-tools" and "nowhere".)  In the near
+future we plan to provide a meta-package which lets
+users select the components to be installed.
+
+The current installer lets the user choose an installation
+root directory.  The default is /usr/local/smlnj.
+The SML/NJ-specific "bin" directory containing the
+"sml" command and its siblings is not automatically
+added to the shell's search path, though.
+
+When using the installer package (even in the case
+when the installation directory is not the default
+/usr/local/smlnj) it is NOT necessary to set any
+global environment variables such as SMLNJ_HOME.
+
+----
+
+When developer tools are present on a MacOS X machine,
+then it is also always possible to do a generic Unix
+install (see file INSTALL).  The runtime system makefile
+for Mac OS X on Intel (mk.x86-darwin) is configured to
+support Mac OS X 10.5 (Leopard), but recent versions
+of Xcode do not provide the 10.5 SDKs.  You will either
+need to obtain the 10.5 SDKs from the Apple Decveloper
+site or modify the Makefile.
+
+----
+
+Xcode 10.1, which is Apple's development environment for
+macOS 10.14 Mojave, does not include the libraries needed
+to build 32-bit executables, such as the SML/NJ runtime,
+although 32-bit programs will still run.
+
+To support building on Mojave, there is a Makefile
+(mk.x86-darwin18) for the runtime system. which the
+config/install.sh script will use when necessary.  This
+new makefile expects that the `MacOSX10.13.sdk` directory
+from Xcode 9 has been copied into the Xcode 10 SDKs directory.
+Note that updating Xcode from the AppStore will likely
+remove the 10.13 SDK, so you should keep a copy in a safe
+place.
+
+The Xcode SDKs live in Platforms/MacOSX.platform/Developer/SDKs
+under the Developer directory.  One can determine the path to the
+current developer directory using the command
+
+	% xcode-select -p

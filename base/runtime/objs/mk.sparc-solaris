@@ -1,0 +1,28 @@
+# mk.sparc-solaris
+#
+
+SHELL		= /bin/sh
+
+MAKE =		/usr/ccs/bin/make
+AS =		/usr/ccs/bin/as
+AR =		/usr/ccs/bin/ar
+GCC =		gcc
+CC =		$(GCC)
+CFLAGS =	-O3
+#CFLAGS =	-g
+CPP =		$(GCC) -x c -E -P
+RANLIB =	$(AR) ts
+
+XOBJS =
+XLIBS =		../c-libs/dl/libunix-dynload.a
+LD_LIBS =	-lm -lsocket -lnsl -ldl
+XDEFS =
+BASE_DEFS =	-D__STDC__=0
+DEFS =		$(XDEFS) $(BASE_DEFS) -DARCH_SPARC -DDSIZE_32 \
+		-DOPSYS_UNIX -DOPSYS_SOLARIS -DUNBOXEDFLOAT=1 -DDLOPEN
+TARGET =	SPARC
+VERSION =	v-sparc-solaris
+RUNTIME =	run.sparc-solaris
+
+all:
+	($(MAKE) RUNTIME="$(RUNTIME)" MAKE="$(MAKE)" VERSION="$(VERSION)" CC="$(CC)" CFLAGS="$(CFLAGS)" CPP="$(CPP)" AS="$(AS)" AR="$(AR)" RANLIB="$(RANLIB)" TARGET=$(TARGET) DEFS="$(DEFS)" XOBJS="$(XOBJS)" XLIBS="$(XLIBS)" LD_LIBS="$(LD_LIBS)" $(RUNTIME))

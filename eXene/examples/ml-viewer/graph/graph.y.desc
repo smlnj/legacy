@@ -1,0 +1,845 @@
+
+state 0:
+
+	File : . GraphType SYMBOL LBRACE StmtList RBRACE 
+	File : .  (reduce by rule 1)
+
+	GRAPH	shift 4
+	DIGRAPH	shift 3
+	STRICT	shift 2
+
+	File	goto 75
+	GraphType	goto 1
+
+	.	reduce by rule 1
+
+
+state 1:
+
+	File : GraphType . SYMBOL LBRACE StmtList RBRACE 
+
+	SYMBOL	shift 5
+
+
+	.	error
+
+
+state 2:
+
+	GraphType : STRICT . GRAPH 
+	GraphType : STRICT . DIGRAPH 
+
+	GRAPH	shift 7
+	DIGRAPH	shift 6
+
+
+	.	error
+
+
+state 3:
+
+	GraphType : DIGRAPH .  (reduce by rule 4)
+
+
+
+	.	reduce by rule 4
+
+
+state 4:
+
+	GraphType : GRAPH .  (reduce by rule 2)
+
+
+
+	.	reduce by rule 2
+
+
+state 5:
+
+	File : GraphType SYMBOL . LBRACE StmtList RBRACE 
+
+	LBRACE	shift 8
+
+
+	.	error
+
+
+state 6:
+
+	GraphType : STRICT DIGRAPH .  (reduce by rule 5)
+
+
+
+	.	reduce by rule 5
+
+
+state 7:
+
+	GraphType : STRICT GRAPH .  (reduce by rule 3)
+
+
+
+	.	reduce by rule 3
+
+
+state 8:
+
+	File : GraphType SYMBOL LBRACE . StmtList RBRACE 
+
+	GRAPH	shift 27
+	SUBGRAPH	shift 26
+	NODE	shift 25
+	EDGE	shift 24
+	SYMBOL	shift 23
+	LBRACE	shift 22
+
+	AttrClass	goto 21
+	AttrSet	goto 20
+	StmtList	goto 19
+	StmtList1	goto 18
+	Stmt	goto 17
+	Stmt1	goto 16
+	AttrStmt	goto 15
+	NodeId	goto 14
+	NodeName	goto 13
+	NodeStmt	goto 12
+	EdgeStmt	goto 11
+	SubgStmt	goto 10
+	SubgHdr	goto 9
+
+	.	reduce by rule 19
+
+
+state 9:
+
+	SubgStmt : SubgHdr . LBRACE StmtList RBRACE 
+	SubgStmt : SubgHdr .  (reduce by rule 49)
+
+	LBRACE	shift 28
+
+
+	.	reduce by rule 49
+
+
+state 10:
+
+	Stmt1 : SubgStmt .  (reduce by rule 27)
+	EdgeStmt : SubgStmt . EdgeRHS OptAttrList 
+
+	EDGEOP	shift 30
+
+	EdgeRHS	goto 29
+
+	.	reduce by rule 27
+
+
+state 11:
+
+	Stmt1 : EdgeStmt .  (reduce by rule 25)
+
+
+
+	.	reduce by rule 25
+
+
+state 12:
+
+	Stmt1 : NodeStmt .  (reduce by rule 24)
+
+
+
+	.	reduce by rule 24
+
+
+state 13:
+
+	NodeId : NodeName . NodePort 
+
+	COLON	shift 35
+	AT	shift 34
+
+	NodePort	goto 33
+	PortLocation	goto 32
+	PortAngle	goto 31
+
+	.	reduce by rule 32
+
+
+state 14:
+
+	NodeStmt : NodeId . OptAttrList 
+	EdgeStmt : NodeId . EdgeRHS OptAttrList 
+
+	EDGEOP	shift 30
+
+	RecAttrList	goto 38
+	OptAttrList	goto 37
+	EdgeRHS	goto 36
+
+	.	reduce by rule 15
+
+
+state 15:
+
+	Stmt1 : AttrStmt .  (reduce by rule 26)
+
+
+
+	.	reduce by rule 26
+
+
+state 16:
+
+	Stmt : Stmt1 .  (reduce by rule 22)
+	Stmt : Stmt1 . SEMICOLON 
+
+	SEMICOLON	shift 39
+
+
+	.	reduce by rule 22
+
+
+state 17:
+
+	StmtList1 : Stmt .  (reduce by rule 20)
+
+
+
+	.	reduce by rule 20
+
+
+state 18:
+
+	StmtList : StmtList1 .  (reduce by rule 18)
+	StmtList1 : StmtList1 . Stmt 
+
+	GRAPH	shift 27
+	SUBGRAPH	shift 26
+	NODE	shift 25
+	EDGE	shift 24
+	SYMBOL	shift 23
+	LBRACE	shift 22
+
+	AttrClass	goto 21
+	AttrSet	goto 20
+	Stmt	goto 40
+	Stmt1	goto 16
+	AttrStmt	goto 15
+	NodeId	goto 14
+	NodeName	goto 13
+	NodeStmt	goto 12
+	EdgeStmt	goto 11
+	SubgStmt	goto 10
+	SubgHdr	goto 9
+
+	.	reduce by rule 18
+
+
+state 19:
+
+	File : GraphType SYMBOL LBRACE StmtList . RBRACE 
+
+	RBRACE	shift 41
+
+
+	.	error
+
+
+state 20:
+
+	AttrStmt : AttrSet .  (reduce by rule 29)
+
+
+
+	.	reduce by rule 29
+
+
+state 21:
+
+	AttrStmt : AttrClass . AttrList 
+
+	LBRACKET	shift 43
+
+	AttrList	goto 42
+
+	.	error
+
+
+state 22:
+
+	SubgStmt : LBRACE . StmtList RBRACE 
+
+	GRAPH	shift 27
+	SUBGRAPH	shift 26
+	NODE	shift 25
+	EDGE	shift 24
+	SYMBOL	shift 23
+	LBRACE	shift 22
+
+	AttrClass	goto 21
+	AttrSet	goto 20
+	StmtList	goto 44
+	StmtList1	goto 18
+	Stmt	goto 17
+	Stmt1	goto 16
+	AttrStmt	goto 15
+	NodeId	goto 14
+	NodeName	goto 13
+	NodeStmt	goto 12
+	EdgeStmt	goto 11
+	SubgStmt	goto 10
+	SubgHdr	goto 9
+
+	.	reduce by rule 19
+
+
+state 23:
+
+	AttrSet : SYMBOL . EQUAL SYMBOL 
+	NodeName : SYMBOL .  (reduce by rule 31)
+
+	EQUAL	shift 45
+
+
+	.	reduce by rule 31
+
+
+state 24:
+
+	AttrClass : EDGE .  (reduce by rule 8)
+
+
+
+	.	reduce by rule 8
+
+
+state 25:
+
+	AttrClass : NODE .  (reduce by rule 7)
+
+
+
+	.	reduce by rule 7
+
+
+state 26:
+
+	SubgHdr : SUBGRAPH . SYMBOL 
+
+	SYMBOL	shift 46
+
+
+	.	error
+
+
+state 27:
+
+	AttrClass : GRAPH .  (reduce by rule 6)
+
+
+
+	.	reduce by rule 6
+
+
+state 28:
+
+	SubgStmt : SubgHdr LBRACE . StmtList RBRACE 
+
+	GRAPH	shift 27
+	SUBGRAPH	shift 26
+	NODE	shift 25
+	EDGE	shift 24
+	SYMBOL	shift 23
+	LBRACE	shift 22
+
+	AttrClass	goto 21
+	AttrSet	goto 20
+	StmtList	goto 47
+	StmtList1	goto 18
+	Stmt	goto 17
+	Stmt1	goto 16
+	AttrStmt	goto 15
+	NodeId	goto 14
+	NodeName	goto 13
+	NodeStmt	goto 12
+	EdgeStmt	goto 11
+	SubgStmt	goto 10
+	SubgHdr	goto 9
+
+	.	reduce by rule 19
+
+
+state 29:
+
+	EdgeStmt : SubgStmt EdgeRHS . OptAttrList 
+
+
+	RecAttrList	goto 38
+	OptAttrList	goto 48
+
+	.	reduce by rule 15
+
+
+state 30:
+
+	EdgeRHS : EDGEOP . NodeId 
+	EdgeRHS : EDGEOP . NodeId EdgeRHS 
+	EdgeRHS : EDGEOP . SubgStmt 
+	EdgeRHS : EDGEOP . SubgStmt EdgeRHS 
+
+	SUBGRAPH	shift 26
+	SYMBOL	shift 51
+	LBRACE	shift 22
+
+	NodeId	goto 50
+	NodeName	goto 13
+	SubgStmt	goto 49
+	SubgHdr	goto 9
+
+	.	error
+
+
+state 31:
+
+	NodePort : PortAngle .  (reduce by rule 34)
+	NodePort : PortAngle . PortLocation 
+
+	COLON	shift 35
+
+	PortLocation	goto 52
+
+	.	reduce by rule 34
+
+
+state 32:
+
+	NodePort : PortLocation .  (reduce by rule 33)
+	NodePort : PortLocation . PortAngle 
+
+	AT	shift 34
+
+	PortAngle	goto 53
+
+	.	reduce by rule 33
+
+
+state 33:
+
+	NodeId : NodeName NodePort .  (reduce by rule 30)
+
+
+
+	.	reduce by rule 30
+
+
+state 34:
+
+	PortAngle : AT . SYMBOL 
+
+	SYMBOL	shift 54
+
+
+	.	error
+
+
+state 35:
+
+	PortLocation : COLON . SYMBOL 
+	PortLocation : COLON . LPAREN SYMBOL COMMA SYMBOL RPAREN 
+
+	SYMBOL	shift 56
+	LPAREN	shift 55
+
+
+	.	error
+
+
+state 36:
+
+	EdgeStmt : NodeId EdgeRHS . OptAttrList 
+
+
+	RecAttrList	goto 38
+	OptAttrList	goto 57
+
+	.	reduce by rule 15
+
+
+state 37:
+
+	NodeStmt : NodeId OptAttrList .  (reduce by rule 40)
+
+
+
+	.	reduce by rule 40
+
+
+state 38:
+
+	RecAttrList : RecAttrList . AttrList 
+	OptAttrList : RecAttrList .  (reduce by rule 16)
+
+	LBRACKET	shift 43
+
+	AttrList	goto 58
+
+	.	reduce by rule 16
+
+
+state 39:
+
+	Stmt : Stmt1 SEMICOLON .  (reduce by rule 23)
+
+
+
+	.	reduce by rule 23
+
+
+state 40:
+
+	StmtList1 : StmtList1 Stmt .  (reduce by rule 21)
+
+
+
+	.	reduce by rule 21
+
+
+state 41:
+
+	File : GraphType SYMBOL LBRACE StmtList RBRACE .  (reduce by rule 0)
+
+
+
+	.	reduce by rule 0
+
+
+state 42:
+
+	AttrStmt : AttrClass AttrList .  (reduce by rule 28)
+
+
+
+	.	reduce by rule 28
+
+
+state 43:
+
+	AttrList : LBRACKET . InsideAttrList RBRACKET 
+
+	SYMBOL	shift 61
+
+	InsideAttrList	goto 60
+	AttrSet	goto 59
+
+	.	reduce by rule 10
+
+
+state 44:
+
+	SubgStmt : LBRACE StmtList . RBRACE 
+
+	RBRACE	shift 62
+
+
+	.	error
+
+
+state 45:
+
+	AttrSet : SYMBOL EQUAL . SYMBOL 
+
+	SYMBOL	shift 63
+
+
+	.	error
+
+
+state 46:
+
+	SubgHdr : SUBGRAPH SYMBOL .  (reduce by rule 50)
+
+
+
+	.	reduce by rule 50
+
+
+state 47:
+
+	SubgStmt : SubgHdr LBRACE StmtList . RBRACE 
+
+	RBRACE	shift 64
+
+
+	.	error
+
+
+state 48:
+
+	EdgeStmt : SubgStmt EdgeRHS OptAttrList .  (reduce by rule 42)
+
+
+
+	.	reduce by rule 42
+
+
+state 49:
+
+	EdgeRHS : EDGEOP SubgStmt .  (reduce by rule 45)
+	EdgeRHS : EDGEOP SubgStmt . EdgeRHS 
+
+	EDGEOP	shift 30
+
+	EdgeRHS	goto 65
+
+	.	reduce by rule 45
+
+
+state 50:
+
+	EdgeRHS : EDGEOP NodeId .  (reduce by rule 43)
+	EdgeRHS : EDGEOP NodeId . EdgeRHS 
+
+	EDGEOP	shift 30
+
+	EdgeRHS	goto 66
+
+	.	reduce by rule 43
+
+
+state 51:
+
+	NodeName : SYMBOL .  (reduce by rule 31)
+
+
+
+	.	reduce by rule 31
+
+
+state 52:
+
+	NodePort : PortAngle PortLocation .  (reduce by rule 35)
+
+
+
+	.	reduce by rule 35
+
+
+state 53:
+
+	NodePort : PortLocation PortAngle .  (reduce by rule 36)
+
+
+
+	.	reduce by rule 36
+
+
+state 54:
+
+	PortAngle : AT SYMBOL .  (reduce by rule 39)
+
+
+
+	.	reduce by rule 39
+
+
+state 55:
+
+	PortLocation : COLON LPAREN . SYMBOL COMMA SYMBOL RPAREN 
+
+	SYMBOL	shift 67
+
+
+	.	error
+
+
+state 56:
+
+	PortLocation : COLON SYMBOL .  (reduce by rule 37)
+
+
+
+	.	reduce by rule 37
+
+
+state 57:
+
+	EdgeStmt : NodeId EdgeRHS OptAttrList .  (reduce by rule 41)
+
+
+
+	.	reduce by rule 41
+
+
+state 58:
+
+	RecAttrList : RecAttrList AttrList .  (reduce by rule 14)
+
+
+
+	.	reduce by rule 14
+
+
+state 59:
+
+	InsideAttrList : AttrSet . Optcomma InsideAttrList 
+
+	COMMA	shift 69
+
+	Optcomma	goto 68
+
+	.	reduce by rule 11
+
+
+state 60:
+
+	AttrList : LBRACKET InsideAttrList . RBRACKET 
+
+	RBRACKET	shift 70
+
+
+	.	error
+
+
+state 61:
+
+	AttrSet : SYMBOL . EQUAL SYMBOL 
+
+	EQUAL	shift 45
+
+
+	.	error
+
+
+state 62:
+
+	SubgStmt : LBRACE StmtList RBRACE .  (reduce by rule 48)
+
+
+
+	.	reduce by rule 48
+
+
+state 63:
+
+	AttrSet : SYMBOL EQUAL SYMBOL .  (reduce by rule 17)
+
+
+
+	.	reduce by rule 17
+
+
+state 64:
+
+	SubgStmt : SubgHdr LBRACE StmtList RBRACE .  (reduce by rule 47)
+
+
+
+	.	reduce by rule 47
+
+
+state 65:
+
+	EdgeRHS : EDGEOP SubgStmt EdgeRHS .  (reduce by rule 46)
+
+
+
+	.	reduce by rule 46
+
+
+state 66:
+
+	EdgeRHS : EDGEOP NodeId EdgeRHS .  (reduce by rule 44)
+
+
+
+	.	reduce by rule 44
+
+
+state 67:
+
+	PortLocation : COLON LPAREN SYMBOL . COMMA SYMBOL RPAREN 
+
+	COMMA	shift 71
+
+
+	.	error
+
+
+state 68:
+
+	InsideAttrList : AttrSet Optcomma . InsideAttrList 
+
+	SYMBOL	shift 61
+
+	InsideAttrList	goto 72
+	AttrSet	goto 59
+
+	.	reduce by rule 10
+
+
+state 69:
+
+	Optcomma : COMMA .  (reduce by rule 12)
+
+
+
+	.	reduce by rule 12
+
+
+state 70:
+
+	AttrList : LBRACKET InsideAttrList RBRACKET .  (reduce by rule 13)
+
+
+
+	.	reduce by rule 13
+
+
+state 71:
+
+	PortLocation : COLON LPAREN SYMBOL COMMA . SYMBOL RPAREN 
+
+	SYMBOL	shift 73
+
+
+	.	error
+
+
+state 72:
+
+	InsideAttrList : AttrSet Optcomma InsideAttrList .  (reduce by rule 9)
+
+
+
+	.	reduce by rule 9
+
+
+state 73:
+
+	PortLocation : COLON LPAREN SYMBOL COMMA SYMBOL . RPAREN 
+
+	RPAREN	shift 74
+
+
+	.	error
+
+
+state 74:
+
+	PortLocation : COLON LPAREN SYMBOL COMMA SYMBOL RPAREN .  (reduce by rule 38)
+
+
+
+	.	reduce by rule 38
+
+
+state 75:
+
+
+	EOF	accept
+
+
+	.	error
+
+52 of 141 action table entries left after compaction
+78 goto table entries

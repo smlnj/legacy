@@ -1,0 +1,5 @@
+The README files have been moved to doc/src/release-notes, which is available via
+the svn command:
+
+	svn co https://smlnj-gforge.cs.uchicago.edu/svn/smlnj/doc/trunk doc
+

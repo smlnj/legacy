@@ -1,0 +1,21 @@
+The functor binaryC in the files
+		binary-C-file.sig.sml
+		binary-C-file.sml
+can be used to convert binary C data (e.g. structs) into their
+SML/NJ C interface equivalents.  This is useful for importing 
+C binary data from files, for example.
+
+To use the convertor, instantiate a C interface for the source
+C data.  Note that it is possible to import C data created by a 
+C compiler with different characteristcs (e.g. sizes) than the
+target (SML/NJ) platform.  Then, instantiate the binaryC functor
+with this C interface.  The function toBits converts an SML/NJ
+ctype instance to bits in a Word8Vector.  Conversely, the function
+fromBits converts the bits in a Word8Vector, given a ctype, to 
+the corresponding C data.  
+
+The toBits/fromBits operations are valid only on flat types; no
+pointers or functions.  binaryC raises an exception when asked
+to convert non-flat types.
+
+The file load.sml serves to illustrate the process described above.

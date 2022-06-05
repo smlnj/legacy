@@ -1,0 +1,143 @@
+(* root sources file for eXene *)
+
+Library
+
+  (** from lib **)
+    signature GEOMETRY
+    signature EXENE_BASE
+    signature FONT
+    signature DRAWING
+    signature ICCC
+    signature INTERACT
+    signature EXENE_WIN
+    signature STD_CURSOR
+
+    structure Geometry
+    structure EXeneBase
+    structure Font
+    structure Drawing
+    structure ICCC
+    structure Interact
+    structure EXeneWin
+    structure StdCursor
+    structure XDebug
+    structure MLXError
+
+  (** from graph-util **)
+    signature BITMAP_IO
+    signature ELLIPSE
+    signature ROUNDED_RECT
+    signature SPLINE
+    signature REGION
+    signature X_AUTH
+    signature COLOR_SPACE
+    signature GET_DPY
+
+    structure BitmapIO
+    structure Ellipse
+    structure RoundedRect
+    structure Spline
+    structure Region
+    structure XAuth
+    structure ColorSpace
+    structure GetDpy
+
+  (** from widgets **)
+    signature ROOT
+    signature SHELL
+    signature WIDGET
+    signature ROUTER
+    signature THREE_D
+    signature QUARK
+    signature ATTRS
+    signature FIELD_EDIT
+    signature STREDIT
+    signature TEXT_WIDGET
+    signature TXTWIN
+    signature VTTY
+    signature BACKGROUND
+    signature BOX
+    signature FRAME
+    signature HIDEABLE
+    signature MENU_BUTTON
+    signature PILE
+    signature SCROLL_LAYOUT
+    signature SCROLL_PORT
+    signature SHAPE
+    signature SIMPLE_MENU
+    signature VIEWPORT
+    signature WIDGET_SET
+    signature BUTTON_CTRL
+    signature BUTTON_VIEW
+    signature BUTTON
+    signature CANVAS
+    signature COLOR_RECT
+    signature DIVIDER
+    signature LABEL
+    signature MESSAGE
+    signature SCROLL_VIEW
+    signature SCROLLBAR
+    signature SHAPE_VIEW
+    signature SLIDER
+    signature TEXT_LIST
+    signature TOGGLE_CTRL
+    signature TOGGLE
+
+    structure Root
+    structure Router
+    structure Shell
+    structure Widget
+    structure ThreeD
+    structure Attrs
+    structure RunEXene
+    structure Quark
+    structure Styles
+    structure FieldEdit
+    structure StrEdit
+    structure TextWidget
+    structure TxtWin
+    structure Vtty
+    structure Background
+    structure Box
+    structure Hideable
+    structure MenuButton
+    structure Frame
+    structure Pile
+    structure ScrollLayout
+    structure ScrollPort
+    structure Shape
+    structure SimpleMenu
+    structure Viewport
+    structure WidgetSet
+    structure ArrowView
+    structure ButtonBase
+    structure ButtonType
+    structure Button
+    structure Canvas
+    structure CheckView
+    structure CircleView
+    structure ColorRect
+    structure DiamondView
+    structure Divider
+    structure LabelBttnView
+    structure Label
+    structure Message
+    structure RectView
+    structure ScrollView
+    structure Scrollbar
+    structure ShapeTypes
+    structure Slider
+    structure SwitchView
+    structure TextList
+    structure TextView
+    structure ToggleType
+    structure Toggle
+
+    functor ButtonCtrl
+    functor ToggleCtrl
+    functor ShapeView
+
+is
+lib/sources.cm
+graph-util/sources.cm
+widgets/sources.cm

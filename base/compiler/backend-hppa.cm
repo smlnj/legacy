@@ -1,0 +1,40 @@
+(* backend-hppa.cm
+ *
+ * (C) 2001 Lucent Technologies, Bell Labs
+ *
+ * This is the HPPA-specific part (backend) of the compiler.
+ *
+ * The present file is a group which gets referred to by the actual library
+ * file in system/smlnj/viscomp/hppa.cm.
+ *)
+Group
+
+	structure HppaBackend
+
+        structure HppaCG
+        structure HppaCpsRegs
+        structure HppaInstr
+	structure HppaProps
+	structure HppaCFG
+	structure HppaAsmEmitter
+is
+
+TopLevel/backend/hppa.sml
+
+CodeGen/hppa/hppaCG.sml
+CodeGen/hppa/hppaCpsRegs.sml
+CodeGen/hppa/hppaLabelComp.sml
+CodeGen/hppa/hppaMLTree.sml
+CodeGen/hppa/hppaMillicode.sml
+CodeGen/hppa/hppagen.sml
+CodeGen/hppa/hppaspec.sml
+
+$smlnj/basis/basis.cm
+$smlnj/smlnj-lib/smlnj-lib.cm
+$smlnj/viscomp/basics.cm
+$smlnj/viscomp/core.cm
+$smlnj/MLRISC/Control.cm
+$smlnj/MLRISC/MLRISC.cm
+$smlnj/MLRISC/MLTREE.cm
+$smlnj/MLRISC/HPPA.cm
+$smlnj/MLRISC/Graphs.cm

@@ -1,0 +1,95 @@
+#!/bin/sh
+#
+#set -x
+
+EXENE_HOME="/home/jhr/sml/eXene"
+export EXENE_HOME
+
+FILES="\
+    mit/black			BlackBM		black-bm.sml \
+    mit/boxes			BoxesBM		boxes-bm.sml \
+    mit/calculator		CalcBM		calc-bm.sml \
+    mit/cross_weave		CrossWeaveBM	cross-weave-bm.sml \
+    mit/dimple1 \
+    mit/dimple3			DimpleBM	dimple-bm.sml \
+    mit/dot			DotBM		dot-bm.sml \
+    mit/dots1x1 \
+    mit/dots2x2			DotsBM		dots-bm.sml \
+    mit/dropbar7
+    mit/dropbar8		DropBarBM	dropbar-bm.sml \
+    mit/escherknot		EscherKnotBM	escherknot-bm.sml \
+    mit/flagdown \
+    mit/flagup			FlagBM		flag-bm.sml \
+    mit/flipped_gray \
+    mit/gray1 \
+    mit/gray3 \
+    mit/light_gray 		GrayBM		gray-bm.sml \
+    mit/hlines2 \
+    mit/hlines3			HLinesBM	hlines-bm.sml \
+    mit/icon			IconBM		icon-bm.sml \
+    mit/keyboard16		Keyboard16BM	keyboard16-bm.sml \
+    mit/letters			LettersBM	letters-bm.sml \
+    mit/mensetmanus		MensetmanusBM	mensetmanus-bm.sml \
+    mit/menu8 \
+    mit/menu10 \
+    mit/menu12 \
+    mit/menu16			MenuBM		menu-bm.sml \
+    mit/noletters		NoLettersBM	noletters-bm.sml \
+    mit/plaid			PlaidBM		plaid-bm.sml \
+    mit/root_weave		RootWeaveBM	root-weave-bm.sml \
+    mit/scales			ScalesBM	scales-bm.sml \
+    mit/sipb			SipbBM		sipb-bm.sml \
+    mit/stipple			StippleBM	stipple-bm.sml \
+    mit/target			TargetBM	target-bm.sml \
+    mit/xterm			XTermBM		xterm-bm.sml \
+    mit/tie_fighter		TieFighterBM	tie_fighter-bm.sml \
+    mit/vlines2	\
+    mit/vlines3			VLinesBM	vlines-bm.sml \
+    mit/weird_size		WeirdSizeBM	weird_size-bm.sml \
+    mit/wide_weave		WideWeaveBM	wide-weave-bm.sml \
+    mit/wingdogs		WingDogsBM	wingdogs-bm.sml \
+    mit/woman			WomanBM		woman-bm.sml \
+    mit/xfd_icon		XFDIconBM	xfd-icon-bm.sml \
+    mit/xlogo11			XLogo11BM	xlogo11-bm.sml \
+    mit/xlogo16			XLogo16BM	xlogo16-bm.sml \
+    mit/xlogo32			XLogo32BM	xlogo32-bm.sml \
+    mit/xlogo64			XLogo64BM	xlogo64-bm.sml \
+    mit/cntr_ptr \
+    mit/cntr_ptrmsk		CenterPtrBM	center-ptr-bm.sml \
+    mit/left_ptr \
+    mit/left_ptrmsk		LeftPtrBM	left-ptr-bm.sml \
+    mit/mailempty \
+    mit/mailemptymsk		MailEmptyBM	mailempty-bm.sml\
+    mit/mailfull \
+    mit/mailfullmsk		MailFullBM	mailful-bm.sml \
+    mit/opendot \
+    mit/opendotMask		OpenDotBM	opendot-bm.sml \
+    mit/right_ptr \
+    mit/right_ptrmsk		RightPtrBM	right-ptr-bm.sml \
+    mit/star \
+    mit/starMask		StarBM		star-bm.sml \
+  "
+
+STRUCT_NAME=""
+IN_FILES=""
+for i in $FILES
+do
+  case $i in
+    mit/*)
+      IN_FILES="$IN_FILES $i"
+      ;;
+    *BM) # the name of the structure
+      STRUCT_NAME=$i
+      ;;
+    *.sml)
+      echo "bm2mlx -v -s -o $i -struct $STRUCT_NAME $IN_FILES"
+      ../tools/bm2mlx -v -s -o $i -struct $STRUCT_NAME $IN_FILES
+      STRUCT_NAME=""
+      IN_FILES=""
+      ;;
+    *)
+      echo "unexpected name $i"
+      exit
+      ;;
+  esac
+done

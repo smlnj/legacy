@@ -1,0 +1,43 @@
+This is a very simple (and simple-minded) N-body simulation.
+It produces a window showing some solar system similar to ours
+(but with TWO Jupiters that are a LOT heavier than the real one!).
+
+The point of this code is to show off concurrency:
+You can resize the window, change the setting of the magnification slider,
+or grab the canvas and shift it around all while the display continues
+to show the spinning planets and updating positions according to both
+the state of the simulation and the input of the user.
+
+Otherwise this code is pretty bad as far as N-body simulations are
+concerned: It is probably numerically unstable to begin with but also
+fails to adjust sampling rates in cases where planets move really
+fast.  The result is a quick detoriation of the situation with planets
+soon flying out of the system at hyperbolic speed.  But it is fun to
+watch... :)
+
+To run:
+  In 110.0.x (old CM):
+    - fire up sml
+    - say CM.make ();
+    - say Main.run ();
+  In 110.33 and later (new CM):
+    - fire up sml
+    - say CM.make "sources.cm";
+    - say Main.run ();
+
+In either system, after you say CM.make you can also produce a
+stand-alone heap image:
+    - say SMLofNJ.exportFn ("nbody", Main.AnimateSim.main);
+
+With 110.33 and later you can also do this instead (from the shell prompt):
+
+   ml-build sources.cm Main.AnimateSim.main nbody
+
+After you have built the heap image, run it using this shell command:
+
+   sml @SMLload=nbody
+
+Enjoy!
+
+PS: The code is currently known to cause a segmentation violation on
+    X86, probably due to a compiler bug.

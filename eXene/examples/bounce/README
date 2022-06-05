@@ -1,0 +1,5 @@
+This directory contains a silly demo that allows the user to
+create and destroy bouncing balls.  Mouse button-1 creates
+a new ball, button-2 will kill the ball(s) that are pointed
+at by the cursor, typing "x" will quit the application.
+Mouse button-3 pops up a simple menu.

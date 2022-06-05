@@ -1,0 +1,8 @@
+The is the fifth pre-release version of eXene 1.0.  We know that it compiles
+under SML/NJ 109.26+ and that it works on OSF/1, Irix, SunOS, Solaris, Linux
+and HPUX.  For the most part, the API is the same as the 108.5 version.
+
+	- John Reppy
+	  AT&T Labs Research
+	  [97-04-08]
+

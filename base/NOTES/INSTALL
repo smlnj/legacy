@@ -1,0 +1,330 @@
+Installation instructions for SML/NJ
+------------------------------------
+
+These are instructions for installing recent "working" versions of SML/NJ
+on Unix-like systems, including MacOX X with the developer tools installed.
+
+If you are running MacOS X but don't have the developer tools, you can
+install the system starting from the disk image that we provide.  See
+MACOSXINSTALL for details.
+
+If you are running Win32, see WININSTALL.
+
+1. If you are in a hurry (and you have network connectivity) ...
+----------------------------------------------------------------
+
+   - Pick a place to do the installation, e.g.
+
+      $ d=/usr/local/smlnj     # or whatever you like
+      $ mkdir $d
+      $ cd $d
+
+   - Download config.tgz, e.g.
+
+      $ v=110.93               # or whatever is the version you desire
+      $ wget http://smlnj.cs.uchicago.edu/dist/working/$v/config.tgz
+
+   - Gunzip and untar, e.g.
+
+      $ gunzip <config.tgz | tar xf -
+
+     This creates a subdirectory "config"
+
+   - Edit the "config/targets" file to your taste.  If you leave this
+     file alone, you end up with a minimal installation.
+
+   - Run the installer, it will automatically fetch all other necessary
+     tarballs:
+
+      $ config/install.sh
+
+     On the x86-64 (aka amd64) hardware, the installer supports installing
+     either 32- or 64-bit versions of SML/NJ on macOS and Linux.  The
+     relevant options are
+
+	-default <sz>	-- installs the system with the specified host
+			   size (either 32 or 64 bits) as the default.
+			   Currently, if this option is not specified,
+			   then the default hostsize is 32.
+
+	-32 | -64	-- installs the specified version of the system,
+			   but does not override the default size.  These
+			   options can be used to install both the 32-
+			   and 64-bit versions in the same location
+			   by running the install.sh script twice.
+			   In this case, you need to run the installation
+			   of the default size second.
+
+     ** WARNING **
+     The 64-bit version of SML/NJ is new as of 110.94 and has not been
+     as thoroughly tested as the 32-bit version.
+
+     If the installer complains about not being able to fetch those
+     tarballs, try step 2.1.
+
+2. If you have a bit more time...
+---------------------------------
+
+   2.1.  If you do not have network connectivity...
+   -------------------------------------------------
+
+   - Use some other means of downloading the necessary tarballs.  Store
+     them in directory $d.  Then run the installer (config/install.sh).
+
+     Here is a table that shows which packages you will need to download
+     depending on what you select in config/targets.  Take the union of
+     all the packages corresponding to your selection.  Don't forget to
+     include the "(always)" entry.  (<arch> and <os> should match your
+     host system.)
+
+     Keep in mind that making selections in config/targets there are
+     dependencies between packages.  For example, eXene requires cml
+     and cml-lib.  The installer script "knows" about these dependencies
+     and will automatically calculate the transitive closure of the
+     "requires" relation for you.  Still, if you do not have network
+     connectivity, then you should have downloaded tarballs for the
+     entire transitive closure.  (If you didn't, the installer will
+     kindly remind you.)
+
+          if you select...         |    ... you need
+      ---------------------------------------------------------------
+          (always)                 | boot.<arch>-<os>.tgz
+                                   | runtime.tgz
+                                   |
+          src-smlnj                | MLRISC.tgz
+                                   | cm.tgz
+                                   | compiler.tgz
+                                   | smlnj-lib.tgz
+                                   | ml-yacc.tgz
+                                   | system.tgz
+                                   |
+          old-basis                | old-basis.tgz
+                                   |
+          ml-yacc                  | ml-yacc.tgz
+                                   |
+          ml-lex                   | ml-lex.tgz
+                                   |
+          ml-burg                  | ml-burg.tgz
+            requires: ml-lex       |
+                                   |
+          smlnj-lib                | smlnj-lib.tgz
+                                   |
+          pgraph-util              | cm.tgz
+                                   |
+          cml                      | cml.tgz
+            requires: smlnj-lib    |
+                                   |
+          cml-lib                  | cml.tgz
+                                   |
+          eXene                    | eXene.tgz
+            requires: cml, cml-lib |
+                                   |
+          ckit                     | ckit.tgz
+                                   |
+          ml-nlffi-lib             | ml-nlffi-lib.tgz
+                                   |
+          ml-nlffigen              | ml-nlffigen.tgz
+            requires: smlnj-lib,   |
+                      ckit         |
+                                   |
+          mlrisc-tools             | MLRISC.tgz
+                                   |
+          nowhere                  |
+            requires: mlrisc-tools |
+                                   |
+          doc                      | doc.tgz
+
+   2.2.  Tweaking "preloads"...
+   ----------------------------
+
+    - Before running the installer (but after unpacking the config
+      directory), you can customize the set of libraries that are
+      pre-loaded (either directly or via CM's "autoload" mechanism).
+
+      For this, edit config/preloads before running config/install.sh.
+
+   2.3.  Using a different ftp server (for a step-1.-like installation)
+   --------------------------------------------------------------------
+
+    - If you have a local mirror for smlnj.cs.uchicago.edu/dist,
+      then you can speed up installation by pointing the automatic URL
+      fetch mechanism there.  The URL of the repository is stored in
+      config/srcarchiveurl.  Edit this file before running
+      config/install.sh.
+
+   2.4.  Using locally stored tarballs
+   -----------------------------------
+
+    - This is like step 2.3. -- except the URL in config/srcarchiveurl
+      should read something like
+
+          file:///usr/src/packages/smlnj/working/110.38
+
+      (In other words, the URL should spell out the name of the local
+      directory that happens to contain the tarballs.  Notice that
+      this method does not seem to work with certain versions of wget
+      which do not understand the file:// scheme.)
+
+   2.5.  What needs to be on my PATH?
+   ----------------------------------
+
+   - You should include $d/bin into your PATH.
+
+   2.6.  Which of all those files do I really need?
+   ------------------------------------------------
+
+   After the installer completes, directory $d will be full of files
+   and subdirectories.  Not all of them are actually required if you want
+   to use the system.
+
+   In particular, if you are not interested in any of the source code,
+   you can DELETE EVERYTHING EXCEPT:
+
+      $d/bin
+      $d/lib
+
+   2.7.  Can I move files to another directory after the fact?
+   -----------------------------------------------------------
+
+   Yes.
+
+   Here is the procedure:
+
+   Suppose you have installed everything under $d and now you want to
+   move things to some other directory $e (e.g., e=/usr/share/smlnj):
+
+     1. Move (at least) $d/bin and $d/lib to $e:
+
+        $ mv $d/{bin,lib} $e
+
+     2. Before running the "sml" command, set the environment variable
+        SMLNJ_HOME to point to $e:
+
+        $ export SMLNJ_HOME=$e
+
+        If you want to put the contents of $e/lib somewhere else, then
+        point CM_PATHCONFIG to wherever the path configuration file
+        lives.  (The default is $SMLNJ_HOME/lib/pathconfig.)
+
+        You can also scatter around the contents of $e/lib.  If you do so,
+        you have to edit the path configuration file itself.  See the CM
+        manual for more information on path anchors and path configuration.
+
+   2.8 Forcing the installer to use a particular URL getter program
+   ----------------------------------------------------------------
+
+   By default, config/install.sh will attempt to use wget, curl, and
+   lynx (in that order).  If you already know which of these programs
+   you want the installer to use, then set the environment variable
+   URLGETTER to "wget", "curl", or "lynx", respectively.
+
+   You can also set URLGETTER to any other command "foo" as long as
+   it can be invoked as
+
+       $ foo <source> <destination>
+
+   where <source> is the URL you want to fetch and <destination> is
+   the file name where the result will be stored.
+
+   2.9 Where are those "CM" directories?
+   -------------------------------------
+
+   CM metadata (source skeletons, compiled files, stable libraries, GUIDs,
+   ...) are now stored under a directory called ".cm".  We changed this
+   from the original "CM" because of name clashes on case-insensitive
+   file systems.  However, SML/NJ itself can work with any (reasonable)
+   choice of name for the metadata directory -- but for consistency the
+   choice has to be made at installation time.
+
+   To choose a different name for metadata directories, run
+   config/install.sh in the presence of an environment variable
+   CM_DIR_ARC.  For example, if you want to have all these directories
+   be named "FOOBAR", then run the installer (assuming a Bourne-ish
+   shell) as
+
+      $ CM_DIR_ARC=FOOBAR config/install.sh
+
+3. Troubleshooting:
+-------------------
+
+   3.1. You think you have network connectivity, but the installer fails
+   ---------------------------------------------------------------------
+
+    - You probably do not have any of the following commands available
+      on your system:  wget, lynx, curl.
+
+      Failsafe remedy:  Proceed according to step 2.1., using whatever
+      other FTP client you have.
+
+      Alternative remedy:  If you have some other command-line tool to
+      fetch URLs, make a wrapper for it (if necessary) so that it can
+      be invoked with precisely two arguments: <srcurl> and <dst>.
+      Then set the environment variable URLGETTER to the name of this
+      (wrapped) tool and try running the installer.
+
+      Example:  Suppose you don't have wget but a wget-lookalike named
+      "xget".  You could then make a shell script that wraps xget, e.g.
+      using a shell script "myxget" consisting of the single line:
+
+         $ exec xget -nv -O $2 $1
+
+      Once you have myxget, simply run:
+
+         $ URLGETTER=myxget config/install.sh
+
+   3.2. The install fails with a message about 32-bit support
+   ----------------------------------------------------------
+
+   By default, SML/NJ is a 32-bit system.  We have recently (as of
+   version 110.94) added beta support for 64-bit Linux and macOS
+   systems.  See Section 1 above for more information.
+
+   To install the 32-bit version on a 64-bit architecture, you must
+   have support for running 32-bit binaries.  On macOS (prior to
+   macOS 10.15 Catalena), this support is standard, but some 64-bit
+   Linux systems are not configured with 32-bit support.  In such a
+   case, you will ge the message
+
+        !!! SML/NJ requires support for 32-bit executables
+
+   during the install process.  To fix this problem, you will need
+   to acquire the 32-bit emulation libraries for your particular Linux
+   distribution.
+
+   For Debian (7.0 Wheezy and later) and recent version of Ubuntu, you will
+   need to enable multiarch support.  See https://wiki.debian.org/Multiarch or
+   https://wiki.ubuntu.com/MultiarchSpec for details, or try the following
+   commands:
+
+        dpkg --add-architecture i386
+        apt-get update
+        apt-get install libc6:i386
+
+   For older versions of Debian and Ubuntu, you will need to install three
+   packages using apt-get:
+
+        apt-get install gcc-multilib g++-multilib ia32-libs
+
+   For Red Hat Fedora (at least Fedora 16), you will need to install
+   glibc-devel(i686):
+
+        yum install glibc-devel.i686
+
+   For Red Hat Enterprise Linux (or CentOS), you may also have to
+   install the rpm package libgcc-multilib, e.g.:
+
+        yum groupinstall "Development tools"
+        yum install libgcc.i686
+        yum install glibc-devel.i686
+
+   Older instructions for RHEL and CentOS: download the libgcc-multilib package
+   from rpmseek.com and then run
+
+        rpm -ivh libgcc-multilib-xxx.x86_64.rpm
+
+   where the libgcc-multilib package is the one you downloaded.
+
+   For openSUSE use the YaST administration tool to install the gcc-32bit
+   package.
+
+----------------------------------------------------------------------------

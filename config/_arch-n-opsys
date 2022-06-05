@@ -1,0 +1,204 @@
+#!@SHELL@
+#
+# .arch-n-opsys [-32 | -64] -- get architecture and system info
+#
+# Running `eval .arch-n-opsys` will define the following shell variables:
+#
+#	ARCH		-- one of ppc, sparc, or x86
+#	OPSYS		-- one of aix, cygwin, darwin, freebsd, linux, mklinux, netbsd,
+#			   sunos, solaris, win32
+#	HEAP_SUFFIX	-- usually $ARCH-$OPSYS, but in some cases the OPSYS is replaced
+#			   by $HEAP_OPSYS
+#
+
+export PATH
+PATH="/bin:/usr/bin"
+
+# the default size; this is set by the config/install.sh script
+#
+SIZE=@SIZE@
+
+# check for word-size override
+#
+case x"$1" in
+  x-32) SIZE=32 ;;
+  x-64) SIZE=64 ;;
+  *) ;;
+esac
+
+# pick_arch arch32 arch64
+#
+pick_arch() {
+  if [ $SIZE = 32 ] ; then
+      echo $1
+  else
+      echo $2
+  fi
+}
+
+case `uname -s` in
+  SunOS)
+    case `uname -r` in
+      4.*)
+	OPSYS=sunos
+	case `/usr/bin/arch` in
+	  sun4) ARCH=sparc;;
+	  *) exit 1;;
+	esac
+      ;;
+      5.*)
+	OPSYS=solaris
+	case `uname -p` in
+	  sparc) ARCH=sparc;;
+	  *86) ARCH=x86;;
+	  *) exit 1;;
+	esac
+      ;;
+      *) exit 1;;
+    esac
+    ;;
+  AIX)
+    OPSYS=aix
+    ARCH=$(pick_arch ppc ppc64)
+    ;;
+  Darwin)
+    case `uname -p` in
+      powerpc)
+	ARCH=$(pick_arch ppc ppc64)
+	case `uname -r` in
+	  9*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # MacOS X 10.5 Leopard
+	  *) exit 1;;
+	esac;;
+      i386)
+	ARCH=$(pick_arch x86 amd64)
+	case `uname -r` in
+	  9*) OPSYS=darwin;  HEAP_OPSYS=darwinz ;; # MacOS X 10.5 Leopard
+	  10*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # MacOS X 10.6 Snow Leopard
+	  11*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # MacOS X 10.7 Lion
+	  12*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # MacOS X 10.8 Mountain Lion
+	  13*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # MacOS X 10.9 Mavericks
+	  14*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # MacOS X 10.10 Yosemite
+	  15*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # MacOS X 10.11 El Capitan
+	  16*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # macOS 10.12 Sierra
+	  17*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # macOS 10.13 High Sierra
+	  18*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # macOS 10.14 Mojave
+	  19*)
+	    if [ $SIZE = 32 ] ; then # Catalina only supports 64-bit executables
+	      exit 1;
+	    fi
+	    OPSYS=darwin;  HEAP_OPSYS=darwin ;; # macOS 10.15 Catalina
+	  20*)
+	    if [ $SIZE = 32 ] ; then # Big Sur only supports 64-bit executables
+	      exit 1;
+	    fi
+	    OPSYS=darwin;  HEAP_OPSYS=darwin ;; # macOS 11 Big Sur
+	  21*)
+	    if [ $SIZE = 32 ] ; then # Monterey only supports 64-bit executables
+	      exit 1;
+	    fi
+	    OPSYS=darwin;  HEAP_OPSYS=darwin ;; # macOS 12 Monterey
+	  *) exit 1;;
+	esac;;
+      arm)
+	# we are going to try to use Rosetta until we have native arm64 support
+	ARCH="amd64"
+	OPSYS=darwin;
+	HEAP_OPSYS=darwin
+	;;
+    esac
+    ;;
+  Linux)
+    OPSYS=linux
+    case `uname -m` in
+      *86)
+	ARCH=x86
+      # we no longer support Linux before the 2.4 kernel.
+	case `uname -r` in
+	  2.4.*) ;;
+	  2.5.*) ;;
+	  2.6.*) ;;
+	  3.*) ;;
+	  4.*) ;;
+	  5.*) ;;
+	  *) exit 1 ;;
+	esac
+	;;
+      x86_64)
+	ARCH=$(pick_arch x86 amd64)
+	;;
+      ppc)
+	ARCH=$(pick_arch ppc ppc64)
+	case `uname -r` in
+	  *osfmach*) OPSYS=mklinux ;;
+	  *) ;;
+	esac
+	;;
+      *) exit 1;;
+    esac
+    ;;
+  FreeBSD)
+    OPSYS=freebsd
+    HEAP_OPSYS=bsd
+    case `uname -m` in
+      *86) ARCH=x86 ;;
+      x86_64) ARCH=$(pick_arch x86 amd64) ;;
+      amd64) ARCH=$(pick_arch x86 amd64) ;;
+      *) exit 1 ;;
+    esac
+    ;;
+  NetBSD)
+    case `uname -r` in
+      1.*) exit 1 ;;
+      2.*) exit 1 ;;
+      *) OPSYS=netbsd ;;
+    esac
+    HEAP_OPSYS=bsd
+    case `uname -p` in
+      *86) ARCH=x86;;
+      x86_64) ARCH=$(pick_arch x86 amd64) ;;
+      powerpc) ARCH=ppc;;
+      sparc) ARCH=sparc;;
+      *) exit 1;;
+    esac
+    ;;
+  OpenBSD)
+    OPSYS=openbsd
+    HEAP_OPSYS=bsd
+    case `uname -p` in
+      *86) ARCH=x86;;
+      x86_64) ARCH=$(pick_arch x86 amd64) ;;
+      powerpc) ARCH=ppc;;
+      *) exit 1;;
+    esac
+    ;;
+  Windows_NT)
+    OPSYS=win32
+    case `uname -m` in
+      *86) ARCH=x86;;
+      *) exit 1;;
+    esac
+    ;;
+  CYGWIN_NT*)
+    # If the environment variable SMLNJ_WINDOWS_RUNTIME is defined,
+    # then we use Win32 as the runtime environment.
+    if [ "$SMLNJ_WINDOWS_RUNTIME" != "" ]; then
+       OPSYS=win32
+    else
+       OPSYS=cygwin
+    fi
+    case `uname -m` in
+       *86) ARCH=x86;;
+       x86_64) ARCH=$(pick_arch x86 amd64) ;;
+       *) exit 1;;
+    esac
+    ;;
+  *) exit 1;;
+esac
+
+if [ "$HEAP_OPSYS" = "" ]; then
+  HEAP_SUFFIX="$ARCH-$OPSYS"
+else
+  HEAP_SUFFIX="$ARCH-$HEAP_OPSYS"
+fi
+
+echo "ARCH=$ARCH; OPSYS=$OPSYS; HEAP_SUFFIX=$HEAP_SUFFIX"

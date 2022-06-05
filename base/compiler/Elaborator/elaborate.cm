@@ -1,0 +1,70 @@
+(* elaborate.cm
+ *
+ * COPYRIGHT (c) 2020 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
+ *)
+
+Group
+        signature ELAB_CONTROL
+	structure ElabControl
+
+	signature BASICTYPES
+	signature INSTANTIATE
+	signature EVALENTITY
+	signature ELABTOP
+	signature UNIFY
+	signature TYPECHECK
+	signature SIGMATCH
+
+	structure Instantiate
+	structure EvalEntity
+	structure SigMatch
+	structure ElabMod
+	structure ElabTop
+
+	structure BasicTypes
+	structure ElabUtil
+	structure ElabDebug
+	structure Unify
+	structure Typecheck
+
+is
+
+	control/elabcontrol.sig
+	control/elabcontrol.sml
+
+	types/unify.sml
+	types/overloadclasses.sml
+	types/overloadvar.sml
+	types/overload.sml
+	types/typecheck.sml
+
+	modules/sigmatch.sml
+	modules/instantiate.sml
+	modules/evalent.sml
+
+	elaborate/tyvarset.sml
+	elaborate/elabutil.sig
+	elaborate/elabutil.sml
+	elaborate/elabtype.sig
+	elaborate/elabtype.sml
+	elaborate/precedence.sml
+	elaborate/elabcore.sml
+	elaborate/include.sml
+	elaborate/elabsig.sml
+	elaborate/elabdebug.sml
+	elaborate/elabmod.sml
+	elaborate/elabtop.sml
+	elaborate/check-unused.sml
+
+	$smlnj/viscomp/elabdata.cm
+	$smlnj/viscomp/basics.cm
+	$smlnj/viscomp/parser.cm
+
+(*
+	$smlnj/MLRISC/MLRISC.cm
+*)
+
+	$smlnj/smlnj-lib/smlnj-lib.cm
+	$smlnj/smlnj-lib/controls-lib.cm
+	$smlnj/basis/basis.cm

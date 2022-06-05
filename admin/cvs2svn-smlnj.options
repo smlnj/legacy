@@ -1,0 +1,426 @@
+# (Be in -*- python -*- mode.)
+#
+# ====================================================================
+# Copyright (c) 2006 CollabNet.  All rights reserved.
+#
+# This software is licensed as described in the file COPYING, which
+# you should have received as part of this distribution.  The terms
+# are also available at http://subversion.tigris.org/license-1.html.
+# If newer versions of this license are posted there, you may use a
+# newer version instead, at your option.
+#
+# This software consists of voluntary contributions made by many
+# individuals.  For exact contribution history, see the revision
+# history and logs, available at http://cvs2svn.tigris.org/.
+# ====================================================================
+
+# An options file like this can be used to configure cvs2svn.  The
+# file is in Python syntax, but you don't need to know Python to
+# modify it.  But if you *do* know Python, then you will be happy to
+# know that you can use arbitary Python constructs to do fancy
+# configuration tricks.
+
+# Two identifiers will have been defined before this file is executed,
+# and can be used freely within this file:
+#
+#     ctx -- a Ctx object (see cvs2svn_lib/context.py), which holds
+#         many configuration options
+#
+#     run_options -- an instance of the OptionsFileRunOptions class
+#         (see cvs2svn_lib/run_options.py), which holds some variables
+#         governing how cvs2svn is run
+
+
+# Import some modules that are used in setting the options:
+import re
+
+from cvs2svn_lib.boolean import *
+from cvs2svn_lib import config
+from cvs2svn_lib.log import Log
+from cvs2svn_lib.project import Project
+from cvs2svn_lib.output_option import DumpfileOutputOption
+from cvs2svn_lib.output_option import ExistingRepositoryOutputOption
+from cvs2svn_lib.output_option import NewRepositoryOutputOption
+from cvs2svn_lib.symbol_strategy import AllBranchRule
+from cvs2svn_lib.symbol_strategy import AllTagRule
+from cvs2svn_lib.symbol_strategy import BranchIfCommitsRule
+from cvs2svn_lib.symbol_strategy import ExcludeRegexpStrategyRule
+from cvs2svn_lib.symbol_strategy import ForceBranchRegexpStrategyRule
+from cvs2svn_lib.symbol_strategy import ForceTagRegexpStrategyRule
+from cvs2svn_lib.symbol_strategy import HeuristicStrategyRule
+from cvs2svn_lib.symbol_strategy import RuleBasedSymbolStrategy
+from cvs2svn_lib.symbol_strategy import UnambiguousUsageRule
+from cvs2svn_lib.symbol_transform import RegexpSymbolTransform
+from cvs2svn_lib.property_setters import AutoPropsPropertySetter
+from cvs2svn_lib.property_setters import BinaryFileDefaultMimeTypeSetter
+from cvs2svn_lib.property_setters import BinaryFileEOLStyleSetter
+from cvs2svn_lib.property_setters import CVSRevisionNumberSetter
+from cvs2svn_lib.property_setters import DefaultEOLStyleSetter
+from cvs2svn_lib.property_setters import EOLStyleFromMimeTypeSetter
+from cvs2svn_lib.property_setters import ExecutablePropertySetter
+from cvs2svn_lib.property_setters import KeywordsPropertySetter
+from cvs2svn_lib.property_setters import MimeMapper
+
+
+# To choose the level of logging output, uncomment one of the
+# following lines:
+#Log().log_level = Log.WARN
+#Log().log_level = Log.QUIET
+Log().log_level = Log.NORMAL
+#Log().log_level = Log.VERBOSE
+
+
+# There are several possible options for where to put the output of a
+# cvs2svn conversion.  Please choose one of the following and adjust
+# the parameters as necessary:
+
+# Use this output option if you would like cvs2svn to create a new SVN
+# repository and store the converted repository there.  The first
+# argument is the path to which the repository should be written (this
+# repository must not already exist).  The second (optional) argument
+# allows a --fs-type option to be passed to "svnadmin create".  The
+# third (optional) argument can be specified to set the
+# --bdb-txn-nosync option on a bdb repository:
+ctx.output_option = NewRepositoryOutputOption(
+    'smlnj-svn-sml', # Path to repository
+    #fs_type='fsfs', # Type of repository to create
+    #bdb_txn_nosync=False, # For bsd repositories, this option can be added
+    )
+
+# Use this output option if you would like cvs2svn to store the
+# converted CVS repository into an SVN repository that already exists.
+# The argument is the filesystem path of an existing local SVN
+# repository (this repository must already exist):
+#ctx.output_option = ExistingRepositoryOutputOption(
+#    'svnrepo', # Path to repository
+#    )
+
+# Use this type of output option if you want the output of the
+# conversion to be written to a SVN dumpfile instead of committing
+# them into an actual repository:
+#ctx.output_option = DumpfileOutputOption(
+#    dumpfile_path='cvs2svn-dump', # Name of dumpfile to create
+#    )
+
+
+# Independent of the ctx.output_option selected, the following option
+# can be set to True to suppress cvs2svn output altogether:
+ctx.dry_run = False
+
+# Change the following if cvs2svn should use "cvs" to read file
+# versions out of *,v files.  (The default is to use "co", which is
+# part of RCS, and is much faster):
+ctx.use_cvs = False
+
+# Set the name (and optionally the path) of some executables required
+# by cvs2svn.  'co' is needed by default; 'cvs' is needed if
+# ctx.use_cvs is set to True:
+ctx.svnadmin_executable = 'svnadmin'
+ctx.co_executable = 'co'
+ctx.cvs_executable = 'cvs'
+ctx.sort_executable = 'sort'
+
+# Change the following line to True if the conversion should only
+# include the trunk of the repository (i.e., all branches and tags
+# should be ignored):
+ctx.trunk_only = False
+
+# Change the following line to True if cvs2svn should delete a
+# directory once the last file has been deleted from it:
+ctx.prune = True
+
+# A list of encodings that should be tried when converting filenames,
+# author names, log messages, etc. to UTF8.  The encoders are tried in
+# order in 'strict' mode until one of them succeeds.  If none
+# succeeds, then ctx.fallback_encoding is used in lossy 'replace' mode
+# (if it is configured):
+ctx.encoding = [
+    #'latin1',
+    'ascii',
+    ]
+
+# The encoding to use if all of the encodings listed in ctx.encoding
+# fail.  This encoding is used in 'replace' mode, which always
+# succeeds but can cause information loss.  To enable this feature,
+# set the following value to the name of the desired encoding (e.g.,
+# 'ascii').
+ctx.fallback_encoding = None
+
+# The basic strategy for converting symbols (this should usually be
+# left unchanged).  A CVS symbol might be used as a tag in one file
+# and as a branch in another file.  The purpose of ctx.symbol_strategy
+# is to determine whether to convert a particular symbol as a tag or
+# as a branch.
+
+# A RuleBasedSymbolStrategy decides about each symbol based on a list
+# of rules.  Rules can be added to this object.  The rules are tried
+# one by one in order; the first rule that matches a given symbol is
+# used.  It is a fatal error if no rule matches a symbol.
+ctx.symbol_strategy = RuleBasedSymbolStrategy()
+
+# To force all symbols matching a regular expression to be converted
+# as branches, add rules like the following:
+#ctx.symbol_strategy.add_rule(ForceBranchRegexpStrategyRule('branch.*'))
+
+# retain certain branches
+ctx.symbol_strategy.add_rule(ForceBranchRegexpStrategyRule('blume-private-devel'))
+ctx.symbol_strategy.add_rule(ForceBranchRegexpStrategyRule('shao-private-devel'))
+ctx.symbol_strategy.add_rule(ForceBranchRegexpStrategyRule('idlbasis-devel'))
+ctx.symbol_strategy.add_rule(ForceBranchRegexpStrategyRule('primop-branch-2'))
+ctx.symbol_strategy.add_rule(ForceBranchRegexpStrategyRule('primop-branch'))
+ctx.symbol_strategy.add_rule(ForceBranchRegexpStrategyRule('dbm-branch-2005_09_20'))
+ctx.symbol_strategy.add_rule(ForceBranchRegexpStrategyRule('dbmdev1-branch'))
+
+ctx.symbol_strategy.add_rule(ForceBranchRegexpStrategyRule('SMLNJ'))
+ctx.symbol_strategy.add_rule(ForceBranchRegexpStrategyRule('smlnj'))
+ctx.symbol_strategy.add_rule(ForceBranchRegexpStrategyRule('FLINT'))
+ctx.symbol_strategy.add_rule(ForceBranchRegexpStrategyRule('ckit'))
+
+# To force all symbols matching a regular expression to be converted
+# as tags, add rules like the following:
+#ctx.symbol_strategy.add_rule(ForceTagRegexpStrategyRule('tag.*'))
+
+# tag releases
+ctx.symbol_strategy.add_rule(ForceTagRegexpStrategyRule('release-.*'))
+
+# To force all symbols matching a regular expression to be excluded
+# from the conversion, add rules like the following:
+#ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('unknown-.*'))
+
+# exclude everything else
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('[a-z][a-z]*-[0-9][0-9]*-.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('blume-head-tmp'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('blume-orig-.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('fang-shao-devel'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('fang-shao-devel'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('saha-.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('flint-.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('league-devel'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('blume2001.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('leunga-110_.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('blume-110_.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('mcz-.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('Root2-mcz'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('Release_.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('v[0-9].*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('.*root.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('.*tmp.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('sml-mode-.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('softs'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('start'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('.*export.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('Version.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('unlabeled.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('local.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('blume_.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('MJM'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('pre.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('lal-.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('home-.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('b1.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('blume-private-com.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('blume-Release_.*'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('debruijn'))
+ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('release-110.8'))
+
+#ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('smlnj'))
+#ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('FLINT'))
+#ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('SMLNJ'))
+#ctx.symbol_strategy.add_rule(ExcludeRegexpStrategyRule('ckit'))
+
+# Usually you want this rule, to convert unambiguous symbols (symbols
+# that were only ever used as tags or only ever used as branches in
+# CVS) the same way they were used in CVS:
+#ctx.symbol_strategy.add_rule(UnambiguousUsageRule())
+
+# If there was ever a commit on a symbol, then it cannot be converted
+# as a tag.  Uncomment the following line to convert such symbols
+# automatically as branches:
+#ctx.symbol_strategy.add_rule(BranchIfCommitsRule())
+
+# Last in the list can be a catch-all rule that is used for symbols
+# that were not matched by any of the more specific rules above.
+# Include at most one of these lines.  If none of these are included,
+# then the presence of any ambiguous symbols (that haven't been
+# disambiguated above) is an error:
+
+# Convert all ambiguous symbols as branches:
+#ctx.symbol_strategy.add_rule(AllBranchRule())
+# Convert all ambiguous symbols as tags:
+#ctx.symbol_strategy.add_rule(AllTagRule())
+# Convert ambiguous symbols based on whether they were used more
+# often as branches or tags:
+#ctx.symbol_strategy.add_rule(HeuristicStrategyRule())
+
+# Specify a username to be used for commits generated by cvs2svn.  If this options is set to None then no username will be used for such commits:
+ctx.username = None
+#ctx.username = 'cvs2svn'
+
+# ctx.svn_property_setters contains a list of rules used to set the
+# svn properties on files in the converted archive.  For each file,
+# the rules are tried one by one.  Any rule can add or suppress one or
+# more svn properties.  Typically the rules will not overwrite
+# properties set by a previous rule (though they are free to do so).
+ctx.svn_property_setters = [
+    # Set the svn:executable flag on any files that are marked in CVS as
+    # being executable:
+    ExecutablePropertySetter(),
+
+    # Omit the svn:eol-style property from any files that are listed as
+    # binary in CVS:
+    BinaryFileEOLStyleSetter(),
+
+    # To read mime types from a file, uncomment the following line and
+    # specify a filename:
+    #MimeMapper('/etc/mime.types'),
+    MimeMapper('/etc/httpd/mime.types'),
+
+    # To read auto-props rules from a file, uncomment the following line
+    # and specify a filename.  The boolean argument specifies whether
+    # case should be ignored when matching filenames to the filename
+    # patterns found in the auto-props file:
+    #AutoPropsPropertySetter(
+    #    '/home/username/.subversion/config',
+    #    False,
+    #    ),
+
+    # If the file is binary and its svn:mime-type property is not yet
+    # set, set svn:mime-type to 'application/octet-stream'.
+    BinaryFileDefaultMimeTypeSetter(),
+
+    # To try to determine the eol-style from the mime type, uncomment
+    # the following line:
+    #EOLStyleFromMimeTypeSetter(),
+
+    # Choose one of the following lines to set the default svn:eol-style
+    # if none of the above rules applied.  The argument is the
+    # svn:eol-style that should be applied, or None if no svn:eol-style
+    # should be set.
+    #DefaultEOLStyleSetter(None)
+    DefaultEOLStyleSetter('native'),
+
+    # If svn:keywords has not been set yet, set it based on the file's
+    # CVS mode:
+    KeywordsPropertySetter(config.SVN_KEYWORDS_VALUE),
+
+    # Uncomment the following line to include the original CVS revision
+    # numbers as file properties in the SVN archive:
+    #CVSRevisionNumberSetter(),
+
+    ]
+
+# The directory to use for temporary files:
+ctx.tmpdir = 'tmp'
+
+# To skip the cleanup of temporary files, uncomment the following
+# option:
+#ctx.skip_cleanup = True
+
+# To prevent CVS commits from different projects from being merged
+# into single SVN commits, change this option to False:
+ctx.cross_project_commits = True
+
+# Now use stanzas like the following to define CVS projects that
+# should be converted.  The arguments are:
+#
+# - The filesystem path of the project within the CVS repository.
+#
+# - The path that should be used for the "trunk" directory of this
+#   project within the SVN repository.
+#
+# - The path that should be used for the "branches" directory of this
+#   project within the SVN repository.
+#
+# - The path that should be used for the "tags" directory of this
+#   project within the SVN repository.
+#
+# - A list of symbol transformations that can be used to rename
+#   symbols in this project.  Each entry is a tuple (pattern,
+#   replacement), where pattern is a Python regular expression pattern
+#   and replacement is the text that should replace the pattern.  Each
+#   pattern is matched against each symbol name.  If the pattern
+#   matches, then it is replaced with the corresponding replacement
+#   text.  The replacement can include substitution patterns (e.g.,
+#   r'\1' or r'\g<name>').  Typically you will want to use raw strings
+#   (strings with a preceding 'r', like shown in the examples) for the
+#   regexp and its replacement to avoid backslash substitution within
+#   those strings."""
+
+# Create the default project (using ctx.trunk, ctx.branches, and ctx.tags):
+ctx.add_project(
+    Project(
+        'sf-cvsrepos/sml',
+        'sml/trunk',
+        'sml/branches',
+        'sml/releases',
+        symbol_transforms=[
+            RegexpSymbolTransform(r'^Release_110_8$',
+                                  r'unlabeled-110.8-throwaway'),
+            RegexpSymbolTransform(r'^Release_(\d+)_(\d+)$',
+                                  r'release-\1.\2'),
+            #RegexpSymbolTransform(r'^release-(\d+)_(\d+)$',
+            #                      r'release-\1.\2'),
+            #RegexpSymbolTransform(r'^release-(\d+)_(\d+)_(\d+)$',
+            #                      r'release-\1.\2.\3'),
+            ],
+        )
+    )
+
+ctx.add_project(
+    Project(
+        'sf-cvsrepos/pages',
+        'pages/trunk',
+        'pages/branches',
+        'pages/releases',
+        symbol_transforms=[
+            RegexpSymbolTransform(r'^Release_110_8$',
+                                  r'unlabeled-110.8-throwaway'),
+            RegexpSymbolTransform(r'^Release_(\d+)_(\d+)$',
+                                  r'release-\1.\2'),
+            #RegexpSymbolTransform(r'^release-(\d+)_(\d+)$',
+            #                      r'release-\1.\2'),
+            #RegexpSymbolTransform(r'^release-(\d+)_(\d+)_(\d+)$',
+            #                      r'release-\1.\2.\3'),
+            ],
+        )
+    )
+
+ctx.add_project(
+    Project(
+        'sf-cvsrepos/bugs',
+        'bugs/trunk',
+        'bugs/branches',
+        'bugs/releases',
+        symbol_transforms=[
+            RegexpSymbolTransform(r'^Release_110_8$',
+                                  r'unlabeled-110.8-throwaway'),
+            RegexpSymbolTransform(r'^Release_(\d+)_(\d+)$',
+                                  r'release-\1.\2'),
+            #RegexpSymbolTransform(r'^release-(\d+)_(\d+)$',
+            #                      r'release-\1.\2'),
+            #RegexpSymbolTransform(r'^release-(\d+)_(\d+)_(\d+)$',
+            #                      r'release-\1.\2.\3'),
+            ],
+        )
+    )
+
+# Add a second project, to be stored to projA/trunk, projA/branches,
+# and projA/tags:
+#ctx.add_project(
+#    Project(
+#        'my/cvsrepo/projA',
+#        'projA/trunk',
+#        'projA/branches',
+#        'projA/tags',
+#        symbol_transforms=[
+#            #RegexpSymbolTransform(r'^release-(\d+)_(\d+)$',
+#            #                      r'release-\1.\2'),
+#            #RegexpSymbolTransform(r'^release-(\d+)_(\d+)_(\d+)$',
+#            #                      r'release-\1.\2.\3'),
+#            ],
+#        )
+#    )
+
+# Change this option to True to turn on profiling of cvs2svn (for
+# debugging purposes):
+run_options.profiling = False

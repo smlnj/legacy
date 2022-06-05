@@ -1,0 +1,22 @@
+(* fast-load
+ * Load the bounce example assuming that eXene is already loaded.
+ *)
+
+(* load some CML library stuff *)
+app use [
+    "buffer.sml",
+    "multicast-sig.sml",
+    "multicast.sml"
+  ];
+
+structure BC = BufferChan(CML);
+structure MChan = Multicast(BC);
+
+(* load the bounce example *)
+app use [
+    "heads.sml",
+    "bounce-dm.sml",
+    "ball.sml",
+    "menu.sml",
+    "bounce.sml"
+  ];

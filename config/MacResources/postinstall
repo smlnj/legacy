@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cd $2
+config/install.sh nolib

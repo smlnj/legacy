@@ -1,0 +1,75 @@
+Here is a rough sketch of the graph data structures used in the viewer.
+The three levels (three types of "graphs" and "nodes") reflect the
+structure (abstract graph) -> (graph embedded in plane) -> (window on graph).
+Some of the redundancies in the data structures are for efficiency; the
+rest are due to the code not being redesigned since it was written in PML.
+
+The edges and nodes of an attributed graph (ATTR_GRAPH) carry a
+dictionary (name/value pairs) and user-defined info. The dictionaries
+are referenced using getAttr/setAttr. The user-defined info is
+referenced using infoOfNode, infoOfGraph and infoOfEdge.
+
+The .dot file is read in to create a ModGraph.graph, which is an attributed
+graph. The nodes and edges look like:
+ 
+  Node
+    [
+        name : string,
+        dictionary : string dict,
+        info : ref to 
+               {
+                 center : G.point,  (* from "pos" in dict *)
+                 size : G.size,     (* from "width","height" in dict *)
+                 shape : shape,     (* from "shape" in dict *)
+                 label : string     (* from "label" in dict *)
+               }
+    ]
+
+  Edge
+    [
+        dictionary : string dict,
+        info : ref to 
+               {
+                 pts : G.point list,       (* from "pos" in dict *)
+                 arrow : G.point           (* from "pos" in dict *)
+               }
+    ]
+
+VGraphAux.mkVGraphOn converts this graph to a VGraph.graph, which is 
+also an attributed graph. Its nodes and edges look like:
+
+  Node
+    [
+        name : string,              (* same as related ModGraph node *)
+        dictionary : string dict,   (* empty *)
+        info :
+               {
+                 base : ModGraph.node,  (* related node in ModGraph *)
+                 pos : Geometry.point,  (* base.center, scaled *)
+                 shape : Attr.shape,    (* base.shape *)
+                 bbox : Geometry.rect,  (* bounding box of base, scaled *)
+                 label : string         (* base.label *)
+               }
+    ]
+
+  Edge
+    [
+        dictionary : string dict,        (* empty *)
+        info :
+               {
+                 pts : G.point list,     (* pts from related edge, scaled *)
+                 arrow : G.point list    (* pts to draw arrow head *)
+               }
+    ]
+
+Finally, the actually viewer maintains a set of visible nodes, represented
+as follows. There is no actual graph structure involved.
+
+    {
+      node : VGraph.node,                      (* related VGraph node *)
+      bbox : rect,                             (* screen bounding box *)
+      draw : (drawable * pen) -> rect -> unit, (* draw function *)
+      fill : (drawable * pen) -> rect -> unit, (* fill function *)
+      label : string                           (* node.label *)
+    }
+

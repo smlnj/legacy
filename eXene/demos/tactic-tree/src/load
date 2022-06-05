@@ -1,0 +1,14 @@
+
+app use 
+	["tree.sig", 
+	 "tree.sml", 
+	 "support.sig", 
+	 "ttree.sig", 
+	 "ttree.sml", 
+	 "manager.sig", 
+         "manager.sml", 
+	 "interactive.sig", 
+	 "interactive.sml"
+];
+
+

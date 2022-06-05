@@ -1,0 +1,43 @@
+(* 2d graphics library sources list
+ *
+ * COPYRIGHT (c) 1998 Bell Labs, Lucent Technologies.
+ * COPYRIGHT (c) 1994 AT&T Bell Laboratories.
+ *)
+
+Library
+
+    signature BSP_2D
+    signature OBJ_CANVAS
+    signature TRANSFORM_2D
+    signature WORLD_VIEW
+    signature WORLD
+
+    structure ObjCanvas
+    structure Transform2D
+    structure WorldView
+    structure World
+
+is
+#if defined(NEW_CM)
+    $cml/basis.cm
+    $cml/cml.cm
+    $cml-lib/smlnj-lib.cm
+    $/eXene.cm
+#else
+    cml.cm
+    cml-lib.cm
+    ../../../sources.cm
+#endif
+
+    arrow.sml
+    transform2d.sml
+    bsp2d-sig.sml
+    bsp2d.sml
+    world-view.sml
+    world-sig.sml
+    world.sml
+    obj-canvas-sig.sml
+    obj-canvas.sml
+
+    scalable-font.sml	(* should be part of eXene *)
+

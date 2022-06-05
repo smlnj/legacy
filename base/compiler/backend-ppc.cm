@@ -1,0 +1,38 @@
+(* backend-ppc.cm
+ *
+ * (C) 2001 Lucent Technologies, Bell Labs
+ *
+ * This is the PPC-specific part (backend) of the compiler.
+ *
+ * The present file is a group which gets referred to by the actual library
+ * file in system/smlnj/viscomp/ppc.cm.
+ *)
+Group
+
+	structure PPCBackend
+
+        structure PPCCG
+        structure PPCCpsRegs
+        structure PPCInstr
+	structure PPCProps
+	structure PPCCFG
+	structure PPCAsmEmitter
+is
+
+TopLevel/backend/ppc.sml
+
+CodeGen/ppc/ppcCG.sml
+CodeGen/ppc/ppcCpsRegs.sml
+CodeGen/ppc/ppcMLTree.sml
+CodeGen/ppc/ppcPseudoInstr.sml
+CodeGen/ppc/ppcgen.sml
+CodeGen/ppc/ppcspec.sml
+
+$smlnj/basis/basis.cm
+$smlnj/smlnj-lib/smlnj-lib.cm
+$smlnj/viscomp/core.cm
+$smlnj/MLRISC/Control.cm
+$smlnj/MLRISC/MLRISC.cm
+$smlnj/MLRISC/MLTREE.cm
+$smlnj/MLRISC/PPC.cm
+$smlnj/MLRISC/Graphs.cm

@@ -1,0 +1,21 @@
+Library
+	structure SMLNJVersion
+is
+
+# if defined (NO_PLUGINS)
+
+	(* don't try to load the version tool, use what's there *)
+	version.sml
+
+# else
+
+	(* load version tool; define class "version" *)
+	versiontool.cm : tool
+
+	version.template : version (target: version.sml
+                                    versionfile: ../../../../config/version
+                                    releasefile: ../../../../config/release)
+
+# endif
+
+        $smlnj/basis/basis.cm

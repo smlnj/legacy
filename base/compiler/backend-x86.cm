@@ -1,0 +1,42 @@
+(* backend-x86.cm
+ *
+ * (C) 2001 Lucent Technologies, Bell Labs
+ *
+ * This is the X86-specific part (backend) of the compiler.
+ *
+ * The present file is a group which gets referred to by the actual library
+ * file in system/smlnj/viscomp/x86.cm.
+ *)
+Group
+	structure X86StdCallBackend
+	structure X86CCallBackend
+
+	functor   X86CG
+        structure X86CpsRegs
+        structure X86Instr
+ 	structure X86Props
+	structure X86CFG
+	structure X86AsmEmitter
+is
+
+TopLevel/backend/x86-stdcall.sml
+TopLevel/backend/x86-ccall.sml
+
+CodeGen/x86/x86CG.sml
+CodeGen/x86/x86CpsRegs.sml
+CodeGen/x86/x86MLTree.sml
+CodeGen/x86/x86MemRegs.sml
+CodeGen/x86/x86Runtime.sml
+CodeGen/x86/x86StackSpills.sml
+CodeGen/x86/x86gen.sml
+CodeGen/x86/x86spec.sml
+
+$smlnj/basis/basis.cm
+$smlnj/smlnj-lib/smlnj-lib.cm
+$smlnj/viscomp/basics.cm
+$smlnj/viscomp/core.cm
+$smlnj/MLRISC/Control.cm
+$smlnj/MLRISC/MLRISC.cm
+$smlnj/MLRISC/MLTREE.cm
+$smlnj/MLRISC/IA32.cm
+$smlnj/MLRISC/Graphs.cm

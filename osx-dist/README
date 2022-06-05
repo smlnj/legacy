@@ -1,0 +1,23 @@
+This directory contains the infrastructure for building a Mac OS X installer
+for SML/NJ on Intel hardware.  The basic command
+
+	./build-pkg.sh [-32 | -64] $VERSION
+
+will build a signed installer package for the specified version (e.g., 110.76).
+This script assumes that the distribution files have already been uploaded
+to the standard distribution site
+
+	http://smlnj.cs.uchicago.edu/dist/working/$VERSION/
+
+and that the targets file is initialized correctly.
+
+The signing of the package depends on the user having the correct developer
+certificate.  The script currently knows about John Reppy's cert, but the
+script can be generalized by adding other user IDs.
+
+In addition to the build script, the other important file is
+
+	components/distribution_xml.in
+
+which is used to generate the distribution.xml file that controls the installer.
+See Apple's documentation for more details.

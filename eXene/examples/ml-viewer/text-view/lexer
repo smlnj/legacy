@@ -1,0 +1,139 @@
+(* lexer
+ *
+ * COPYRIGHT (c) 1989,1992 by AT&T Bell Laboratories
+ *
+ * A scanner for mapping mapping ML code to pretty print form.
+ *
+ * TODO: spaces at the beginning of multi-line comments.
+ *)
+
+structure VB = ViewBuffer
+structure KW = Keywords
+
+datatype lexresult
+  = EOF
+  | NL
+  | TOK of {space : int, kind : VB.token_kind, text : string}
+  | COM of lexresult list
+  | STR of lexresult list
+
+val comLevel = ref 0
+
+val resultStk = ref ([] : lexresult list)
+
+val charList = ref ([] : string list)
+fun makeString () = (implode(rev(!charList)) before charList := [])
+
+val col = ref 0
+val space = ref 0
+fun tab () = let
+      val n = !col
+      val skip = 8 - Bits.andb(n, 0x7)
+      in
+	space := !space + skip;
+	col := n + skip
+      end
+fun expandTab () = let
+      val n = !col
+      val skip = 8 - Bits.andb(n, 0x7)
+      in
+	charList := Makestring.padLeft("", skip) :: (!charList);
+	col := n + skip
+      end
+fun addString s = (charList := s :: (!charList); col := !col + size s)
+fun token tok = (
+      space := 0;
+      col := !col + size (#text tok);
+      TOK tok)
+fun newline () = (space := 0; col := 0; NL)
+fun pushLine kind = let
+      val tok = TOK{space = !space, kind = kind, text = makeString()}
+      in
+	space := 0;
+	newline(); resultStk := NL :: tok :: !resultStk
+      end
+fun dumpStk kind = let
+      val tok = TOK{space = !space, kind = kind, text = makeString()}
+      in
+	space := 0;
+	(rev (tok :: !resultStk)) before resultStk := []
+      end
+fun mkId s = token(KW.mkToken{space = !space, text = s})
+fun mkSym s = token({space = !space, kind = VB.Symbol, text = s})
+fun mkTyvar s = token({space = !space, kind = VB.Ident, text = s})
+fun mkCon s = token({space = !space, kind = VB.Symbol, text = s})
+
+fun eof () = (
+      charList := []; resultStk := [];
+      space := 0; col := 0;
+      comLevel := 0;
+      EOF)
+fun error s = raise Fail s
+
+%% 
+
+%s C S F;
+
+idchars=[A-Za-z'_0-9];
+id=[A-Za-z]{idchars}*;
+sym=[!%&$+/:<=>?@~|#*`]|\\|\-|\^;
+num=[0-9]+;
+frac="."{num};
+exp="E"(~?){num};
+real=(~?)(({num}{frac}?{exp})|({num}{frac}{exp}?));
+hexnum=[0-9a-fA-F]+;
+
+%%
+
+<INITIAL,F>\t		=> (tab(); continue());
+<INITIAL,F>" "		=> (inc space; inc col; continue());
+<INITIAL>\n		=> (newline());
+<INITIAL>"_"		=> (mkSym yytext);
+<INITIAL>","		=> (mkSym yytext);
+<INITIAL>"{"		=> (mkSym yytext);
+<INITIAL>"}"		=> (mkSym yytext);
+<INITIAL>"["		=> (mkSym yytext);
+<INITIAL>"]"		=> (mkSym yytext);
+<INITIAL>";"		=> (mkSym yytext);
+<INITIAL>"("		=> (mkSym yytext);
+<INITIAL>")"		=> (mkSym yytext);
+<INITIAL>"."		=> (mkSym yytext);
+<INITIAL>"..."		=> (mkSym yytext);
+<INITIAL>"'"{idchars}*	=> (mkTyvar yytext);
+
+<INITIAL>({sym}+|{id})	=> (mkId yytext);
+
+<INITIAL>{real}		=> (mkCon yytext);
+
+<INITIAL>{num}		=> (mkCon yytext);
+<INITIAL>~{num}		=> (mkCon yytext);
+<INITIAL>"0x"{hexnum}	=> (mkCon yytext);
+<INITIAL>"~0x"{hexnum}	=> (mkCon yytext);
+
+<INITIAL>"(*"	=> (YYBEGIN C; addString yytext; comLevel := 1; continue());
+<INITIAL>"*)"	=> (error "unmatched close comment");
+<C>"(*"		=> (addString yytext; inc comLevel; continue());
+<C>\n		=> (pushLine VB.Comment; continue());
+<C>"*)"		=> (addString yytext;
+		    dec comLevel;
+		    if (!comLevel = 0)
+		      then (YYBEGIN INITIAL; COM(dumpStk VB.Comment))
+		      else continue());
+<C>\t		=> (expandTab(); continue());
+<C>.		=> (addString yytext; continue());
+
+<INITIAL>\"	=> (YYBEGIN S; addString yytext; continue());
+<S>\"	        => (YYBEGIN INITIAL; addString yytext; STR(dumpStk VB.Symbol));
+<S>\n		=> (error "unexpected newline in unclosed string");
+<S>\\\n		=> (YYBEGIN F; pushLine VB.Symbol; continue());
+<S>\t		=> (expandTab(); continue());
+<S>\\\"		=> (addString yytext; continue());
+<S>\\		=> (addString yytext; continue());
+<S>[^"\\\n\t]*	=> (addString yytext; continue());
+
+<F>\n		=> (resultStk := (newline ()) :: !resultStk; continue());
+<F>\\		=> (YYBEGIN S; addString yytext; continue());
+<F>.		=> (error "unclosed string");
+
+<INITIAL>\h	=> (error "non-Ascii character");
+<INITIAL>.	=> (error "illegal character");

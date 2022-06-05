@@ -1,0 +1,7 @@
+library
+	structure X
+is
+	$/basis.cm
+	$smlnj-tdp/plugins.cm
+
+	abcdef.sml

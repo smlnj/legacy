@@ -1,0 +1,112 @@
+<?xml version='1.0'?>
+<!--
+    Copyright (c) The Fellowship of SML/NJ
+-->
+<Wix xmlns='http://schemas.microsoft.com/wix/2003/01/wi'>
+   <Product Id='f7ca0fdb-0c97-480b-a532-2a579917cfdb' Name='Standard ML of New Jersey' Language='1033' Version='0.0.0.0' Manufacturer='University of Chicago'>
+      <Package Id='????????-????-????-????-????????????' Description='SML of New Jersey.' InstallerVersion='200' Compressed='yes' />
+
+      <Property Id='WIXUI_INSTALLDIR' Value='INSTALLDIR' />
+
+      <!-- Based on the InstallDir style of UI -->
+      <UI Id='SMLNJ_Install_Sequence'>
+	<TextStyle Id='WixUI_Font_Normal' FaceName='Tahoma' Size='8' />
+	<TextStyle Id='WixUI_Font_Bigger' FaceName='Tahoma' Size='12' />
+	<TextStyle Id='WixUI_Font_Title' FaceName='Tahoma' Size='9' Bold='yes' />
+
+	<Property Id='DefaultUIFont' Value='WixUI_Font_Normal' />
+	<Property Id='WixUI_Mode' Value='InstallDir' />
+
+	<DialogRef Id='BrowseDlg' />
+	<DialogRef Id='DiskCostDlg' />
+	<DialogRef Id='InstallDirDlg' />
+	<DialogRef Id='ErrorDlg' />
+	<DialogRef Id='ExitDialog' />
+	<DialogRef Id='FatalError' />
+	<DialogRef Id='FilesInUse' />
+	<DialogRef Id='MaintenanceTypeDlg' />
+	<DialogRef Id='MaintenanceWelcomeDlg' />
+	<DialogRef Id='MsiRMFilesInUse' />
+	<DialogRef Id='PrepareDlg' />
+	<DialogRef Id='ProgressDlg' />
+	<DialogRef Id='ResumeDlg' />
+	<DialogRef Id='UserExit' />
+	<DialogRef Id='VerifyReadyDlg' />
+	<DialogRef Id='WelcomeDlg' />
+
+	<Property Id='ARPNOMODIFY' Value='1' />
+
+	<Property Id='WixUI_WelcomeDlg_Next' Value='InstallDirDlg' />
+
+	<Property Id='WixUI_InstallDirDlg_Back' Value='WelcomeDlg' />
+	<Property Id='WixUI_InstallDirDlg_Next' Value='VerifyReadyDlg' />
+	<Property Id='WixUI_InstallDirDlg_Browse' Value='BrowseDlg' />
+
+	<Property Id='WixUI_VerifyReadyDlg_BackRepair' Value='MaintenanceTypeDlg' />
+	<Property Id='WixUI_VerifyReadyDlg_BackRemove' Value='MaintenanceTypeDlg' />
+	<Property Id='WixUI_VerifyReadyDlg_BackInstallDir' Value='InstallDirDlg' />
+
+	<Property Id='WixUI_MaintenanceWelcomeDlg_Next' Value='MaintenanceTypeDlg' />
+
+	<Property Id='WixUI_MaintenanceTypeDlg_Repair' Value='VerifyReadyDlg' />
+	<Property Id='WixUI_MaintenanceTypeDlg_Remove' Value='VerifyReadyDlg' />
+	<Property Id='WixUI_MaintenanceTypeDlg_Back' Value='MaintenanceWelcomeDlg' />
+      </UI>
+      <UIRef Id='WixUI_Common' />
+
+      <Media Id='1' Cabinet='product.cab' EmbedCab='yes' />
+
+      <Directory Id='TARGETDIR' Name='SourceDir'>
+         <Directory Id='ProgramFilesFolder' Name='PFiles'>
+            <Directory Id='INSTALLDIR' Name='SMLNJ'>
+	      <Directory Id='SMLNJBinFolder' Name='bin'>
+		<Directory Id='heap' Name='.hea' LongName='.heap'>
+		  <Component Id='SMLNJBinHeap' Guid='2ba5887e-1200-4923-adc6-ce6ff8e35e3e' DiskId='1'>
+                    <File Id='mlantlr' Name='antlr.x86' LongName='ml-antlr.x86-win32' src='bin\.heap\ml-antlr.x86-win32' />
+                    <File Id='mlburg' Name='burg.x86' LongName='ml-burg.x86-win32' src='bin\.heap\ml-burg.x86-win32' />
+                    <File Id='mllex' Name='lex.x86' LongName='ml-lex.x86-win32' src='bin\.heap\ml-lex.x86-win32' />
+                    <File Id='mlnlffigen' Name='ffigen.x86' LongName='ml-nlffigen.x86-win32' src='bin\.heap\ml-nlffigen.x86-win32' />
+                    <File Id='mlulex' Name='ulex.x86' LongName='ml-ulex.x86-win32' src='bin\.heap\ml-ulex.x86-win32' />
+                    <File Id='mlyacc' Name='yacc.x86' LongName='ml-yacc.x86-win32' src='bin\.heap\ml-yacc.x86-win32' />
+                    <File Id='sml' Name='sml.x86' LongName='sml.x86-win32' src='bin\.heap\sml.x86-win32' />
+		  </Component>
+		</Directory>
+		<Directory Id='run' Name='.run'>
+		  <Component Id='SMLNJBinRun' Guid='e2186124-ef2f-4058-acd5-14682f4cc68c' DiskId='1'>
+                    <File Id='run' Name='run.exe' LongName='run.x86-win32.exe' src='bin\.run\run.x86-win32.exe' >
+                     <Shortcut Id='SMLNJProductShortcut' Directory='ProgramMenuFolder' Name='SMLNJ' LongName='SML of New Jersey' Description='SML of New Jersey Interpreter' Target='[#run]' Arguments='&quot;@SMLload=[heap]sml&quot;'/>
+                  </File>
+		  </Component>
+		</Directory>
+
+		<Component Id='SMLNJBin' Guid='3be4a34f-fa44-4b7c-9fdd-d29186f6cd94' DiskId='1'>
+		  <!-- Ensures the smlnj compiler will be on the path and that sml.bat will run -->
+		  <Environment Id='SMLNJPathExtension' Action='set' Name='PATH' Part='last' Permanent='no' System='yes' Value='[SMLNJBinFolder]' />
+		  <Environment Id='SMLNJHome' Action='set' Name='SMLNJ_HOME' Permanent='no' System='yes' Value='[INSTALLDIR]' />
+                  <File Id='linksmlbin' Name='link-sml.bat' src='bin\link-sml.bat' />
+                  <File Id='mlburgbin' Name='ml-burg.bat' src='bin\ml-burg.bat' />
+                  <File Id='mlantlrbin' Name='antlr.bat' LongName='ml-antlr.bat' src='bin\ml-antlr.bat' />
+                  <File Id='mlbuildbin' Name='ml-build.bat' src='bin\ml-build.bat' />
+                  <File Id='mllexbin' Name='ml-lex.bat' src='bin\ml-lex.bat' />
+                  <File Id='mlnlffigenbin' Name='ffigen.bat' LongName='ml-nlffigen.bat' src='bin\ml-nlffigen.bat' />
+                  <File Id='mlulexbin' Name='ml-ulex.bat' src='bin\ml-ulex.bat' />
+                  <File Id='mlyaccbin' Name='ml-yacc.bat' src='bin\ml-yacc.bat' />
+                  <File Id='smlbat' Name='sml.bat' src='bin\sml.bat' />
+		</Component>
+	      </Directory>
+            </Directory>
+         </Directory>
+         <Directory Id='ProgramMenuFolder' Name='ProgMenu'/>
+      </Directory>
+      
+      <Feature Id='AllFiles' Title='SML/NJ' Level='1'>
+         <ComponentRef Id='SMLNJBinHeap' />
+         <ComponentRef Id='SMLNJBinRun' />
+         <ComponentRef Id='SMLNJBin' />
+	 
+	 <!-- note that this comes from the lib.wxs fragment file, generated
+	      from GenerateWixFile.exe lib -->
+	 <FeatureRef Id='SubFiles' />
+      </Feature>
+   </Product>
+</Wix>

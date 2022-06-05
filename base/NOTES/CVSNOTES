@@ -1,0 +1,83 @@
+-*- outline -*-
+
+* from Lal's deltas
+	cvs -d ~cvs co -d smlnj -r SMLNJ flint; cd smlnj/src
+	mkdir tmp; cd tmp
+	ncftp 'daffy:/pub/smlnj/tmp/george/110.7.1/*'
+	cd ..
+	for tarball in tmp/*.tar.gz; do gtar zxUvpf $tarball; done
+	sed -n -e ':loop' -e '/\\$/N' -e '/\\$/b loop' -e '/=/p' tmp/GO.sh >tmp/GO
+	. tmp/GO
+	cvs commit -m "  $VERSION"
+	cvs tag $VERSION
+	rm -rf tmp
+	
+
+* from Zhong's dir
+	cd .../src/sml-nj
+	rm -rf **/CM
+	rm -r sml.* sml-cm.* *.sml bin.*
+	cvs -d ~cvs import -m '' smlnj/src/sml-nj FLINT v980311
+
+* from tarballs
+	cd ~/flint; ./bin/smlnj-newrev 110.9.1
+	cd trunk
+	<... solve the problems if any ...>
+	# check correctness
+	rm -rf lib bin bin.* src/compiler/bin.*
+	link ../110.9.1/bin.x86-unix; config/install.sh
+	cd src/compiler; link ../../../bin.x86-unix; ./xrecompile; ./xrecompile
+
+	cd ../..; cvs commit -m 'merged in 110.6 changes'
+
+* /softs install
+** original
+	cd /softs/smlnj-110
+	ztar ~/work/110-bin.x86-unix.tar.gz
+	config/install.sh
+	rm -rf bin.* src/sml-nj
+** upgrade
+	cvs update
+	cd src/compiler
+	rm -rf bin.*; ln -s some/full/bin.arch-unix/directory bin.<arch>-unix
+	./xmakeml; rm bin.*
+	echo 'CMB.make();' | ./xrun sml
+	rm sml*.*
+	cd ../..
+	rm -r bin* lib **/CM
+	ln -s src/compiler/bin.* .
+	config/install.sh
+	# rm -rf bin.*/*
+
+* diffs between release
+** sml-nj/TopLevel/viscomp/control.sml
+-      val checkFlint     = ref false
+-      val checkDatatypes = ref false
+-      val checkKinds     = ref false
++      val checkFlint     = ref true
++      val checkDatatypes = ref true
++      val checkKinds     = ref true
+** runtime/gc/import-heap.c
+--- import-heap.c       1998/01/18 01:00:25     1.1.1.2
++++ import-heap.c       1998/03/22 22:26:22     1.2
+@@ -168,7 +168,7 @@
+       /* read the ML heap */
+        ReadHeap (&inBuf, &heapHdr, msp, externs);
+       /* GC message are on by default for interactive images */
+-       GCMessages = TRUE;
++       /* GCMessages = TRUE; */
+     }
+     else {  /* EXPORT_FN_IMAGE */
+        ml_val_t        funct, cmdName, args;
+** sml-nj/TopLevel/interact/evalloop.sml
+--- evalloop.sml        1998/04/03 00:06:01     1.1.1.4
++++ evalloop.sml        1998/04/03 00:11:31
+@@ -173,7 +173,7 @@
+               handle EndOfFile => (say "\n")
+                   | Interrupt => (say "\nInterrupt\n"; 
+                               flush(); loop())
+-                  | EM.Error => (flush(); loop())
++                  (* | EM.Error => (flush(); loop()) *)
+                   | C.Compile "syntax error" => (flush(); loop())
+                   | C.Compile s =>
+                      (say(concat["\nuncaught exception Compile: \"",

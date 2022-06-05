@@ -1,0 +1,16 @@
+(*
+ * Library implementing the bootstrap compiler for PowerPC/MacOS.
+ *
+ * (C) 2001 Lucent Technologies, Bell Laboratories
+ *
+ * Author: Matthias Blume (blume@research.bell-labs.com)
+ *)
+Library
+	structure PPCMacOSCMB
+is
+	$smlnj/basis/basis.cm
+	$smlnj/internal/cm-sig-lib.cm
+	$smlnj/internal/cm-lib.cm
+	$smlnj/internal/cm0.cm
+	$smlnj/viscomp/ppc.cm
+	ppc-macos.sml

@@ -1,0 +1,18 @@
+(* load the text widget test *)
+
+app use [
+  (* generic text widget stuff *)
+    "text-canvas-sig.sml",
+    "text-canvas.sml",
+    "text-pool-sig.sml",
+    "text-display-sig.sml",
+    "text-display.sml",
+  (* viewer stuff *)
+    "view-buffer.sml",
+    "viewer.sml",
+    "scroll-viewer.sml",
+    "keywords.sml",
+    "lexer.sml",
+    "load-file.sml",
+    "ml-viewer.sml"
+  ];

@@ -1,0 +1,33 @@
+Procedure to add a new primop
+
+Step 1:
+  o compiler/DEVNOTES/Flint/primop-list		-- add description
+  o compiler/FLINT/kernel/primop.{sig,sml}	-- add primop definition
+  o compiler/ElabData/basics/primoptypemap.sml  -- add with intrinsic type
+  o compiler/FLINT/trans/primopmap.sml          -- add representation
+  o compiler/Semant/statenv/prim.sml		-- add to Inline structure
+  o compiler/Semant/pickle/pickmod.sml	-- pickle 
+  o compiler/Semant/pickle/unpickmod.sml -- unpickle
+
+	-- compile with -rebuild	
+	-- compile to fixpoint
+
+Step 2:
+  o compiler/FLINT/cps/cps.{sig,sml}		-- add cps primop
+  o compiler/FLINT/cps/ppcps.sml		-- primop to string
+  o compiler/FLINT/cps/convert.sml		-- conversion to cps
+  o compiler/CodeGen/main/mlriscGen.sml		-- generate appropriate mltree
+	
+	-- compile compiler to fixpt
+
+Step 3:
+  o system/smlnj/init/built-in.sml		-- add to InlineT
+  o <use primop where you like> usually in 
+	system/Basis/Implementation
+    [Note that InlineT is not visible in
+     top-level environment.]
+
+
+-------------------
+Edit history:
+[DBM: 5/23/07]

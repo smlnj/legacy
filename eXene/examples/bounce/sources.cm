@@ -1,0 +1,25 @@
+(* sources.cm
+ *
+ * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
+ *
+* sources file for bounce demo
+ *)
+Group
+is
+#if defined(NEW_CM)
+  $cml/basis.cm
+  $cml/cml.cm
+  $cml-lib/smlnj-lib.cm
+  $/eXene.cm
+#else
+  cml.cm
+  cml-lib.cm
+  ../../sources.cm
+#endif
+
+heads.sml
+bounce-dm.sml
+ball.sml
+menu.sml
+bounce.sml

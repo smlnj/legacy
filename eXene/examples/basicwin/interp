@@ -1,0 +1,14 @@
+(* load
+ * Load the basicwin example.
+ *)
+
+(* load the eXene stuff *)
+System.Directory.cd "../..";  (* switch to eXene root dir *)
+use "interp-x";
+
+(* load the basicwin example *)
+System.Directory.cd "examples/basicwin"; (* switch back to here *)
+app use [
+    "icon-bitmap.sml",
+    "basicwin.sml"
+  ]

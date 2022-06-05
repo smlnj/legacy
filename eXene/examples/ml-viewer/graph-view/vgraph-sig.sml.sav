@@ -1,0 +1,77 @@
+signature VGRAPH = sig
+
+  type edge_info
+  type graph_info
+  type node_info
+
+  type graph
+  type node
+  type edge
+
+            (* Graphs *)
+  val mkGraph : graph_info -> graph
+
+            (* Nodes *)
+
+        (* Add a node with the given name to the graph if it doesn't exist.
+         * Return the node.
+         *)
+  val addNode        : (graph * string * node_info) -> node
+
+        (* Get the node with the given name.
+         * If the node doesn't exist, return NONE
+         *)
+  val getNode        : (graph * string) -> node option
+
+        (* Delete the node from its graph
+         * All associated edges are also deleted.
+         *)
+  val delNode        : node -> unit
+
+         (* Return a list of all nodes in the graph. *)
+  val nodeList    : graph -> node list
+
+         (* Return a list of the edges whose tail (head) is the given node. *)
+  val outList        : node -> edge list
+  val inList        : node -> edge list
+
+            (* Edges *)
+        (* Add an edge with the given tail and head to the graph 
+         * if it doesn't exist. Return the edge.
+         * If the two nodes are equal or belong to different graphs, 
+         * raise BadEdge
+         *)
+  val addEdge    : (node * node * edge_info) -> edge
+
+        (* Get the edge with the given tail and head.
+         * If the edge doesn't exist, return NONE
+         *)
+  val getEdge    : (node * node) -> edge option
+
+         (* Delete the edge from its graph. *)
+  val delEdge    : edge -> unit
+
+         (* Return a list of all edges in the graph. *)
+  val edgeList : graph -> edge list
+
+  val nameOf    : node -> string
+
+  val head    : edge -> node
+  val tail    : edge -> node
+
+	val eqGraph	: (graph * graph) -> bool
+	val eqNode	: (node * node) -> bool
+	val eqEdge	: (edge * edge) -> bool
+
+  val infoOfNode    : node -> node_info
+  val infoOfEdge    : edge -> edge_info
+  val infoOfGraph   : graph -> graph_info
+
+  val setNodeInfo    : (node * node_info) -> unit
+  val setEdgeInfo    : (edge * edge_info) -> unit
+  val setGraphInfo   : (graph * graph_info) -> unit
+
+  val graphOfNode : node -> graph
+  val graphOfEdge : edge -> graph
+
+end (* VGRAPH *)

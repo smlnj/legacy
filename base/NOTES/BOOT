@@ -1,0 +1,369 @@
+BOOT: the location of the latest boot files.
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2006/03/02 17:30:00 CDT
+Tag: Release_110_58
+Version: 110.58
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.58/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2005/11/16 15:00:00 CDT
+Tag: Release_110_57
+Version: 110.57
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.57/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2005/10/25 16:00:00 CDT
+Tag: Release_110_56
+Version: 110.56
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.56/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2005/07/20 12:00:00 CDT
+Tag: Release_110_55
+Version: 110.55
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.55/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2005/05/18 12:00:00 CDT
+Tag: Release_110_54
+Version: 110.54
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.54/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2005/02/25 15:00:00 CST
+Tag: Release_110_53
+Version: 110.53
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.53/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2004/12/15 15:30:00 CST
+Tag: Release_110_52
+Version: 110.52
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.52/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2004/11/18 15:45:00 CST
+Tag: Release_110_51
+Version: 110.51
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.51/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2004/10/28 12:58:00 CDT
+Tag: Release_110_50
+Version: 110.50
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.50/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2004/09/13 16:50:00 CDT
+Tag: Release_110_49
+Version: 110.49
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.49/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2004/08/10 12:00:00 CDT
+Tag: Release_110_48
+Version: 110.48
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.48/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2004/08/04 14:00:00 CDT
+Tag: Release_110_47
+Version: 110.47
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.47/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2004/07/12 22:50:00 CDT
+Tag: blume-110_46_1-macosx-nlffi
+Version: 110.46.1
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.46.1/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2004/06/17 18:15:00 CDT
+Tag: Release_110_46
+Version: 110.46
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.46/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2004/02/03 14:50:00 CST
+Tag: Release_110_45
+Version: 110.45
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.45/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2003/11/06 12:00:00 CST
+Tag: Release_110_44
+Version: 110.44
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.44/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2003/09/26 15:00:00 CDT
+Tag: blume-20030926-110_43_3
+Version: 110.43.3
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.43.3/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2003/09/22 12:10:00 CDT
+Tag: blume-20030922-110_43_2
+Version: 110.43.2
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.43.2/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2003/09/09 22:00:00 CDT
+Tag: blume-20030918-110_43_1
+Version: 110.43.1
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.43.1/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2003/09/09 22:00:00 CDT
+Tag: Release_110_43
+Version: 110.43
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.43/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2003/08/28 17:00:00 CDT
+Tag: blume-20030828-intinf
+Version: 110.42.99
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.42.99/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2003/08/11 15:45:00 EST
+Tag: blume-20030811-windows
+Version: 110.42.9
+Location: http://smlnj.cs.uchicago.edu/dist/working/110.42.9/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2002/10/16 12:00:00 EST
+Tag: Release_110_42
+Version: 110.42
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/110.42/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2002/07/05 16:00:00 EST
+Tag: Release_110_41
+Version: 110.41
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/110.41/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2002/05/21 16:00:00 EST
+Tag: Release_110_40
+Version: 110.40
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/110.40/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2002/03/29 14:10:00 EST
+Tag: blume-20020329-inlprims
+Version: 110.39.3
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/bootfiles/blume-110393/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2002/03/24 22:40:00
+Tag: blume-20020324-bootfiles
+Version: 110.39.2
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/bootfiles/leunga-20020324-bootfiles/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2002/03/12 22:03:00
+Tag: blume-20020312-version110392
+Version: 110.39.2
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/bootfiles/blume-110392/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2002/03/08 16:05:00
+Tag: blume-20020308-entrypoints
+Version: 110.39.1
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/bootfiles/blume-110391/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2002/02/15 16:00:00 EST
+Tag: Release_110_39
+Version: 110.39
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/110.39/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2002/02/08 15:00:00 EST
+Tag: blume-20020208-uniquepid
+Version: 110.38.1
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/bootfiles/blume-20020208-uniquepid/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2002/01/28 12:00:00 EST
+Tag: Release_110_38
+Version: 110.38
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/110.38/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2001/11/21 16:10:00 EST
+Tag: Release_110_37
+Version: 110.37
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/110.37/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2001/09/18 09:40:00 EDT
+Tag: Release_110_36
+Version: 110.36
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/110.36/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2001/08/24 17:10:00 EDT
+Tag: Release_110_35
+Version: 110.35
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/110.35/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2001/08/20 15:35:00 EDT
+Tag: blume-20010820-debugprof
+Version: 110.34(+)
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/bootfiles/blume-20010820-debugprof/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2001/07/10 17:30:00 EDT
+Tag: Release_110_34
+Version: 110.34
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/110.34/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2001/05/23 14:30:00 EDT
+Tag: Release_110_33
+Version: 110.33
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/110.33/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2001/05/07 14:40:00 EDT
+Tag: blume-20010507-proxies
+Version: 110.32.2(+)
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/bootfiles/blume-20010507-proxies/
+----------------------------------------------------------------------
+Name: Lal George
+Date: 2001/04/20 09:15:28 EDT
+Tag: george-20010420-macosX
+Version: 110.32.2
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/bootfiles/george-20010420-bootfiles/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2001/03/22 16:25:00 EST
+Tag: blume-20010322-bootfiles
+Version: 110.32.1(+++)
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/bootfiles/blume-20010322-bootfiles/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2001/03/16 12:22:00 EST
+Tag: blume-20010316-bootfiles
+Version: 110.32.1(++)
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/bootfiles/blume-20010316-bootfiles/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2001/01/12 23:30:00 JST
+Tag: blume-20010112-bootfiles
+Version: 110.32.1(+)
+Location: ftp://ftp.cs.princeton.edu/pub/people/blume/sml/110.32.1b-autofetch/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2001/01/05 00:30:00 JST
+Tag: blume-20010105-primops
+Version: 110.32.1
+Location: ftp://ftp.cs.princeton.edu/pub/people/blume/sml/110.32.1-autofetch/
+----------------------------------------------------------------------
+Name: Lal George
+Date: 2000/12/22 22:22:58 EST 2000
+Tag: Release_110_32
+Version: 110.32
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/110.32
+----------------------------------------------------------------------
+Name: Lal George
+Date: 2000/12/08 09:56:14 EST 2000
+Tag: Release_110_31
+Version: 110.31
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/110.31
+----------------------------------------------------------------------
+Name: Lal George
+Date: 2000/11/06 09:02:21 EST 2000 
+Tag: Release_110_30
+Version: 110.30
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/110.30
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2000/11/02 17:00:00 JST
+Tag: blume-20001102-condcomp
+Version: 110.29.2
+Location: ftp://ftp.cs.princeton.edu/pub/people/blume/sml/110.29.2-autofetch/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2000/08/31 17:30:00 JST
+Tag: blume-20001017-v110p29p1
+Version: 110.29.1
+Location: ftp://ftp.cs.princeton.edu/pub/people/blume/sml/110.29.1-autofetch/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Name: Matthias Blume
+Date: 2000/08/31 18:00:00 JST
+Tag: blume-20000831-cvsbootfiles
+Version: 110.29
+Location: ftp://ftp.cs.princeton.edu/pub/people/blume/sml/110.29a-autofetch/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2000/07/22 23:30:00 JST
+Tag: blume-20000722-urlupdate
+Version: 110.29
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/110.29/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2000/07/18 18:00:00 JST
+Tag: blume-20000718-Version_110_29
+Version: 110.29
+Location: ftp://ftp.cs.princeton.edu/pub/people/blume/sml/110.29-autofetch/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2000/06/06 11:15:00 JST
+Tag: blume-20000606-lazierpickle
+Version: 110.28.1
+Location: ftp://ftp.cs.princeton.edu/pub/people/blume/sml/110.28.1-autofetch/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2000/05/12 17:30:00 JST
+Tag: blume-20000512-anchors
+Version: 110.28
+Location: ftp://ftp.cs.princeton.edu/pub/people/blume/sml/110.29pre1-autofetch/
+----------------------------------------------------------------------
+Name: Dave MacQueen
+Date: 2000/05/02 14:00 EDT
+Tag: dbm-20000502-Version_110_28
+Version: 110.28
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/110.28/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2000/04/30 01:00:00
+Tag: blume-20000430-versions
+Version: 110.27
+Location: ftp://ftp.cs.princeton.edu/pub/people/blume/sml/110.28pre1-autofetch/
+----------------------------------------------------------------------
+Name: Dave MacQueen
+Date: 2000/04/10 14:00 EDT
+Tag: dbm-20000410-Version_110_27
+Version: 110.27
+Location: ftp://ftp.research.bell-labs.com/dist/smlnj/working/110.27/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2000/04/03 16:05:00 JST
+Tag: blume_main_v110p26p2_2
+Version: 110.26.2
+Location: ftp://ftp.cs.princeton.edu/pub/people/blume/sml/110.26.2-2-autofetch/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 00/03/30 18:00:00
+Tag: blume_main_v110p26p2_0
+Version: 110.26.2
+Location: ftp://ftp.cs.princeton.edu/pub/people/blume/sml/110.26.2-autofetch/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 00/03/09 10:23:53
+Tag: blume_main_v110p26p1_0
+Version: 110.26.1
+Location: ftp://ftp.cs.princeton.edu/pub/people/blume/sml/110.26.1-autofetch/
+----------------------------------------------------------------------
+Name: Matthias Blume
+Date: 2000/03/07 04:01:04
+Tag: blume_main_v110_26_2
+Version: 110.26
+Location: ftp://ftp.cs.princeton.edu/pub/people/blume/sml/110.26-cm-update/
+----------------------------------------------------------------------

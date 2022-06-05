@@ -1,0 +1,33 @@
+(* sources.cm
+ *
+ * COPYRIGHT (c) 1995 AT&T Bell Laboratories.
+ *
+ * The library sources file for the EXene library level.
+ *)
+
+Group
+
+    signature GEOMETRY
+    signature EXENE_BASE
+    signature FONT
+    signature DRAWING
+    signature ICCC
+    signature INTERACT
+    signature EXENE_WIN
+    signature STD_CURSOR
+
+    structure Geometry
+    structure EXeneBase
+    structure Font
+    structure Drawing
+    structure ICCC
+    structure Interact
+    structure EXeneWin
+    structure StdCursor
+    structure XDebug
+    structure MLXError
+
+is
+
+  base.cm
+  user/build.sml

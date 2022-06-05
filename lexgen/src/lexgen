@@ -1,0 +1,17 @@
+#!/bin/sh
+#
+# Wrapper for lexgen heap image
+#
+
+case `uname -s` in
+  Darwin) heap=lexgen.ppc-darwin ;;
+  *) heap=lexgen.x86-linux ;;
+esac
+
+if test ! -r $heap ; then
+  echo "lexgen: no heap image!"
+  exit 1
+fi
+
+exec sml @SMLload=$heap $@
+

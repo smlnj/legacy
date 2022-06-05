@@ -1,0 +1,41 @@
+(* backend-sparc.cm
+ *
+ * (C) 2001 Lucent Technologies, Bell Labs
+ *
+ * This is the Sparc-specific part (backend) of the compiler.
+ *
+ * The present file is a group which gets referred to by the actual library
+ * file in system/smlnj/viscomp/sparc.cm.
+ *)
+Group
+
+	structure SparcBackend
+
+        structure SparcCG
+        structure SparcCpsRegs
+        structure SparcInstr
+	structure SparcProps
+	structure SparcCFG
+	structure SparcAsmEmitter
+is
+
+TopLevel/backend/sparc.sml
+
+CodeGen/sparc/sparcCG.sml
+CodeGen/sparc/sparcCpsRegs.sml
+CodeGen/sparc/sparcMLTree.sml
+CodeGen/sparc/sparcPseudoInstrs.sml
+CodeGen/sparc/sparcgen.sml
+CodeGen/sparc/sparcspec.sml
+
+CodeGen/sparc/sparc-mltreeext.sml
+CodeGen/sparc/sparcMLTreeExtComp.sml
+
+$smlnj/basis/basis.cm
+$smlnj/smlnj-lib/smlnj-lib.cm
+$smlnj/viscomp/core.cm
+$smlnj/MLRISC/Control.cm
+$smlnj/MLRISC/MLRISC.cm
+$smlnj/MLRISC/MLTREE.cm
+$smlnj/MLRISC/SPARC.cm
+$smlnj/MLRISC/Graphs.cm

@@ -1,0 +1,8 @@
+(* load
+ * Load the basicwin example (assuming eXene is already loaded).
+ *)
+
+app use [
+    "icon-bitmap.sml",
+    "basicwin.sml"
+  ];

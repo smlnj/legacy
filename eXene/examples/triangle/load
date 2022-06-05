@@ -1,0 +1,4 @@
+app use [
+  "icon-bitmap.sml",
+  "tri.sml"
+];

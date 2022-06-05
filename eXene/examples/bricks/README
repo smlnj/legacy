@@ -1,0 +1,5 @@
+This directory contains an eXene implementation of Luc Cardelli's
+BadBricks program (originally implemented in Modula-3).
+
+To build an exportFn heap image, use Export.export().
+

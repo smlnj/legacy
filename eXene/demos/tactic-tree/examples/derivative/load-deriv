@@ -1,0 +1,18 @@
+app use ["../fol/base.sml",
+	"syntax.sml",
+	"rules.sml",
+	"tactics.sml",
+        "ttree-support.sml",
+	"expression.grm.sig", 
+	"expression.lex.sml",
+	"expression.grm.sml"];
+
+structure expressionLrVals = expressionLrValsFun(structure Token = LrParser.Token);
+structure expressionLex = expressionLexFun(structure Tokens = expressionLrVals.Tokens);
+structure expressionParser = JoinWithArg(structure ParserData = expressionLrVals.ParserData
+                        structure Lex = expressionLex
+                        structure LrParser = LrParser);
+app use ["parse-strings.sml","interactive.sml","test.sml"];
+
+
+

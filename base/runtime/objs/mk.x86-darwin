@@ -1,0 +1,54 @@
+# mk.x86-darwin
+#
+# COPYRIGHT (c) 2012 The SML/NJ Fellowship
+#
+# Makefile for MacOS X 10.6+ on Intel processors
+#
+
+#
+# The SDK variable is set to the SDK minimum Mac OS X version that you want
+# to support.  Note that since Lion, the 10.5 (and 10.6?) SDKs are not part
+# of the Xcode install.
+#
+# to support 10.5 and later you will need to have the 10.5 SDK in /Developer/SDKs/MacOSX10.5.sdk
+#
+#SDK =		-isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5
+#
+# to support 10.5 and later you will need to have the 10.6 SDK in /Developer/SDKs/MacOSX10.6.sdk;
+# this should work on Lion, if you had Xcode 4.2 installed.
+#SDK =		-isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.6
+#
+# On Mountain Lion, the earliest version is 10.7, which is to supported by the following line:
+#
+#SDK =		-isysroot Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -mmacosx-version-min=10.7
+
+SDK =		-mmacosx-version-min=10.6
+
+# the /usr/bin/as command does _not_ accept the -mmacosx-version-min
+# command-line option prior to MacOS X 10.10 (Yosimite)
+ifeq ($(AS_ACCEPTS_SDK),yes)
+AS_SDK =	$(SDK)
+endif
+
+SHELL =		/bin/sh
+
+MAKE =		make
+AS =		/usr/bin/as -arch i386 $(AS_SDK)
+CC =		cc -m32 -std=c99
+CFLAGS =	-g -O2 -D_DARWIN_C_SOURCE $(SDK)
+CPP =           cc -x assembler-with-cpp -E -P -std=c99
+XOBJS =
+XLIBS =         ../c-libs/dl/libunix-dynload.a
+LD_LIBS =       -ldl
+XDEFS =
+BASE_DEFS =
+DEFS		= $(XDEFS) $(BASE_DEFS) -DARCH_X86 -DDSIZE_32 \
+		-DOPSYS_UNIX -DOPSYS_DARWIN -DGNU_ASSEMBLER -DDLOPEN -DINDIRECT_CFUNC
+TARGET =	X86
+VERSION =	v-x86-darwin
+RUNTIME =	run.x86-darwin
+RUNTIMEX =	runx.x86-darwin
+
+all:
+	($(MAKE) RUNTIME="$(RUNTIME)" VERSION="$(VERSION)" CC="$(CC)" CFLAGS="$(CFLAGS)" CPP="$(CPP)" AS="$(AS)" TARGET=$(TARGET) DEFS="$(DEFS)" XOBJS="$(XOBJS)" XLIBS="$(XLIBS)" LD_LIBS="$(LD_LIBS)" $(RUNTIME))
+	($(MAKE) RUNTIME="$(RUNTIMEX)" VERSION="$(VERSION)" CC="$(CC)" CFLAGS="$(CFLAGS)" CPP="$(CPP)" TARGET=$(TARGET) DEFS="$(DEFS)" XOBJS="$(XOBJS)" XLIBS="$(XLIBS)" LD_LIBS="$(LD_LIBS)" LDFLAGS="-Xlinker -r" $(RUNTIMEX))

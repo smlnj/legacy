@@ -1,0 +1,59 @@
+(* sources.cm
+ *
+ * COPYRIGHT (c) 1995 AT&T Bell Laboratories.
+ *
+ * The library sources file for the EXene graph utilities level.
+ *)
+
+Group
+
+    signature BITMAP_IO
+    signature ELLIPSE
+    signature ROUNDED_RECT
+    signature SPLINE
+    signature REGION
+    signature X_AUTH
+    signature COLOR_SPACE
+    signature GET_DPY
+
+    structure BitmapIO
+    structure Ellipse
+    structure RoundedRect
+    structure Spline
+    structure Region
+    structure XAuth
+    structure ColorSpace
+    structure GetDpy
+
+is
+
+#if defined (NEW_CM)
+    $cml/basis.cm
+    $cml/cml.cm
+    $cml-lib/smlnj-lib.cm
+#else
+    cml-lib.cm
+    cml.cm
+#endif
+    ../lib/sources.cm
+
+    bitmap-io-sig.sml
+    bitmap-io.sml
+    ellipse-sig.sml
+    ellipse.sml
+    rounded-rect-sig.sml
+    rounded-rect.sml
+    spline-sig.sml
+    spline.sml
+    box.sml
+    band.sml
+    scan-convert.sml
+    region-sig.sml
+    region.sml
+    xauth-sig.sml
+    xauth.sml
+    color-space-sig.sml
+    color-space.sml
+    get-dpy-sig.sml
+    get-dpy.sml
+

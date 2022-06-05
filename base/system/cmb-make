@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# COPYRIGHT (c) 2020 The Fellowship of SML/NJ (http://www.smlnj.org)
+# All rights reserved.
+#
+# script to compile using the batch compiler
+# usage:
+#	cmb-make [ <sml-cmd> ] <flags> ...
+#
+# Do a batch compiler of the compiler; the optional <sml-cmd> argument specifes
+# the path to the SML compiler to use for the build.
+#
+
+set -x
+SML=sml
+ARGS=""
+# Process command-line arguments
+#
+while [ "$#" != "0" ] ; do
+    arg=$1; shift
+    case $arg in
+    -32) SIZE_OPT=$arg ;;
+    -64) SIZE_OPT=$arg ;;
+    -C*) ARGS="$ARGS $arg" ;;
+    -D*) ARGS="$ARGS $arg" ;;
+    *)  SML=$arg
+	break
+	;;
+    esac
+done
+
+# if the size was not specified on the command line, then we use
+# the size from the sml executable.
+#
+if [ x"SIZE_OPT" = x ] ; then
+  SIZE=`$SML @SMLwordsize`
+  SIZE_OPT="-$SIZE"
+fi
+
+exec $SML $SIZE_OPT $ARGS $@ -DNO_PLUGINS '$smlnj/cmb.cm' <<XXXX
+CMB.make();
+XXXX

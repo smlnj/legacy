@@ -1,0 +1,161 @@
+dbm changes committed 1/2012 (for 110.74)
+
+======================================================================
+revision 3648
+======================================================================
+1. change of SourceMap interface
+2. minor cleanup of match compiler
+3. preliminary modification of type checker to add culprit tracking
+
+cm/bootstrap/build-initdg.sml
+   Source.newSource (deleted argument)
+cm/parse/parse.sml
+   Source.newSource (deleted argument)
+   SourceMap.lastChange -> SourceMap.lastLinePos
+   revised sync
+cm/smlfile/smlinfo.sml
+   Source.newSource (deleted argument)
+   
+compiler/Basics/errormsg/errormsg.sml
+   clarified Ramsey comments
+
+compiler/Basics/source/source.sig
+   inputSource: added content field
+   newSource: deleted 2nd argument
+   filepos: return type is now SourceMap.sourceloc
+   add getContent, regionContent
+   clarified comment
+
+compiler/Basics/source/source.sml
+   newSource: deleted 2nd argument, use SourceMap.newSourceMap, add content
+   filepos: defined in terms of SourceMap.filepos
+   add getContent, regionContent
+
+compiler/Basics/source/sourcemap.sig
+   rewrote Ramsey comment (revising noweb support)
+   newSourceMap, replaces newmap w. changed type
+   fileregion: changed return type
+   lastLinePos: replaces lastChange, same type
+   widenToLines: added
+   positions: deleted
+   
+compiler/Basics/source/sourcemap.sml
+   major rewrite, implementing changes noted for sourcemap.sig
+
+compiler/Basics/source/sourceutil.sml
+   preliminary incomplete version to support printing regions of
+   source code with embedded hilighting
+   not currently used
+
+compiler/DebugProf/profile/sprof.sml
+   modified for change in type of Source.filepos
+
+compiler/ElabData/syntax/absyn.sig
+   added MARKpat constructor to pat datatype spec
+
+compiler/ElabData/syntax/absyn.sml
+   added MARKpat constructor to pat datatype
+   modified a couple of comments
+
+compiler/ElabData/syntax/absynutil.sml
+   stripPathMarks added
+
+compiler/ElabData/types/typesutil.sml
+   MARKpat case in fun. irref
+
+compiler/Elaborator/elaborate/elabcore.sml
+   MarkPat/MARKpat handling added
+
+compiler/Elaborator/elaborate/elabutil.sml
+   MARKpat handling added
+
+compiler/Elaborator/print/ppabsyn.sml
+   change for modified Source.filepos
+   MARKpat handling added
+
+compiler/Elaborator/print/ppast.sml
+   change for modified Source.filepos
+
+compiler/Elaborator/types/typecheck.sml
+   type location tracking added
+   ppModeErrorMsg added to print culprit locations
+
+compiler/Elaborator/types/unify.sml
+   type location tracking added (major changes)
+
+compiler/FLINT/trans/matchcomp.sml
+   superficial cleanup, removing unused calls related to templates
+
+compiler/FLINT/trans/mccommon.sml
+   deleted unused datatype simp
+
+compiler/FLINT/trans/tempexpn.sml
+   file removed (at revision 3652)
+
+compiler/FLINT/trans/translate.sml
+   MARKpat handling added
+   superficial cleanup with some added comments
+
+compiler/Parse/lex/ml.lex
+   SourceMap.lastChange -> SourceMap.lastLinePos
+   revised mysynch
+
+compiler/Parse/main/parser.sml
+   revised oneparse to use new SourceMap version
+
+compiler/Parse/parse/ml.grm
+   markpat added and used to capture pattern regions
+
+compiler/TopLevel/interact/evalloop.sml
+   Source.newSource calls drop second argument
+
+compiler/core.cm
+   delete line for FLINT/trans/tempexpn.sml (unused pattern template code)
+
+======================================================================
+revision 3652
+======================================================================
+
+compiler/Elaborator/basics/elabcontrol.sig
+compiler/Elaborator/basics/elabcontrol.sml
+compiler/Elaborator/types/typecheck.sml
+   added showTypeErrorCulprit flag in ElabControls (Elaborator/main/elabcontrol.s??)
+
+compiler/FLINT/MAP
+compiler/FLINT/trans/tempexpn.sml (deleted)
+   deleted unused code for pattern templates (FLINT/trans/tempexpn.sml)
+
+
+======================================================================
+revision 3664
+======================================================================
+
+config/version
+   bumped version number to 110.74
+
+
+======================================================================
+revision 3665
+======================================================================
+
+cm/smlfile/skel-cvt.sml
+compiler/Elaborator/print/ppast.sml
+compiler/Elaborator/print/ppast.sig
+compiler/Elaborator/elaborate/elabsig.sml
+compiler/Elaborator/elaborate/elabcore.sml
+compiler/Elaborator/elaborate/elabmod.sml
+compiler/Elaborator/elaborate/elabtype.sml
+compiler/Parse/ast/ast.sml
+compiler/Parse/ast/ast.sig
+compiler/Parse/parse/ml.grm
+   Fix for bug #77, separating datatype decs/specs from 
+   datatype replication decs/specs
+
+compiler/Elaborator/modules/evalent.sml
+   Fix for bug #60
+
+compiler/Elaborator/print/pptype.sml
+   Minor fix for ppTycon with internals set (printing strict vals)
+
+compiler/ElabData/types/types.sml
+   Comment edited

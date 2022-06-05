@@ -1,0 +1,29 @@
+# mk.ppc-darwin
+#
+# COPYRIGHT (c) 2012 The SML/NJ Fellowship
+#
+# Makefile for MacOS X 10.5 on PPC
+#
+# the -D_NONSTD_SOURCE flag is needed for Mac OS X 10.5, because the
+# mcontext field names changed.
+
+SHELL =		/bin/sh
+
+MAKE =		make
+CC =		cc -ansi
+CFLAGS =	-g -O2 -D_NONSTD_SOURCE
+CPP =           cc -x assembler-with-cpp -E -P -ansi
+XOBJS =
+XLIBS =         ../c-libs/dl/libunix-dynload.a
+LD_LIBS =       -ldl
+XDEFS =
+BASE_DEFS =
+DEFS		= $(XDEFS) $(BASE_DEFS) -DARCH_PPC -DDSIZE_32 -DOPSYS_UNIX -DOPSYS_DARWIN -DDLOPEN
+TARGET =	PPC
+VERSION =	v-ppc-darwin
+RUNTIME =	run.ppc-darwin
+RUNTIMEX =	runx.ppc-darwin
+
+all:
+	($(MAKE) RUNTIME="$(RUNTIME)" VERSION="$(VERSION)" CC="$(CC)" CFLAGS="$(CFLAGS)" CPP="$(CPP)" TARGET=$(TARGET) DEFS="$(DEFS)" XOBJS="$(XOBJS)" XLIBS="$(XLIBS)" LD_LIBS="$(LD_LIBS)" $(RUNTIME))
+	($(MAKE) RUNTIME="$(RUNTIMEX)" VERSION="$(VERSION)" CC="$(CC)" CFLAGS="$(CFLAGS)" CPP="$(CPP)" TARGET=$(TARGET) DEFS="$(DEFS)" XOBJS="$(XOBJS)" XLIBS="$(XLIBS)" LD_LIBS="$(LD_LIBS)" LDFLAGS="-Xlinker -r" $(RUNTIMEX))

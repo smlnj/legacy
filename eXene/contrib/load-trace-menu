@@ -1,0 +1,13 @@
+(* script to load the trace menu widget code *)
+
+(* load the buffered channels from the CML library *)
+(* use "/usr/local/sml/cml-0.9.8/library/buffer.sml"; *)
+use "/home/jhr/sml/CML/library/buffer.sml";
+
+structure BufferChan = BufferChan (CML);
+
+app use [
+    "trace-menu-sig.sml",
+    "trace-menu.sml"
+  ];
+

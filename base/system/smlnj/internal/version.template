@@ -1,0 +1,36 @@
+(* %F version.template
+ *
+ * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
+ *
+ * Author: Matthias Blume (blume@tti-c.org)
+ *)
+
+structure SMLNJVersion : sig
+
+    val version : {
+            system : string,      	(* the system title *)
+	    version_id : int list,	(* the version number *)
+            date : string         	(* date of creation *)
+	  }
+
+    val banner : string
+
+  end = struct
+
+    val size = Int.toString(SMLofNJ.SysInfo.getArchSize())
+
+    (* generate date string at boot time *)
+    val version = {
+	    system = "Standard ML of New Jersey",
+	    version_id = [%V],
+	    date = Date.toString (Date.fromTimeLocal (Time.now ()))
+        }
+
+    val banner = concat [
+	    #system version, " (", size, "-bit)",
+	    " v", String.concatWithMap "." Int.toString (#version_id version),
+	    " [built: ", #date version, "]"
+	  ]
+
+  end

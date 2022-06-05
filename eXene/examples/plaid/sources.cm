@@ -1,0 +1,21 @@
+(* sources.cm
+ *
+ * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
+ *
+ * sources file for plaid example
+ *)
+
+Group
+is
+
+#if defined (NEW_CM)
+  $cml/basis.cm
+  $cml/cml.cm
+  $/eXene.cm
+#else
+  cml.cm
+  ../../sources.cm
+#endif
+
+plaid.sml

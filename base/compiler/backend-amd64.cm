@@ -1,0 +1,42 @@
+(* backend-amd64.cm
+ *
+ * COPYRIGHT (c) 2017 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
+ *
+ * This is the AMD64-specific (aka x86-64) part (backend) of the compiler.
+ *
+ * The present file is a group which gets referred to by the actual library
+ * file in system/smlnj/viscomp/amd64.cm.
+ *)
+
+Group
+	structure AMD64StdCallBackend
+	structure AMD64CCallBackend
+
+	functor   AMD64CG
+        structure AMD64CpsRegs
+        structure AMD64Instr
+ 	structure AMD64Props
+	structure AMD64CFG
+	structure AMD64AsmEmitter
+is
+
+TopLevel/backend/amd64-stdcall.sml
+TopLevel/backend/amd64-ccall.sml
+
+CodeGen/amd64/amd64CG.sml
+CodeGen/amd64/amd64CpsRegs.sml
+CodeGen/amd64/amd64MLTree.sml
+CodeGen/amd64/amd64-frame-layout.sml
+CodeGen/amd64/amd64gen.sml
+CodeGen/amd64/amd64spec.sml
+
+$smlnj/basis/basis.cm
+$smlnj/smlnj-lib/smlnj-lib.cm
+$smlnj/viscomp/basics.cm
+$smlnj/viscomp/core.cm
+$smlnj/MLRISC/Control.cm
+$smlnj/MLRISC/MLRISC.cm
+$smlnj/MLRISC/MLTREE.cm
+$smlnj/MLRISC/AMD64.cm
+$smlnj/MLRISC/Graphs.cm

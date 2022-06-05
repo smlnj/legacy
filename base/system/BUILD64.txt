@@ -1,0 +1,25 @@
+Steps for building the 64-bit version of SML/NJ
+
+  1) build the runtime system
+
+	% cd base/runtime/objs
+	% make -f mk.amd64-darwin  -- if macOS, or
+	  % make -f mk.amd64-linux  -- if linux (e.g. Ubuntu)
+	% mv run.amd64-darwin ../../../bin/.run/
+
+  2) cross compile
+
+	% cd ../../system
+	% ./cmb-cross amd64-unix
+
+  3) bootstrap
+
+	% ./makeml -64
+
+  4) to test
+
+	% ./testml -64
+
+  5) to install in the bin directory
+
+ 	% ./installml -64

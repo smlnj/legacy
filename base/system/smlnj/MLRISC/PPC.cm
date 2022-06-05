@@ -1,0 +1,30 @@
+(* PPC.cm
+ *
+ * COPYRIGHT (c) 2020 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
+ *
+ * This is library $smlnj/MLRISC/PPC.cm -- a proxy providing the
+ * services of $SMLNJ-MLRISC/PPC.cm.
+ *   The path anchor $SMLNJ-MLRISC points to (implementation of the)
+ *   version of MLRISC that is used by SML/NJ.
+ *   This proxy takes care of binding path anchors internal to MLRISC
+ *   in such a way that they consistently point to the same version
+ *   of MLRISC.
+ *
+ * author: Matthias Blume (blume@cs.princeton.edu)
+ *)
+Library
+	library($SMLNJ-MLRISC/PPC.cm)
+is
+	$SMLNJ-MLRISC/PPC.cm
+		(bind:(anchor:basis.cm value:$SMLNJ-BASIS)
+		 bind:(anchor:smlnj-lib.cm value:$SMLNJ-LIB/Util)
+		 bind:(anchor:pp-lib.cm value:$SMLNJ-LIB/PP)
+		 bind:(anchor:controls-lib.cm value:$SMLNJ-LIB/Controls)
+
+                 bind:(anchor:Lib.cm value:$SMLNJ-MLRISC)
+		 bind:(anchor:Control.cm value:$SMLNJ-MLRISC)
+		 bind:(anchor:Graphs.cm value:$SMLNJ-MLRISC)
+		 bind:(anchor:Visual.cm value:$SMLNJ-MLRISC)
+                 bind:(anchor:MLRISC.cm value:$SMLNJ-MLRISC)
+		 bind:(anchor:MLTREE.cm value:$SMLNJ-MLRISC))

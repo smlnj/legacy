@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# build heap image for eXene
+# from ml-build: $SML $dulist @CMbuild $root $cmfile $heap $listfile $linkargsfile
+/usr/local/smlnj/bin/sml @CMbuild eXene.cm $$-export.sml x86-unix-eXene.cm $$-BOOTLIST $$-LINKARGS

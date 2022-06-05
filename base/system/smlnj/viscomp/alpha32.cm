@@ -1,0 +1,14 @@
+(* smlnj/viscomp/alpha32.cm *)
+
+(*
+ * This is the part of what used to be viscomp-lib.cm that is specific to
+ * to Alphas.
+ *   (M.Blume, 11/1999)
+ *
+ * Moved to smlnj/viscomp for better path-anchor organization.
+ *   M.Blume (03/2000)
+ *)
+Library
+	group($compiler/backend-alpha32.cm)
+is
+	$compiler/backend-alpha32.cm

@@ -1,0 +1,191 @@
+(* sources.cm
+ *
+ * COPYRIGHT (c) 1995 AT&T Bell Laboratories.
+ *
+ * The library sources file for the EXene graph utilities level.
+ *)
+
+Group
+signature ROOT
+signature SHELL
+signature WIDGET
+signature ROUTER
+signature THREE_D
+signature QUARK
+signature ATTRS
+signature FIELD_EDIT
+signature STREDIT
+signature TEXT_WIDGET
+signature TXTWIN
+signature VTTY
+signature BACKGROUND
+signature BOX
+signature FRAME
+signature HIDEABLE
+signature MENU_BUTTON
+signature PILE
+signature SCROLL_LAYOUT
+signature SCROLL_PORT
+signature SHAPE
+signature SIMPLE_MENU
+signature VIEWPORT
+signature WIDGET_SET
+signature BUTTON_CTRL
+signature BUTTON_VIEW
+signature BUTTON
+signature CANVAS
+signature COLOR_RECT
+signature DIVIDER
+signature LABEL
+signature MESSAGE
+signature SCROLL_VIEW
+signature SCROLLBAR
+signature SHAPE_VIEW
+signature SLIDER
+signature TEXT_LIST
+signature TOGGLE_CTRL
+signature TOGGLE
+
+structure Root
+structure Router
+structure Shell
+structure Widget
+structure ThreeD
+structure Attrs
+structure RunEXene
+structure Quark
+structure Styles
+structure FieldEdit
+structure StrEdit
+structure TextWidget
+structure TxtWin
+structure Vtty
+structure Background
+structure Box
+structure Hideable
+structure MenuButton
+structure Frame
+structure Pile
+structure ScrollLayout
+structure ScrollPort
+structure Shape
+structure SimpleMenu
+structure Viewport
+structure WidgetSet
+structure ArrowView
+structure ButtonBase
+structure ButtonType
+structure Button
+structure Canvas
+structure CheckView
+structure CircleView
+structure ColorRect
+structure DiamondView
+structure Divider
+structure LabelBttnView
+structure Label
+structure Message
+structure RectView
+structure ScrollView
+structure Scrollbar
+structure ShapeTypes
+structure Slider
+structure SwitchView
+structure TextList
+structure TextView
+structure ToggleType
+structure Toggle
+
+functor ButtonCtrl
+functor ToggleCtrl
+functor ShapeView
+
+is
+
+#if defined (NEW_CM)
+  $cml/basis.cm
+  $cml/cml.cm
+  $cml-lib/smlnj-lib.cm
+#else
+  cml-lib.cm
+  cml.cm
+#endif
+
+../lib/sources.cm
+../graph-util/sources.cm
+../styles/sources.cm
+
+basics/router.sml
+basics/widget-base.sml
+basics/root.sml
+basics/widget.sml
+basics/shell.sml
+basics/widget-attrs.sml
+
+simple/arrow-view.sml
+simple/button-base.sml
+simple/button-ctrl.sml
+simple/button-type.sml
+simple/button-view.sml
+simple/button.sml
+simple/canvas-sig.sml
+simple/canvas.sml
+simple/check-view.sml
+simple/circle-view.sml
+simple/color-rect.sml
+simple/diamond-view.sml
+simple/divider.sml
+simple/item-list.sml
+simple/label-bttn-view.sml
+simple/label.sml
+simple/message.sml
+simple/rect-view.sml
+simple/scroll-view.sml
+simple/scrollbar-sig.sml
+simple/scrollbar.sml
+simple/shape-view.sml
+simple/slider-view.sml
+simple/slider.sml
+simple/switch-view.sml
+simple/text-list.sml
+simple/text-view.sml
+simple/toggle-ctrl.sml
+simple/toggle-type.sml
+simple/toggle.sml
+
+composite/background.sml
+composite/shape.sml
+composite/frame.sml
+composite/hideable.sml
+composite/index.sml
+composite/box-layout.sml
+composite/box.sml
+composite/pile.sml
+composite/viewport-sig.sml
+composite/viewport.sml
+composite/scrollbar-layout.sml
+composite/widget-set.sml
+composite/scrollport-sig.sml
+composite/scrollport.sml
+composite/simple-menu.sml
+composite/menu-button.sml
+
+text/extstr.sml
+text/text-widget-sig.sml
+text/text-widget.sml
+text/txtwin.sml
+text/str-edit.sml
+text/field-edit.sml
+text/vtty-sig.sml
+text/vtty.sml
+
+util/run-exene.sml
+util/3d-sig.sml
+util/3d.sml
+util/shade-server.sml
+util/tile-server.sml
+util/images.sml
+util/image-server.sml
+util/attrs-sig.sml
+util/attrs.sml
+util/styles.sml

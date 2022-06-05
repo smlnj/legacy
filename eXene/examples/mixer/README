@@ -1,0 +1,4 @@
+This directory contains a simple color mixer implemented by
+Tim Griffin (AT&T Bell Labs).  It will die after a while,
+because it runs out of color cells.  Once color finalization
+is implemented, this houldn't be a problem.
