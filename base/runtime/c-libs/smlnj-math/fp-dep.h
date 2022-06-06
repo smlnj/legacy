@@ -34,6 +34,9 @@
 
 #if defined(HAS_ANSI_C_FP_EXT)
 #  include <fenv.h>
+/* some compilers may ignore the fesetround() function if this is not ON */
+#pragma STDC FENV_ACCESS ON
+
 typedef int fe_rnd_mode_t;
 
 #elif defined(OPSYS_AIX)
@@ -75,9 +78,8 @@ typedef int fe_rnd_mode_t;
 #  define fegetround()		fpgetround()
 #  define fesetround(RM)	fpsetround(RM)
 
-#elif (defined(OPSYS_LINUX)  || defined(OPSYS_WIN32) || defined(OPSYS_CYGWIN))
-/** Linux doesn't provide an API for controlling the rounding modes, so
- ** we've got to do it by hand.
+#elif (defined(OPSYS_WIN32) || defined(OPSYS_CYGWIN))
+/** 
  ** Win32 can set (some) alternate math paramters, but then only by re-linking
  ** with different objects.  Best to do it by hand here as well.
  **/

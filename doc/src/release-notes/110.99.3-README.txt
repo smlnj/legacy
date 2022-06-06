@@ -89,6 +89,8 @@ for more details.
 | Error when REPL tries to print value of type `Posix.FileSys.ST.stat`
 | [.bug]#312#
 | `CM.make` is unable to handle filenames that contain a backslash
+| [.bug]#314#
+| `IEEEReal.setRoundingMode` is a no-op on Linux
 |=======
 
 The following unnumbered bug was also fixed:
