@@ -1,6 +1,11 @@
-/* ctlrndmode.c
+/*! \file ctlrndmode.c
  *
- * COPYRIGHT (c) 1996 AT&T Research.
+ * \author John Reppy
+ */
+
+/*
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
  */
 
 #include "ml-base.h"

@@ -85,10 +85,12 @@ for more details.
 | `SExpParser.parseFile` should return empty list on empty file
 | [.bugid]#309#
 | SExp: parsing the output of the printer produces a different SExp
-| [.bug]#310#
+| [.bugid]#310#
 | Error when REPL tries to print value of type `Posix.FileSys.ST.stat`
-| [.bug]#312#
+| [.bugid]#312#
 | `CM.make` is unable to handle filenames that contain a backslash
+| [.bugid]#314#
+| `IEEEReal.setRoundingMode` is a no-op on Linux
 |=======
 
 The following unnumbered bug was also fixed:
