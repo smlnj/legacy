@@ -7,7 +7,9 @@
  *
  * Author: Matthias Blume
  *)
-signature SRCPATH = sig
+
+signature SRCPATH =
+  sig
 
     exception Format
     (* When faced with an undefined anchor, pressing on does not
@@ -125,7 +127,8 @@ signature SRCPATH = sig
 		   { pickled: string list list, relativeTo: file } -> prefile
 end
 
-structure SrcPath :> SRCPATH = struct
+structure SrcPath :> SRCPATH =
+  struct
 
     exception Format
     exception BadAnchor

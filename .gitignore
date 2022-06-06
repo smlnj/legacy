@@ -88,6 +88,8 @@
 latex.out/
 
 ## Other stuff ##
+*.tgz
+*.swp
 
 # macOS finder
 .DS_Store
@@ -109,6 +111,18 @@ asdl/src/gen/fragments/Makefile
 asdl/src/asdlgen/Makefile
 asdl/src/lib/cxx/Makefile
 asdl/src/lib/Makefile
+base/cm/parse/cm.grm.desc
+base/cm/parse/cm.grm.sig
+base/cm/parse/cm.grm.sml
+base/cm/parse/cm.lex.sml
+base/compiler/Parse/lex/ml.lex.sml
+base/compiler/Parse/lex/sml.lex.sml
+base/compiler/Parse/parse/ml.grm.desc
+base/compiler/Parse/parse/ml.grm.sig
+base/compiler/Parse/parse/ml.grm.sml
+base/compiler/Parse/parse/sml.grm.desc
+base/compiler/Parse/parse/sml.grm.sig
+base/compiler/Parse/parse/sml.grm.sml
 doc/mk/doc-rules.gmk
 doc/Makefile
 doc/src/Makefile
@@ -124,3 +138,7 @@ smlnj-lib/Doc/tools/gen-pages/config.sml
 smlnj-lib/Doc/tools/gen-pages/gen-pages.*
 smlnj-lib/Doc/tools/make-index/Makefile
 smlnj-lib/Doc/tools/make-index/make-index.*
+
+smlnj/internal/version.sml
+bin
+lib
