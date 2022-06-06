@@ -518,7 +518,7 @@ structure PrivateTools : PRIVATETOOLS = struct
 	val dummy = ({ smlfiles = [], cmfiles = [], sources = [] }, [])
 	fun norule _ = dummy
 	fun native2pathmaker s () =
-	    SrcPath.native { err = error } { context = context, spec = s }
+	    SrcPath.raw { err = error } { context = context, spec = s }
 	fun class2rule class =
 	    case classes class of
 		SOME rule => rule

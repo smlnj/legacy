@@ -107,7 +107,7 @@ signature CM_SEMANT = sig
     type addsym
     val PLUS : addsym
     val MINUS : addsym
-    
+
     type mulsym
     val TIMES : mulsym
     val DIV : mulsym
@@ -186,7 +186,7 @@ structure CMSemant :> CM_SEMANT = struct
 	     false)
 
     fun file_native (s, d, err) =
-	SrcPath.native { err = err } { context = d, spec = s }
+	SrcPath.raw { err = err } { context = d, spec = s }
     fun file_standard (gp: GeneralParams.info) (s, d, err) =
 	SrcPath.standard { env = #penv (#param gp), err = err }
 			 { context = d, spec = s }
