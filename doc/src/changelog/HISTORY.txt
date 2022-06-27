@@ -100,10 +100,12 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 +
 Adding support for generating a SIG_GC signal when there is a garbage
 collection.  I have also added a function
++
 [source,sml]
 ------------
   val signalThreshold : int -> unit
 ------------
++
 to the `SMLofNJ.Internals.GC` structure that allows one to specify the
 threshold for generating a signal.  The default is `1`, which means
 that for any major collection a signal is generated.  Setting the
