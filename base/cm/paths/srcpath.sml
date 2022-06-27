@@ -66,7 +66,7 @@ signature SRCPATH =
 
     (* make abstract paths *)
     val raw : { err: string -> unit } ->
-		 { context: dir, spec: string } -> prefile
+              { context: dir, spec: string } -> prefile
     val native : { err: string -> unit, env: env } ->
 		 { context: dir, spec: string } -> prefile
     val standard : { err: string -> unit, env: env } ->
