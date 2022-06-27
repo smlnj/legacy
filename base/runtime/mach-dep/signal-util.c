@@ -17,6 +17,23 @@
 #include "system-signals.h"
 
 
+/* GCSignal:
+ *
+ * Conditionally record a GC signal.
+ */
+void GCSignal (vproc_state_t *vsp, int nGen)
+{
+    if ((vsp->vp_gcSigState != ML_SIG_ENABLED) || (nGen < vsp->vp_gcSigThreshold)) {
+      /* the default behavior is to not generate GC signals */
+        return;
+    }
+
+    vsp->vp_sigCounts[RUNSIG_GC].nReceived++;
+    vsp->vp_totalSigCount.nReceived++;
+
+} /* end of GCSignal */
+
+
 /* ChooseSignal:
  *
  * Choose which signal to pass to the ML handler and setup the ML state

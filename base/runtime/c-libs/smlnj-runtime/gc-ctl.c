@@ -1,6 +1,7 @@
 /* gc-ctl.c
  *
- * COPYRIGHT (c) 1994 by AT&T Bell Laboratories.
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
  *
  * General interface for GC control functions.
  */
@@ -9,6 +10,7 @@
 #include <string.h>
 #include "ml-values.h"
 #include "ml-state.h"
+#include "vproc-state.h"
 #include "memory.h"
 #include "heap.h"
 #include "ml-objects.h"
@@ -21,7 +23,6 @@ PVT void DoGC (ml_state_t *msp, ml_val_t cell, ml_val_t *next);
 PVT void AllGC (ml_state_t *msp, ml_val_t *next);
 
 
-
 /* _ml_RunT_gc_ctl : (string * int ref) list -> unit
  *
  * Current control operations:
@@ -32,6 +33,7 @@ PVT void AllGC (ml_state_t *msp, ml_val_t *next);
  *   ("AllGC", _)		- collects all generations.
  *   ("Messages", ref 0)	- turn GC messages off
  *   ("Messages", ref n)	- turn GC messages on (n > 0)
+ *   ("SigThreshold", ref n)    - set GC signal threshold to n (>= 0)
  */
 ml_val_t _ml_RunT_gc_ctl (ml_state_t *msp, ml_val_t arg)
 {
@@ -55,11 +57,17 @@ ml_val_t _ml_RunT_gc_ctl (ml_state_t *msp, ml_val_t arg)
 		GCMessages = FALSE;
 	}
 	else if (STREQ("LimitHeap", oper)) {
+          /* NOTE: this control is not needed once we have dynamically sized areans! */
 	    if (INT_MLtoC(DEREF(cell)) > 0)
 		UnlimitedHeap = FALSE;
 	    else
 		UnlimitedHeap = TRUE;
 	}
+        else if (STREQ("SigThreshold", oper)) {
+            int threshold = INT_MLtoC(DEREF(cell));
+            if (threshold < 0) threshold = 0;
+            msp->ml_vproc->vp_gcSigThreshold = threshold;
+        }
     }
 
     return ML_unit;

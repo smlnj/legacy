@@ -1,6 +1,7 @@
 /* ml-signals.h
  *
- * COPYRIGHT (c) 1995 by AT&T Bell Laboratories.
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
  */
 
 #ifndef _ML_SIGNALS_
@@ -11,7 +12,7 @@ typedef struct {		/* counters for pending signals; we keep two counters */
     Word_t		nReceived;  /* the count of how many signals of this variety */
 				    /* have been received. This counter is incremented */
 				    /* the signal handler */
-    Word_t		nHandled;  /* the count of how many of this kind of */
+    Word_t		nHandled;   /* the count of how many of this kind of */
 				    /* signal have been handled.  This counter */
 				    /* is incremented by the main thread. */
 } sig_count_t;
@@ -24,6 +25,7 @@ typedef struct {		/* counters for pending signals; we keep two counters */
 #define ML_SIG_ENABLED		2
 
 /** Utility functions **/
+extern void GCSignal (vproc_state_t *vsp, int nGen);
 extern void ChooseSignal (vproc_state_t *vsp);
 extern ml_val_t MakeResumeCont (ml_state_t *msp, ml_val_t resume[]);
 extern ml_val_t MakeHandlerArg (ml_state_t *msp, ml_val_t resume[]);
