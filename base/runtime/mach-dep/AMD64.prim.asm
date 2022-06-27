@@ -33,9 +33,9 @@
 
 /* Registers (see compiler/CodeGen/amd64/amd64CpsRegs.sml): */
 #define temp		RAX
-#define misc0		RBX
-#define misc1		RCX
-#define misc2		RDX
+#define misc0		RBX     /* callee save */
+#define misc1		RCX     /* callee save */
+#define misc2		RDX     /* callee save */
 #define misc3		R10
 #define misc4		R11
 #define misc5		R12
@@ -613,6 +613,8 @@ ALIGNED_ENTRY(logb_a)
 
 #define EXP_MASK	IM(0x7ff0000000000000)
 #define NOT_EXP_MASK	IM(0x800fffffffffffff)
+#define SIGN_MASK	IM(0x8000000000000000)
+#define INFINITY        EXP_MASK
 
 /* scalb : (real * int) -> real
  * Scale the first argument by 2 raised to the second argument.
@@ -625,11 +627,9 @@ ALIGNED_ENTRY(scalb_a)
 	MOV	(REGOFF(8,stdarg), temp)	/* get second arg */
 	SAR	(IM(1), temp)			/* untag second arg */
 	MOV	(REGIND(stdarg), stdarg)	/* put pointer to real in stdarg */
-	PUSH	(misc0)
-	PUSH	(misc1)
-#define temp1 misc0
-#define temp2 misc1
-	MOV	(REGIND(stdarg), temp1)		/* put bits in temp1 */
+#define temp1 misc5
+#define temp2 misc6
+	MOV	(REGIND(stdarg), temp1)		/* put real bits in temp1 */
 	MOV	(EXP_MASK, temp2)
 	AND	(temp1, temp2)			/* temp2 has shifted exponent */
 	TEST	(temp2, temp2)
@@ -653,16 +653,18 @@ L_scalb_alloc:
 	ADD	(WORD_SZB_IM,allocptr)		/* allocptr += 1 */
 
 L_scalb_return:
-	POP	(misc1)
-	POP	(misc0)
 	CONTINUE
 
 L_scalb_under:
 	XOR	(temp1,temp1)			/* temp1 = 0 */
 	JMP	(L_scalb_alloc)
 
-L_scalb_over:
-	INT4					/* signal Overflow */
+L_scalb_over:                                   /* Overflow, so return infinity */
+	MOV	(SIGN_MASK, temp)		/* temp1 := sign bit of temp1 */
+	AND	(temp, temp1)
+        MOV     (INFINITY, temp)                /* temp1 := sign | infinity */
+        OR      (temp, temp1)
+        JMP     L_scalb_alloc
 #undef temp1
 #undef temp2
 

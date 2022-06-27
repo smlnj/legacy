@@ -98,6 +98,16 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //--------------------------------------------------------------------
 [2022/06/27]::
 +
+Fixed bug bugref:313[] (`Real.fromLargeInt` crashes on large integer
+input).  Changed the assembly code for the AMD64 to return infinity
+when the scaled exponent exceeds the maximum allowed (instead of
+generating an overflow).
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
+[2022/06/27]::
++
 Adding support for generating a SIG_GC signal when there is a garbage
 collection.  I have also added a function
 +

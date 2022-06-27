@@ -93,6 +93,8 @@ for more details.
 | Error when REPL tries to print value of type `Posix.FileSys.ST.stat`
 | [.bugid]#312#
 | `CM.make` is unable to handle filenames that contain a backslash
+| [.bugid]#313#
+| `Real.fromLargeInt` crashes on large integer input
 | [.bugid]#314#
 | `IEEEReal.setRoundingMode` is a no-op on Linux
 |=======
