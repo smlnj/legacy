@@ -1,6 +1,7 @@
 (* gc.sml
  *
- * COPYRIGHT (c) 1997 AT&T Labs Research.
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
  *
  * Garbage collector control and stats.
  *)
@@ -16,6 +17,6 @@ structure GC : GC =
     fun messages true = gcCtl [("Messages", ref 1)]
       | messages false = gcCtl [("Messages", ref 0)]
 
+    fun signalThreshold n = gcCtl [("SigThreshold", ref n)]
+
   end
-
-

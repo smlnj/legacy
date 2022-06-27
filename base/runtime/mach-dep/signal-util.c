@@ -28,8 +28,19 @@ void GCSignal (vproc_state_t *vsp, int nGen)
         return;
     }
 
+    if (vsp->vp_inSigHandler && (vsp->vp_sigCode == RUNSIG_GC)) {
+      /* avoid generating GC signals while we are processing a GC signal; otherwise
+       * things can get out of hand!
+       */
+        return;
+    }
+
     vsp->vp_sigCounts[RUNSIG_GC].nReceived++;
     vsp->vp_totalSigCount.nReceived++;
+
+    if (vsp->vp_inMLFlag && (! vsp->vp_handlerPending) && (! vsp->vp_inSigHandler)) {
+	vsp->vp_handlerPending = TRUE;
+    }
 
 } /* end of GCSignal */
 

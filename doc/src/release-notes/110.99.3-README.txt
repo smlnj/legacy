@@ -77,8 +77,12 @@ for more details.
 
 [.buglist,cols="^1,<15"]
 |=======
+| [.bugid]#65#
+| Garbage collection does not trigger `sigGC`
 | [.bugid]#284#
 | Compiler bug: Contract: UsageMap on 132
+| [.bugid]#291#
+| Signals are not delivered for corresponding events
 | [.bugid]#306#
 | Word8VectorSlice: mapping a subslice produces wrong result or crashes SML/NJ
 | [.bugid]#307#

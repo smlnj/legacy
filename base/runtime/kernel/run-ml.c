@@ -123,7 +123,7 @@ SayDebug ("run-ml: poll event\n");
 	        InvokeGC (msp,0);
 #else
 	      /* check for GC */
-		if (NeedGC (msp, 4*ONE_K))
+		if (NeedGC (msp, ONE_K*WORD_SZB))
 		    InvokeGC (msp, 0);
 		msp->ml_arg		= MakeResumeCont(msp, pollh_resume);
 		msp->ml_cont		= PTR_CtoML(pollh_return_c);

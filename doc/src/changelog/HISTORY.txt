@@ -96,6 +96,30 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //== Recent updates
 
 //--------------------------------------------------------------------
+[2022/06/27]::
++
+Adding support for generating a SIG_GC signal when there is a garbage
+collection.  I have also added a function
+[source,sml]
+------------
+  val signalThreshold : int -> unit
+------------
+to the `SMLofNJ.Internals.GC` structure that allows one to specify the
+threshold for generating a signal.  The default is `1`, which means
+that for any major collection a signal is generated.  Setting the
+threshold to `0` means that minor collections also generate signals,
+while setting the value to something greater than `1` will filter out
+collections of younger generations.  Collections that happen while a
+`sigGC` handler is running are ignored, which should not be an issue
+for thresholds of `1` or greater.
++
+These changes fix bugs bugref:65[] (Garbage collection does not trigger
+`sigGC`) and bugref:291[] (Signals are not delivered for corresponding
+events).
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2022/06/05]::
 +
 Fixed bug bugref:314[] (`IEEEReal.setRoundingMode` is a no-op on Linux).
