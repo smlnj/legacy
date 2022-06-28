@@ -94,6 +94,11 @@ latex.out/
 # macOS finder
 .DS_Store
 
+# autoconf files
+configure
+config.status
+autom4te.cache
+
 ## Repo-specific files
 
 asdl/Makefile
@@ -123,15 +128,41 @@ base/compiler/Parse/parse/ml.grm.sml
 base/compiler/Parse/parse/sml.grm.desc
 base/compiler/Parse/parse/sml.grm.sig
 base/compiler/Parse/parse/sml.grm.sml
+base/runtime/objs/run.*
+base/runtime/objs/runx.*
+base/system/sml.boot*
+base/system/sml.*-*
 doc/mk/doc-rules.gmk
 doc/Makefile
+doc/doc/html
+doc/doc/pdf
 doc/src/Makefile
 doc/src/changelog/Makefile
+doc/src/changelog/HISTORY.html
 doc/src/extensions/Makefile
 doc/src/install-notes/Makefile
 doc/src/man/Makefile
 doc/src/manuals/Makefile
 doc/src/release-notes/Makefile
+doc/src/release-notes/110.86-README.html
+doc/src/release-notes/110.87-README.html
+doc/src/release-notes/110.88-README.html
+doc/src/release-notes/110.89-README.html
+doc/src/release-notes/110.90-README.html
+doc/src/release-notes/110.91-README.html
+doc/src/release-notes/110.92-README.html
+doc/src/release-notes/110.93-README.html
+doc/src/release-notes/110.94-README.html
+doc/src/release-notes/110.95-README.html
+doc/src/release-notes/110.96-README.html
+doc/src/release-notes/110.97-README.html
+doc/src/release-notes/110.98-README.html
+doc/src/release-notes/110.98.1-README.html
+doc/src/release-notes/110.99-README.html
+doc/src/release-notes/110.99.1-README.html
+doc/src/release-notes/110.99.2-README.html
+doc/src/release-notes/110.99.3-README.html
+doc/src/release-notes/2021.1-README.html
 doc/src/smlnj-guide/Makefile
 smlnj-lib/Doc/tools/gen-pages/Makefile
 smlnj-lib/Doc/tools/gen-pages/config.sml
@@ -139,6 +170,6 @@ smlnj-lib/Doc/tools/gen-pages/gen-pages.*
 smlnj-lib/Doc/tools/make-index/Makefile
 smlnj-lib/Doc/tools/make-index/make-index.*
 
-smlnj/internal/version.sml
+base/system/smlnj/internal/version.sml
 bin
 lib
