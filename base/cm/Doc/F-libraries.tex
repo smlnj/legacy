@@ -15,46 +15,66 @@ obtain access to functionality that by default is not present.
 
 \section{Libraries for general programming}
 
-Libraries listed in the following table provide a broad palette of
-general-purpose programming tools\footnote{Recall that anchored paths
-of the form {\tt \$$/x[/\cdots]$} act as an abbreviation for {\tt
-\$$x/x[/\cdots]$}.}:
+Libraries listed in the following two tables provide a broad palette of
+general-purpose programming tools:\footnote{
+  Recall that anchored paths of the form \texttt{\$$/x[/\cdots]$}
+  act as an abbreviation for \texttt{\$$x/x[/\cdots]$}.
+}
 
+\newcommand{\CMLIB}[1]{\texttt{\$/#1}}
 \begin{small}
 \begin{center}
-\begin{tabular}{p{1.7in}||p{3.4in}|c|c}
+\begin{tabular}{p{1.7in}||p{3.0in}|c|c}
 name & description & installed & loaded \\
 \hline\hline
-{\tt \$/basis.cm} & Standard Basis Library & always & auto \\
+\CMLIB{basis.cm} & Standard Basis Library & always & auto \\
 \hline\hline
-{\tt \$/ml-yacc-lib.cm} & ML-Yacc library & always & no \\
-\hline\hline
-{\tt \$/smlnj-lib.cm} & SML/NJ general-purpose utility library &
-always & auto \\
+\CMLIB{ml-yacc-lib.cm} & ML-Yacc library & always & no \\
 \hline
-{\tt \$/unix-lib.cm} & SML/NJ Unix programming utility library &
-optional & no \\
-\hline
-{\tt \$/inet-lib.cm} & SML/NJ internet programming utility library &
-optional & no \\
-\hline
-{\tt \$/regexp-lib.cm} & SML/NJ regular expression library & optional
-& no \\
-\hline
-{\tt \$/reactive-lib.cm} & SML/NJ reactive programming library &
-optional & no \\
-\hline
-{\tt \$/pp-lib.cm} & SML/NJ pretty-printing library & always & no \\
-\hline
-{\tt \$/html-lib.cm} & SML/NJ HTML handling library & always & no \\
-\hline
-{\tt \$/controls-lib.cm} & SML/NJ library for configurable
-``controls'' & always & no \\
-\hline
-{\tt \$/hash-cons-lib.cm} & SML/NJ hash-consing library & optional & no
+\CMLIB{ml-lpt-lib.cm} & Language Processing Tools library & always & no \\
 \end{tabular}
 \end{center}
 \end{small}
+
+The following libraries comprise the SML/NJ Library Suite.
+We list them in alphabetical order.
+\begin{small}
+\begin{center}
+\begin{tabular}{p{1.7in}||p{3.0in}|c|c}
+name & description & installed & loaded \\
+\hline\hline
+\CMLIB{controls-lib.cm} & & always & no \\
+\hline
+\CMLIB{html-lib.cm} & HTML 3 library & optional & no \\
+\hline
+\CMLIB{html4-lib.cm} & HTML 4 library & optional & no \\
+\hline
+\CMLIB{hash-cons-lib.cm} & hash-consing library & optional & no \\
+\hline
+\CMLIB{inet-lib.cm} & internet programming utility library & optional & no \\
+\hline
+\CMLIB{json-lib.cm} & JSON parsing, printing, and utility library library & optional & no \\
+\hline
+\CMLIB{pp-extras-lib.cm} & additional pretty-printing devices & optional & no \\
+\hline
+\CMLIB{pp-lib.cm} & pretty-printing library & always & no \\
+\hline
+\CMLIB{reactive-lib.cm} & reactive programming library & optional & no \\
+\hline
+\CMLIB{regexp-lib.cm} & regular expression library & optional & no \\
+\hline
+\CMLIB{sexp-lib.cm} & S-Expression parsing and printing library & optional & no \\
+\hline
+\CMLIB{uuid-lib.cm} & UUID generation library & optional & no \\
+\hline
+\CMLIB{unix-lib.cm} & Unix programming utility library & optional & no \\
+\hline
+\CMLIB{smlnj-lib.cm} & general-purpose utility library & always & no \\
+\hline
+\CMLIB{xml-lib.cm} & XML parsing and printing library & optional & no \\
+\end{tabular}%
+\end{center}%
+\end{small}%
 
 \section{Libraries for controlling SML/NJ's operation}
 
