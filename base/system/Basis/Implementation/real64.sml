@@ -124,7 +124,7 @@ structure Real64Imp : REAL =
 		 of 0w0 => IEEEReal.SUBNORMAL
 		  | 0w2047 => if (W64.andb(0wxfffffffffffff, bits) = 0w0)
 		      then IEEEReal.INF
-		      else IEEEReal.NAN IEEEReal.QUIET
+		      else IEEEReal.NAN
 		  | _ => IEEEReal.NORMAL
 		(* end case *)
 	      end

@@ -1,6 +1,7 @@
 (* ieee-real.sml
  *
- * COPYRIGHT (c) 1996 AT&T Bell Laboratories.
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
  *)
 
 structure IEEEReal : IEEE_REAL =
@@ -10,10 +11,8 @@ structure IEEEReal : IEEE_REAL =
 
     datatype real_order = LESS | EQUAL | GREATER | UNORDERED
 
-    datatype nan_mode = QUIET | SIGNALLING
-
     datatype float_class
-      = NAN of nan_mode
+      = NAN
       | INF
       | ZERO
       | NORMAL
@@ -68,8 +67,8 @@ structure IEEEReal : IEEE_REAL =
 		  StringImp.concat("0." :: fmtDigits(digits, fmtExp exp))
 	      | (true, INF, _) => "~inf"
 	      | (false, INF, _) => "inf"
-	      | (_, NAN _, []) => "nan"
-	      | (_, NAN _, _) =>
+	      | (_, NAN, []) => "nan"
+	      | (_, NAN, _) =>
 		  StringImp.concat("nan(" :: fmtDigits(digits, [")"]))
 	    (* end case *)
 	  end
@@ -109,7 +108,7 @@ structure IEEEReal : IEEE_REAL =
 	fun check_an (sign, ss) =
 	    case check ([#"a", #"n"], ss) of
 		NONE => NONE
-	      | SOME ss' => infnan (NAN QUIET, sign, ss')
+	      | SOME ss' => infnan (NAN, sign, ss')
 
 	(* we have succeeded constructing a normal number,
 	 * dl is still reversed and might have trailing zeros... *)

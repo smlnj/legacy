@@ -1,6 +1,7 @@
-(* sigs/ieee-real.sig
+(* ieee-real.sig
  *
- * COPYRIGHT (c) 1996 AT&T Bell Laboratories.
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
  *)
 
 signature IEEE_REAL =
@@ -10,10 +11,8 @@ signature IEEE_REAL =
 
     datatype real_order = LESS | EQUAL | GREATER | UNORDERED
 
-    datatype nan_mode = QUIET | SIGNALLING
-
     datatype float_class
-      = NAN of nan_mode
+      = NAN
       | INF
       | ZERO
       | NORMAL
@@ -41,5 +40,3 @@ signature IEEE_REAL =
 	       (decimal_approx, 'a) StringCvt.reader
 
   end;
-
-

@@ -367,7 +367,7 @@ functor RealToBitsFn (FP : IEEE_FLOAT_PARAMS) : REAL_TO_BITS =
     fun classify lit = (case RealLit.toRep lit
            of RealLit.PosInf => IEEEReal.INF
             | RealLit.NegInf => IEEEReal.INF
-            | RealLit.QNaN => IEEEReal.NAN IEEEReal.QUIET
+            | RealLit.QNaN => IEEEReal.NAN
             | RealLit.Flt{isNeg, digits=[], exp} => IEEEReal.ZERO
             | RealLit.Flt{isNeg, digits, exp} => let
               (* convert the digits to a IntInf.int and adjust the exponent *)
@@ -401,7 +401,7 @@ functor RealToBitsFn (FP : IEEE_FLOAT_PARAMS) : REAL_TO_BITS =
     fun toBits lit = (case RealLit.toRep lit
            of RealLit.PosInf => (posInf, IEEEReal.INF)
             | RealLit.NegInf => (negInf, IEEEReal.INF)
-            | RealLit.QNaN => (quietNaN, IEEEReal.NAN IEEEReal.QUIET)
+            | RealLit.QNaN => (quietNaN, IEEEReal.NAN)
             | RealLit.Flt{isNeg, digits=[], exp} => (zero isNeg, IEEEReal.ZERO)
             | RealLit.Flt{isNeg, digits, exp} => let
               (* convert the digits to a IntInf.int and adjust the exponent *)

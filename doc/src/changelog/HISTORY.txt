@@ -106,6 +106,17 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //== Recent updates
 
 //--------------------------------------------------------------------
+[2022/06/29]::
++
+Fixed bug bugref:314[] (`IEEEReal.float_class` does not match the
+Basis Library).  For some reason, the `NAN` constructor took an argument
+in our implementation.  This code was probably an early design of the
+API that was changed in the Basis Library specification, but not in our
+code.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2022/06/27]::
 +
 Fixed bug bugref:313[] (`Real.fromLargeInt` crashes on large integer

@@ -97,6 +97,8 @@ for more details.
 | `Real.fromLargeInt` crashes on large integer input
 | [.bugid]#314#
 | `IEEEReal.setRoundingMode` is a no-op on Linux
+| [.bugid]#315#
+| `IEEEReal.float_class` does not match the Basis Library
 |=======
 
 The following unnumbered bug was also fixed:
