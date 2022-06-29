@@ -17,7 +17,7 @@ REM now we can build the installer using the WiX Toolset
 REM
 
 setlocal
-SET SCRIPTDIR=%~dp0
+SET SCRIPTDIR=config\WinSetup
 
 %SCRIPTDIR%\GenerateWixFile.exe %SMLNJ_HOME%\lib
 %SCRIPTDIR%\candle.exe lib.wxs %SCRIPTDIR%\smlnj.wxs
