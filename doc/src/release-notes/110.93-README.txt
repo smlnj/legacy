@@ -87,6 +87,8 @@ for more details.
 |=======
 | [.bugid]#173#
 | `OS.Process.sleep` only works with whole numbers
+| [.bugid]#208#
+| `Real.toManExp` produces incorrect results in some cases
 | [.bugid]#223#
 | Incremental Build fails on Windows
 |=======

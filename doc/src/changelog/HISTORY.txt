@@ -5,6 +5,7 @@ The Fellowship of SML/NJ
 :stem: latexmath
 :source-highlighter: pygments
 :tabsize: 8
+:note-caption: UPDATE
 
 This file documents changes to the *Standard ML of New Jersey* system since
 March of 2000 (around Version 110.26).  The change log  primarily covers
@@ -83,6 +84,15 @@ structure Foo = struct val x = 1 end
 To process the file, you will need asciidoctor and the pygments.rb gem
 installed.  See the Asciidoctor manual at https://asciidoctor.org/docs/user-manual
 for more information.
+
+We have hijacked the "NOTE" admonition to mark updates to previous entries.
+Use the following syntax for such updates:
+
+[NOTE]
+.2022/07/01
+====
+Here is an update to the entry
+====
 
 NOTE: the original HISTORY file was converted to ASCIIDOC using a Perl
 script.  This script gets the basic structure for entries correct,
@@ -1285,6 +1295,13 @@ Fixed a bug in the `Real.toManExp` function (the exponent was off
 by one, which meant that the mantissa was two times its expected
 value).  This fix also fixes a problem in `Real.toLargeInt`, where
 the function would go into an infinite loop in some cases.
++
+[NOTE]
+.2022/06/29
+====
+This change probably also fixed bug bugref:208[] (`Real.toManExp`
+produces incorrect results in some cases).
+====
 +
 owner:cs.uchicago.edu/~jhr[John Reppy]
 
