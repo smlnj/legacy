@@ -64,7 +64,7 @@ cd $DISTROOT
 #
 # first we need to download and unbundle the config directory for the release
 #
-curl -s -S -O $CONFIGURL
+curl -k -s -S -O $CONFIGURL
 tar -xzf config.tgz
 if [ "$?" != 0 ] ; then
   # note that if config.tgz does not exist, curl will still work (it will get a
