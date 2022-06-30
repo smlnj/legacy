@@ -36,15 +36,15 @@ This step should be run in the Visual Studio native x86 shell.
 We start by setting the `SMLNJ_HOME` variable to the path to the
 `smlnj` directory created in Step 1.
 
-```
+``` bat
   set SMLNJ_HOME=c:\path\to\smlnj
 ```
 
 Then we run the MSI building script in that directory:
 
-```
-chdir %SMLNJ_HOME%
-build-msi.bat
+``` bat
+  chdir %SMLNJ_HOME%
+  build-msi.bat
 ```
 
 It uses the WiX Tools that can be found in the `win-dist\WinSetup`
