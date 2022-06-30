@@ -1,0 +1,13 @@
+Instructions for installing Windows Subsytem for Linux at
+
+        https://docs.microsoft.com/en-us/windows/wsl/install
+
+wsl --install
+
+<reboot>
+
+sudo apt update && sudo apt upgrade
+
+sudo apt install subversion
+
+the Windows file system is rooted at "/mnt/c/"

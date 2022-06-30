@@ -173,3 +173,8 @@ smlnj-lib/Doc/tools/make-index/make-index.*
 base/system/smlnj/internal/version.sml
 bin
 lib
+
+# files created when building a distribution (macOS or Windows)
+osx-dist/smlnj.dst
+win-dist/smlnj
+
