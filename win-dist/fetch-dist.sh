@@ -1,7 +1,10 @@
 #!/bin/sh
 #
-# Script to fetch the distribution files for building the Windows
-# version of SML/NJ
+# Copyright (c) 2022 The Fellowship of SML/NJ
+#
+# Pre-installation script for SML/NJ.  The purpose of this script
+# is to download and unpackage files in preparation of building on
+# Windows.  The script can be run under either WSL or Cygwin.
 #
 # usage:
 #	fetch-dist.sh [-32 | -64] <version>
@@ -63,6 +66,8 @@ cd $DISTROOT
 # the files that we need to download
 #
 # first we need to download and unbundle the config directory for the release
+# Note that we use the "-k" option here, since the smlnj.org certificate is
+# not always current.
 #
 curl -k -s -S -O $CONFIGURL
 tar -xzf config.tgz
