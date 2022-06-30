@@ -5,7 +5,9 @@
  *)
 
 structure HTML4Printer : sig
+
     val toString : HTML4.html -> string
+
 end = struct
 
 structure H4 = HTML4
@@ -158,7 +160,7 @@ fun ppTagAndChildren ppstrm ppChild tag (attrs, children) = (
     ppChildren ppstrm ppChild children;
     ppCloseTag ppstrm tag
     )
-                                                              
+
 (* ____________________________________________________________ *)
 
 local

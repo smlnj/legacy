@@ -1,7 +1,26 @@
 (* html4-print.sml
  *
- * COPYRIGHT (c) 2014 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
+ *
+ * To print to an output stream (i.e., TextIO.outstream):
+ *
+ *      fun output outS = HTML4Print.prHTML {
+ *              putc = fn c => TextIO.output1 (outS, c),
+ *              puts = fn s => TextIO.output (outS, s)
+ *            }
+ *
+ * To generate a string, use a character buffer:
+ *
+ *      fun toString html = let
+ *            val buf = CharBuffer.new 1024
+ *            in
+ *              HTML4Print.prHTML {
+ *                  putc = fn c => CharBuffer.add1 (buf, c),
+ *                  puts = fn s => CharBuffer.addVec (buf, s)
+ *                } html;
+ *              CharBuffer.contents buf
+ *            end
  *)
 
 structure HTML4Print : sig
