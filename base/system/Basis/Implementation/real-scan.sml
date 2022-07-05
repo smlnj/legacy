@@ -73,10 +73,57 @@ structure RealScan : sig
 	    else scaleDown (R.*(1.0E~10, r), exp - 10)
     end (* local *)
 
+  (* scan special reals: "inf"|"infinity"|"nan".
+   * Note that the names are case insesitive.
+   *)
+    local
+      (* suffixes *)
+      val nfChrs = [#"n",#"f"]                          (* [i]nf *)
+      val inityChrs = [#"i",#"n",#"i",#"t",#"y"]        (* [inf]inity *)
+      val anChrs = [#"a", #"n"]                         (* [n]an *)
+    in
+    fun scanSpecial getc (neg, cs) = let
+          fun match (cs, []) = SOME cs
+            | match (cs, c::cr) = (case getc cs
+                 of SOME(c', cs') => if (c = Char.toLower c')
+                      then match (cs', cr)
+                      else NONE
+                  | NONE => NONE
+                (* end case *))
+          fun infinity cs = if neg
+                then SOME(Real64Values.negInf, cs)
+                else SOME(Real64Values.posInf, cs)
+          in
+            case getc cs
+             of SOME((#"I" | #"i"), cs') => (case match (cs', nfChrs)
+                   of SOME cs'' => (case match (cs'', inityChrs)
+                         of SOME cs''' => infinity cs'''
+                          | NONE => infinity cs''
+                        (* end case *))
+                    | NONE => NONE
+                  (* end case *))
+              | SOME((#"N" | #"n"), cs') => (case match (cs', anChrs)
+                   of SOME cs' => SOME(Real64Values.nan, cs')
+                  (* end case *))
+              | _ => NONE
+            (* end case *)
+          end
+    end (* local *)
+
+  (* scan the optional sign *)
+    fun scanSign getc cs = (case getc cs
+           of SOME(#"~", cs) => (true, cs)
+            | SOME(#"-", cs) => (true, cs)
+            | SOME(#"+", cs) => (false, cs)
+            | _ => (false, cs)
+          (* end case *))
+
   (* scanning real literals from strings.  If the number is too large, it should
    * be represented by +/- infinity.
    *)
     fun scanReal getc cs = let
+          val scanSign = scanSign getc
+          val scanSpecial = scanSpecial getc
 	  fun scan10 cs = (case (getc cs)
 		 of (SOME(c, cs)) => fscan10 getc (U.code c, cs)
 		  | NONE => NONE
@@ -154,33 +201,35 @@ structure RealScan : sig
 			else SOME(negate(neg, num), cs)
 		  | NONE => SOME(negate(neg, num), cs)
 		(* end case *))
+          val cs = StringCvt.skipWS getc cs
+          val (neg, cs) = scanSign cs
 	  in
-	    case (U.scanPrefix U.fltPat getc cs)
-	     of NONE => NONE
-	      | (SOME{neg, next, rest}) =>
-		  if (next = ptCode) (* initial point after prefix *)
-		    then (case getFrac rest
-		       of SOME(frac, rest) => getExp(neg, frac, rest)
-			| NONE => NONE (* initial point not followed by digit *)
-		      (* end case *))
-		    else ((* ASSERT: next must be a digit *)
-		    (* get whole number part *)
-		      case fscan10 getc (next, rest)
-		       of SOME(whole, _, rest) => (case (getc rest)
-			     of SOME(#".", rest') => (
-				(* whole part followed by point, get fraction *)
-				  case getFrac rest'
-				   of SOME(frac, rest'') => (* fraction exists *)
-				       getExp(neg, R.+(whole, frac), rest'')
-                                    | NONE =>
-				       (* no fraction -- point terminates num *)
-				       SOME(negate(neg, whole), rest)
-		                  (* end case *))
-			      | _ => getExp(neg, whole, rest)
-			   (* end case *))
-		       | NONE => NONE (* ASSERT: this case can't happen *)
+            case getc cs
+             of SOME(#".", rest) => (case getFrac rest
+                   of SOME(frac, rest) => getExp(neg, frac, rest)
+                    | NONE => NONE (* initial point not followed by digit *)
+                  (* end case *))
+              | SOME(c, rest) => if Char.isDigit c
+                  then (
+                  (* get whole number part *)
+                    case fscan10 getc (U.code c, rest)
+                     of SOME(whole, _, rest) => (case (getc rest)
+                           of SOME(#".", rest') => (
+                              (* whole part followed by point, get fraction *)
+                                case getFrac rest'
+                                 of SOME(frac, rest'') => (* fraction exists *)
+                                     getExp(neg, R.+(whole, frac), rest'')
+                                  | NONE =>
+                                     (* no fraction -- point terminates num *)
+                                     SOME(negate(neg, whole), rest)
+                                (* end case *))
+                            | _ => getExp(neg, whole, rest)
+                         (* end case *))
+                     | NONE => NONE (* ASSERT: this case can't happen *)
 		   (* end case *))
-	    (* end case *)
-	  end
+                  else scanSpecial (neg, cs)
+              | NONE => NONE
+            (* end case *)
+          end
 
   end

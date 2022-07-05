@@ -1,9 +1,9 @@
 (* scan-util.sml
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *
- * Utility code for scanning modules (ScanNum32, ScanNum64, and ScanReal).
+ * Utility code for scanning modules (ScanNum32 and ScanNum64).
  *)
 
 structure ScanUtil : sig
@@ -13,7 +13,6 @@ structure ScanUtil : sig
                                  * true, then signs (+, -, ~) are not okay.
                                  *)
 	xOkay : bool,           (* true if 0[xX] prefix is okay *)
-        ptOkay: bool,           (* true if can start with point *)
 	maxDigit : word         (* maximum digit (i.e., 7, 9, or 15) *)
       }
 
@@ -31,15 +30,13 @@ structure ScanUtil : sig
    *       (0[wW][xX])?h (h hex digit)
    *   hexPat(false) {wOkay=false, xOkay=true, ptOkay=false, isHexDigit} =>
    *       [-~+]?(0[xX])?h
-   *   decPat(true,false) {wOkay=true, xOkay=false, ptOkay=false, isDecDigit} =>
+   *   decPat(true)  {wOkay=true, xOkay=false, ptOkay=false, isDecDigit} =>
    *       (0[wW][xX])?d (d decimal digit)
-   *   decPat(false,false){wOkay=false, xOkay=false, ptOkay=false, isDecDigit} =>
+   *   decPat(false) {wOkay=false, xOkay=false, ptOkay=false, isDecDigit} =>
    *       [-~+]?d
-   *   decPat(false,true) {wOkay=false, xOkay=false, ptOkay=true, isDecDigit} =>
-   *       [-~+]?[.d]
    *
    * Sign characters, initial 0x, 0w, etc are consumed.  The initial
-   * digit or point code is returned as the value of next.
+   * digit is returned as the value of next.
    *)
     val scanPrefix : prefix_pat
           -> ('a -> (char * 'a) option)
@@ -51,7 +48,6 @@ structure ScanUtil : sig
     val octPat : bool -> prefix_pat
     val decPat : bool -> prefix_pat
     val hexPat : bool -> prefix_pat
-    val fltPat : prefix_pat
 
   (* map character to its hex value (e.g., #"3" ==> 0w3, #"e" ==> 0w14, etc). *)
     val code : char -> word
@@ -59,14 +55,13 @@ structure ScanUtil : sig
   end = struct
 
   (* A table for mapping digits to values.  Whitespace characters map to
-   * 128, "+" maps to 129, "-","~" map to 130, "." maps to 131, and the
-   * characters 0-9,A-Z,a-z map to their base-36 value.  All other
-   * characters map to 255.
+   * 128, "+" maps to 129, "-","~" map to 130, and the characters 0-9,A-Z,a-z
+   * map to their base-36 value.  All other characters map to 255.
    *)
     val cvtTable = "\
 	  \\255\255\255\255\255\255\255\255\255\128\128\255\255\255\255\255\
 	  \\255\255\255\255\255\255\255\255\255\255\255\255\255\255\255\255\
-	  \\128\255\255\255\255\255\255\255\255\255\255\129\255\130\131\255\
+	  \\128\255\255\255\255\255\255\255\255\255\255\129\255\130\255\255\
 	  \\000\001\002\003\004\005\006\007\008\009\255\255\255\255\255\255\
 	  \\255\010\011\012\013\014\015\016\017\018\019\020\021\022\023\024\
 	  \\025\026\027\028\029\030\031\255\033\034\035\255\255\255\255\255\
@@ -89,7 +84,6 @@ structure ScanUtil : sig
     val wsCode : word = 0w128		(* code for whitespace *)
     val plusCode : word = 0w129		(* code for #"+" *)
     val minusCode : word = 0w130	(* code for #"-" and #"~" *)
-    val ptCode : word = 0w131		(* code for #"." *)
     val eCode : word = 0w14		(* code for #"e" and #"E" *)
     val wCode : word = 0w32		(* code for #"w" *)
     val xCode : word = 0w33		(* code for #"X" and #"X" *)
@@ -99,35 +93,8 @@ structure ScanUtil : sig
 				 * true, then signs (+, -, ~) are not okay.
 				 *)
 	xOkay : bool,		(* true if 0[xX] prefix is okay *)
-        ptOkay: bool,           (* true if can start with point *)
 	maxDigit : word         (* maximum digit (i.e., 7, 9, or 15) *)
       }
-
-    (* scanPrefix : prefix_pat -> (char,'a) reader -> 'a
-                    -> {neg: bool, next: word (* code *), rest: 'a} option
-       scans prefix for a number:
-       binPat(true)  {wOkay=true, xOkay=false, ptOkay=false, isBinDigit} =>
-	   (0[wW])?b (b binary digit)
-       binPat(false) {wOkay=true, xOkay=false, ptOkay=false, isBinDigit} =>
-	   [-~+]?b
-       octPat(true)  {wOkay=true, xOkay=false, ptOkay=false, isOctDigit} =>
-	   (0[wW])?o (o octal digit)
-       octPat(false) {wOkay=false, xOkay=false, ptOkay=false, isOctDigit} =>
-	   [-~+]?o
-       hexPat(true)  {wOkay=true, xOkay=true, ptOkay=false, isHexDigit} =>
-           (0[wW][xX])?h (h hex digit)
-       hexPat(false) {wOkay=false, xOkay=true, ptOkay=false, isHexDigit} =>
-	   [-~+]?(0[xX])?h
-       decPat(true,false) {wOkay=true, xOkay=false, ptOkay=false, isDecDigit} =>
-           (0[wW][xX])?d (d decimal digit)
-       decPat(false,false){wOkay=false, xOkay=false, ptOkay=false, isDecDigit} =>
-	   [-~+]?d
-       decPat(false,true) {wOkay=false, xOkay=false, ptOkay=true, isDecDigit} =>
-	   [-~+]?[.d]
-
-       Sign characters, initial 0x, 0w, etc are consumed.  The initial
-       digit or point code is returned as the value of next.
-     *)
 
     fun scanPrefix (p : prefix_pat) getc cs = let
 	  fun getNext cs = (case (getc cs)
@@ -187,7 +154,7 @@ structure ScanUtil : sig
 		  then SOME{neg=neg, next = c, rest = cs}
 		  else finish (neg, savedCS)
 	  and finish (neg, (c, cs)) =
-		if (#maxDigit p >= c) orelse ((c = ptCode) andalso (#ptOkay p))
+		if (#maxDigit p >= c)
 		  then SOME{neg=neg, next = c, rest = cs}
 		  else NONE
 	  in
@@ -195,15 +162,9 @@ structure ScanUtil : sig
 	  end
 
 
-    fun binPat wOkay =
-          {wOkay=wOkay, xOkay=false, ptOkay=false, maxDigit=0w1} : prefix_pat
-    fun octPat wOkay =
-          {wOkay=wOkay, xOkay=false, ptOkay=false, maxDigit=0w7} : prefix_pat
-    fun decPat wOkay =
-          {wOkay=wOkay, xOkay=false, ptOkay=false, maxDigit=0w9} : prefix_pat
-    fun hexPat wOkay =
-          {wOkay=wOkay, xOkay=true,  ptOkay=false, maxDigit=0w15} : prefix_pat
-    val fltPat =
-          {wOkay=false, xOkay=false, ptOkay=true, maxDigit=0w9} : prefix_pat
+    fun binPat wOkay = {wOkay=wOkay, xOkay=false, maxDigit=0w1} : prefix_pat
+    fun octPat wOkay = {wOkay=wOkay, xOkay=false, maxDigit=0w7} : prefix_pat
+    fun decPat wOkay = {wOkay=wOkay, xOkay=false, maxDigit=0w9} : prefix_pat
+    fun hexPat wOkay = {wOkay=wOkay, xOkay=true,  maxDigit=0w15} : prefix_pat
 
   end

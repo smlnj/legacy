@@ -1,13 +1,15 @@
 (* real64.sml
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
 
 structure Real64Imp : REAL =
   struct
-    structure I = InlineT.Int
 
+    structure I = InlineT.Int
+    structure W = InlineT.Word
+    structure W64 = InlineT.Word64
     structure Math = Math64
 
     infix 4 == !=
@@ -32,6 +34,9 @@ structure Real64Imp : REAL =
     val posInf = Real64Values.posInf
   (* negative infinity *)
     val negInf = Real64Values.negInf
+
+    val radix = 2
+    val precision = 53			(* hidden bit gets counted, too *)
 
   (* these functions are implemented in base/system/smlnj/init/pervasive.sml *)
     val floor = floor
@@ -96,10 +101,6 @@ structure Real64Imp : REAL =
 	  else IEEEReal.UNORDERED
 
   (* classification of IEEE reals *)
-    local
-      structure W = InlineT.Word
-      structure W64 = InlineT.Word64
-    in
 
     fun isFinite x = negInf < x andalso x < posInf
     fun isNan x = (x != x)
@@ -134,7 +135,7 @@ structure Real64Imp : REAL =
 	  val bits = InlineT.Real64.toBits x
 	  in
 	    if (W64.andb(0wx7fffffffffffffff, bits) = 0w0)
-	      then {man = x, exp = 0}
+	      then {man = x, exp = 0} (* +/- zero *)
 	      else (case W.andb(W.fromLarge(W64.rshiftl(bits, 0w52)), 0wx7ff)
 		 of 0w0 => let (* subnormal *)
 		      val {man, exp} = toManExp(1048576.0 * x)
@@ -150,27 +151,38 @@ structure Real64Imp : REAL =
 		(* end case *))
 	  end
 
-    end (* local *)
-
-    val radix = 2
-    val precision = 53			(* hidden bit gets counted, too *)
-
-    fun fromManExp {man=m, exp=e:int} =
-	  if (m >= 0.5 andalso m <= 1.0  orelse m <= ~0.5 andalso m >= ~1.0)
-	    then if e > 1020
-	      then if e > 1050 then if m>0.0 then posInf else negInf
-		   else let fun f(i,x) = if i=0 then x else f(i-1,x+x)
-			   in f(e-1020,  Assembly.A.scalb(m,1020))
-			  end
-	      else if e < ~1020
-		   then if e < ~1200 then 0.0
-		     else let fun f(i,x) = if i=0 then x else f(i-1, x*0.5)
-			   in f(1020-e, Assembly.A.scalb(m, ~1020))
-			  end
-		   else Assembly.A.scalb(m,e)  (* This is the common case! *)
-	  else let val {man=m',exp=e'} = toManExp m
-		in fromManExp { man = m', exp = e'+ e }
-	       end
+    fun fromManExp {man=m, exp=e:int} = let
+        (* is `x` a zero, nan, or infinity? *)
+          fun isSpecial x = let
+                val bits = InlineT.Real64.toBits x
+                in
+                  (W64.andb(0wx7fffffffffffffff, bits) = 0w0)
+                  orelse (W.andb(W.fromLarge(W64.rshiftl(bits, 0w52)), 0wx7ff) = 0w2047)
+                end
+        (* iterative implementation *)
+          fun fromManExp' (m, e) =
+                if (m >= 0.5 andalso m <= 1.0 orelse m <= ~0.5 andalso m >= ~1.0)
+                  then if e > 1020
+                    then if e > 1050 then if m>0.0 then posInf else negInf
+                         else let fun f(i,x) = if i=0 then x else f(i-1,x+x)
+                                 in f(e-1020,  Assembly.A.scalb(m,1020))
+                                end
+                    else if e < ~1020
+                         then if e < ~1200 then 0.0
+                           else let fun f(i,x) = if i=0 then x else f(i-1, x*0.5)
+                                 in f(1020-e, Assembly.A.scalb(m, ~1020))
+                                end
+                         else Assembly.A.scalb(m,e)  (* This is the common case! *)
+                  else let
+                    val {man=m', exp=e'} = toManExp m
+                    in
+                      fromManExp' (m', e'+ e)
+                    end
+          in
+            if isSpecial m
+              then m
+              else fromManExp' (m, e)
+          end
 
   (* the conversion between reals and IntInf.int are target dependent *)
     val fromLargeInt = IntInfToReal64.cvt

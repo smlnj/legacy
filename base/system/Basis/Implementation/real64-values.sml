@@ -3,7 +3,7 @@
  * Specific Real64 values that we need both in the real64.sml and num-scan.sml
  * files.
  *
- * COPYRIGHT (c) 2018 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
 
@@ -19,6 +19,8 @@ structure Real64Values : sig
     val posInf : real
   (* negative infinity *)
     val negInf : real
+  (* nan *)
+    val nan : real
 
   end = struct
 
@@ -76,5 +78,6 @@ structure Real64Values : sig
 
     val posInf = maxFinite * maxFinite
     val negInf = ~posInf
+    val nan = 0.0 / 0.0
 
   end

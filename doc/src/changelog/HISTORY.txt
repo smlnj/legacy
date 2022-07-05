@@ -106,6 +106,22 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //== Recent updates
 
 //--------------------------------------------------------------------
+[2022/07/05]::
++
+Fixed bug bugref:316[] (`Real.fromManExp` does not return expected
+value if `man = 0.0`).
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
+[2022/07/05]::
++
+Fixed bug bugref:317[] (Conversion from string to real does not
+accept non-finite values).
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2022/06/29]::
 +
 Fixed bug bugref:314[] (`IEEEReal.float_class` does not match the

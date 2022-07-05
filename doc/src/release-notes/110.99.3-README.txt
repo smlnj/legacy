@@ -99,6 +99,10 @@ for more details.
 | `IEEEReal.setRoundingMode` is a no-op on Linux
 | [.bugid]#315#
 | `IEEEReal.float_class` does not match the Basis Library
+| [.bugid]#316#
+| `Real.fromManExp` does not return expected value if `man = 0.0`
+| [.bugid]#317#
+| Conversion from string to real does not accept non-finite values
 |=======
 
 The following unnumbered bug was also fixed:
