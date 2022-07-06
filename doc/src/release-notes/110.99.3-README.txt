@@ -31,8 +31,23 @@ FILES::
 
 == Summary
 
-This is a patch release that fixes a number of bugs in the "legacy" version
+This is a patch release that fixes a large number of bugs in the "legacy" version
 of SML/NJ.
+
+== GitHub Migration
+
+With this release, we have migrated the legacy branch from our own **svn** server
+to a https://github.com/smlnj/legacy[**GitHub** repository].  This is the first step
+in migrating everything to **GitHub**.
+
+In addition, we have retired the old bug tracking infrastructure in favor of using
+**GitHub** issues.  We have prepopulated the issues for the legacy repository with
+the entries from the old bug database.
+
+Since issues are associated with a repository, we now have separate trackers for the
+legacy and main development versions.  While most bugs that are present in one version
+will also be present in the other version, it is not necessary to create two issues
+when reporting a bug.
 
 == Details
 
