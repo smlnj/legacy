@@ -106,6 +106,16 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //== Recent updates
 
 //--------------------------------------------------------------------
+[2022/07/06]::
++
+Fixed some interfaces that did not agree with the **SML Basis Library**
+specification.  Bugs bugref:318[] (`IEEEReal.decimal_approx` does not
+match the Basis Library) and bugref:319[] (Type of `Real.fromDecimal`
+does not match the Basis Library).
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2022/07/05]::
 +
 Fixed bug bugref:316[] (`Real.fromManExp` does not return expected

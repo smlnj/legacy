@@ -1,7 +1,9 @@
 (* real.sig
  *
- * COPYRIGHT (c) 1995 AT&T Bell Laboratories.
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
  *
+ * The Standard ML Basis Library interface to floating-point structures.
  *)
 
 signature REAL =
@@ -9,14 +11,13 @@ signature REAL =
     type real
 
     structure Math : MATH
-      sharing type real = Math.real
+      where type real = real
 
     val radix     : Int.int
     val precision : Int.int
 	(* the number of digits (each 0..radix-1) in mantissa *)
 
     val maxFinite    : real   (* maximum finite number *)
-(*** these cause problems on the alpha? ***)
     val minPos       : real   (* minimum non-zero positive number *)
     val minNormalPos : real   (* minimum non-zero normalized number *)
 
@@ -27,6 +28,7 @@ signature REAL =
     val - : real * real -> real
     val * : real * real -> real
     val / : real * real -> real
+    val rem : real * real -> real
     val *+ : real * real * real -> real
     val *- : real * real * real -> real
     val ~ : real -> real
@@ -59,42 +61,36 @@ signature REAL =
 
     val class : real -> IEEEReal.float_class
 
-    val fmt  : StringCvt.realfmt -> real -> string
-    val toString   : real -> string
-    val fromString : string -> real option
-    val scan : (char, 'a) StringCvt.reader -> (real, 'a) StringCvt.reader
-
     val toManExp : real -> {man: real, exp: int}
     val fromManExp : {man: real, exp: int} -> real
-
     val split : real -> {whole: real, frac: real}
     val realMod : real -> real
 
-    val rem : real * real -> real
     val nextAfter  : real * real -> real
     val checkFloat : real -> real
-
-    val floor : real -> Int.int
-    val ceil  : real -> Int.int
-    val trunc : real -> Int.int
-    val round : real -> Int.int
 
     val realFloor : real -> real
     val realCeil  : real -> real
     val realTrunc : real -> real
     val realRound : real -> real
-
+    val floor : real -> Int.int
+    val ceil  : real -> Int.int
+    val trunc : real -> Int.int
+    val round : real -> Int.int
     val toInt : IEEEReal.rounding_mode -> real -> int
     val toLargeInt : IEEEReal.rounding_mode -> real -> LargeInt.int
-
     val fromInt  : Int.int -> real
     val fromLargeInt  : LargeInt.int -> real
+
+    val fmt  : StringCvt.realfmt -> real -> string
+    val toString   : real -> string
+    val scan : (char, 'a) StringCvt.reader -> (real, 'a) StringCvt.reader
+    val fromString : string -> real option
 
     val toLarge : real -> LargeReal.real
     val fromLarge: IEEEReal.rounding_mode -> LargeReal.real -> real
 
     val toDecimal   : real -> IEEEReal.decimal_approx
-    val fromDecimal : IEEEReal.decimal_approx -> real
+    val fromDecimal : IEEEReal.decimal_approx -> real option
 
-  end;
-
+  end

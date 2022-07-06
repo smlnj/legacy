@@ -103,6 +103,10 @@ for more details.
 | `Real.fromManExp` does not return expected value if `man = 0.0`
 | [.bugid]#317#
 | Conversion from string to real does not accept non-finite values
+| [.bugid]#318#
+| `IEEEReal.decimal_approx` does not match the Basis Library
+| [.bugid]#319#
+| Type of `Real.fromDecimal` does not match the Basis Library
 |=======
 
 The following unnumbered bug was also fixed:

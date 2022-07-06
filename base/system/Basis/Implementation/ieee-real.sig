@@ -28,15 +28,15 @@ signature IEEE_REAL =
     val getRoundingMode : unit -> rounding_mode
 
     type decimal_approx = {
-	kind : float_class,
+	class : float_class,
 	sign : bool,
 	digits : int list,
 	exp : int
       }
 
     val toString   : decimal_approx -> string
-    val fromString : string -> decimal_approx option
     val scan : (char, 'a) StringCvt.reader ->
 	       (decimal_approx, 'a) StringCvt.reader
+    val fromString : string -> decimal_approx option
 
-  end;
+  end
