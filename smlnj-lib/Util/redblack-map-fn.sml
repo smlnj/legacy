@@ -365,25 +365,64 @@ functor RedBlackMapFn (K : ORD_KEY) :> ORD_MAP where type Key.ord_key = K.ord_ke
       | left (t as T(_, a, _, _, _), rest) = left(a, t::rest)
     fun start m = left(m, [])
 
-  (* given an ordering on the map's range, return an ordering
-   * on the map.
+  (* Given two maps `f` and `g`, return true if they have equal domains and if
+   * for every `x` in their domain, `rngEq(f x, g x) = true`.
    *)
-    fun collate cmpRng = let
+    fun equiv rngEq (MAP(n1, m1), MAP(n2, m2)) = let
+	  fun cmp (t1, t2) = (case (next t1, next t2)
+		 of ((E, _), (E, _)) => true
+		  | ((E, _), _) => false
+		  | (_, (E, _)) => false
+		  | ((T(_, _, xk, x, _), r1), (T(_, _, yk, y, _), r2)) => (
+		      case Key.compare(xk, yk)
+		       of EQUAL => rngEq(x, y) andalso cmp (r1, r2)
+			| _ => false
+		      (* end case *))
+		(* end case *))
+	  in
+	    (n1 = n2) andalso cmp (start m1, start m2)
+	  end
+
+  (* Given two maps `f` and `g`, and a comparison function `rngCmp` on their
+   * range types, return the order of the maps.
+   *)
+    fun collate rngCmp (MAP(_, m1), MAP(_, m2)) = let
 	  fun cmp (t1, t2) = (case (next t1, next t2)
 		 of ((E, _), (E, _)) => EQUAL
 		  | ((E, _), _) => LESS
 		  | (_, (E, _)) => GREATER
 		  | ((T(_, _, xk, x, _), r1), (T(_, _, yk, y, _), r2)) => (
 		      case Key.compare(xk, yk)
-		       of EQUAL => (case cmpRng(x, y)
-			     of EQUAL => cmp (r1, r2)
-			      | order => order
-			    (* end case *))
+		       of EQUAL => (case rngCmp(x, y)
+                            of EQUAL => cmp (r1, r2)
+                             | order => order
+                           (* end case *))
 			| order => order
 		      (* end case *))
 		(* end case *))
 	  in
-	    fn (MAP(_, m1), MAP(_, m2)) => cmp (start m1, start m2)
+	    cmp (start m1, start m2)
+	  end
+
+  (* Given two maps `f` and `g`, return true if the domain of `g` is a subset
+   * of the domain of `f` and for every `x` in the domain of `g`,
+   * `rngEq(g x, f x) = true`.
+   *)
+    fun extends rngEx (MAP(n1, m1), MAP(n2, m2)) = let
+          (* does t1 extend t2? *)
+	  fun cmp (t1, t2) = (case (next t1, next t2)
+		 of ((E, _), (E, _)) => true
+		  | (_, (E, _)) => true
+		  | ((E, _), _) => false
+		  | ((T(_, _, xk, x, _), r1), (T(_, _, yk, y, _), r2)) => (
+		      case Key.compare(xk, yk)
+		       of LESS => cmp (r1, t2)
+			| EQUAL => rngEx(x, y) andalso cmp (r1, r2)
+			| GREATER => false
+		      (* end case *))
+		(* end case *))
+	  in
+	    (n1 >= n2) andalso cmp (start m1, start m2)
 	  end
 
   (* support for constructing red-black trees in linear time from increasing

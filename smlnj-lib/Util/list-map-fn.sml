@@ -125,17 +125,42 @@ functor ListMapFn (K : ORD_KEY) :> ORD_MAP where type Key.ord_key = K.ord_key =
 
     fun listKeys (l : 'a map) = List.map #1 l
 
+    fun equiv rngEq = let
+          fun cmp ([], []) = true
+            | cmp ((xk, x)::xr, (yk, y)::yr) = (case Key.compare(xk, yk)
+                 of EQUAL => rngEq(x, y) andalso cmp(xr, yr)
+                  | _ => false
+                (* end case *))
+            | cmp _ = false
+          in
+            cmp
+          end
+
     fun collate cmpRng = let
 	  fun cmp ([], []) = EQUAL
 	    | cmp ([], _) = LESS
 	    | cmp (_, []) = GREATER
-	    | cmp ((x1, y1)::r1, (x2, y2)::r2) = (case Key.compare(x1, x2)
-		 of EQUAL => (case cmpRng(y1, y2)
-		       of EQUAL => cmp (r1, r2)
+            | cmp ((xk, x)::xr, (yk, y)::yr) = (case Key.compare(xk, yk)
+		 of EQUAL => (case cmpRng(x, y)
+		       of EQUAL => cmp (xr, yr)
 			| order => order
 		      (* end case *))
 		  | order => order
 		(* end case *))
+	  in
+	    cmp
+	  end
+
+    fun extends rngEx = let
+	  fun cmp ([], []) = true
+            | cmp (_, []) = true
+            | cmp ([], _) = false
+            | cmp ((xk, x)::xr, ys as ((yk, y)::yr)) = (
+                case Key.compare(xk, yk)
+                 of LESS => cmp (xr, ys)
+                  | EQUAL => rngEx(x, y) andalso cmp (xr, yr)
+                  | GREATER => false
+                (* end case *))
 	  in
 	    cmp
 	  end

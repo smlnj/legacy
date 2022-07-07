@@ -121,17 +121,39 @@ structure IntListMap :> ORD_MAP where type Key.ord_key = Int.int =
 
     fun listKeys (l : 'a map) = List.map #1 l
 
+    fun equiv rngEq = let
+          fun cmp ([], []) = true
+            | cmp ((xk, x)::xr, (yk, y)::yr) =
+                (xk = yk) andalso rngEq(x, y) andalso cmp(xr, yr)
+            | cmp _ = false
+          in
+            cmp
+          end
+
     fun collate cmpRng = let
 	  fun cmp ([], []) = EQUAL
 	    | cmp ([], _) = LESS
 	    | cmp (_, []) = GREATER
-	    | cmp ((x1, y1)::r1, (x2, y2)::r2) = (case Key.compare(x1, x2)
-		 of EQUAL => (case cmpRng(y1, y2)
-		       of EQUAL => cmp (r1, r2)
-			| order => order
-		      (* end case *))
-		  | order => order
-		(* end case *))
+            | cmp (xs as ((xk, x)::xr), (yk, y)::yr) =
+                if (xk = yk)
+                  then (case cmpRng(x, y)
+                     of EQUAL => cmp (xr, yr)
+                      | order => order
+                    (* end case *))
+                else if (xk < yk)
+                  then LESS
+                  else GREATER
+	  in
+	    cmp
+	  end
+
+    fun extends rngEx = let
+	  fun cmp ([], []) = true
+            | cmp (_, []) = true
+            | cmp ([], _) = false
+            | cmp ((xk, x)::xr, ys as ((yk, y)::yr)) =
+                if (xk < yk) then cmp (xr, ys)
+                else (xk = yk) andalso rngEx(x, y) andalso cmp (xr, yr)
 	  in
 	    cmp
 	  end

@@ -173,20 +173,35 @@ functor SplayMapFn (K : ORD_KEY) :> ORD_MAP where type Key.ord_key = K.ord_key =
 	| next _ = (SplayNil, [])
       and left (SplayNil, rest) = rest
 	| left (t as SplayObj{left=l, ...}, rest) = left(l, t::rest)
+      fun start s = left(!s, [])
     in
-    fun collate cmpRng (EMPTY, EMPTY) = EQUAL
-      | collate cmpRng (EMPTY, _) = LESS
-      | collate cmpRng (_, EMPTY) = GREATER
-      | collate cmpRng (MAP{root=s1, ...}, MAP{root=s2, ...}) = let
+    fun equiv rngEq (MAP{root=s1, nobj=n1},  MAP{root=s2, nobj=n2}) = let
+          fun cmp (t1, t2) = (case (next t1, next t2)
+		 of ((SplayObj{value=(xk, x), ...}, r1), (SplayObj{value=(yk, y), ...}, r2)) => (
+		      case Key.compare(xk, yk)
+		       of EQUAL => rngEq (x, y) andalso cmp (r1, r2)
+			| _ => false
+		      (* end case *))
+		  | ((SplayNil, _), (SplayNil, _)) => true
+		  | _ => false
+		(* end case *))
+          in
+            (n1 = n2) andalso cmp(start s1, start s2)
+          end
+      | equiv _ (EMPTY, EMPTY) = true
+      | equiv _ _ = false
+
+    fun collate rngCmp (EMPTY, EMPTY) = EQUAL
+      | collate rngCmp (EMPTY, _) = LESS
+      | collate rngCmp (_, EMPTY) = GREATER
+      | collate rngCmp (MAP{root=s1, ...}, MAP{root=s2, ...}) = let
 	  fun cmp (t1, t2) = (case (next t1, next t2)
 		 of ((SplayNil, _), (SplayNil, _)) => EQUAL
 		  | ((SplayNil, _), _) => LESS
 		  | (_, (SplayNil, _)) => GREATER
-		  | ((SplayObj{value=(x1, y1), ...}, r1),
-		     (SplayObj{value=(x2, y2), ...}, r2)
-		    ) => (
-		      case Key.compare(x1, x2)
-		       of EQUAL => (case cmpRng (y1, y2)
+		  | ((SplayObj{value=(xk, x), ...}, r1), (SplayObj{value=(yk, y), ...}, r2)) => (
+		      case Key.compare(xk, yk)
+		       of EQUAL => (case rngCmp (x, y)
 			     of EQUAL => cmp (r1, r2)
 			      | order => order
 			    (* end case *))
@@ -194,11 +209,29 @@ functor SplayMapFn (K : ORD_KEY) :> ORD_MAP where type Key.ord_key = K.ord_key =
 		      (* end case *))
 		(* end case *))
 	  in
-	    cmp (left(!s1, []), left(!s2, []))
+	    cmp (start s1, start s2)
 	  end
+
+    fun extends rngEx (MAP{root=s1, nobj=n1},  MAP{root=s2, nobj=n2}) = let
+	  fun cmp (t1, t2) = (case (next t1, next t2)
+		 of ((SplayNil, _), (SplayNil, _)) => true
+		  | ((SplayNil, _), _) => false (* domain of second map is bigger than first *)
+		  | (_, (SplayNil, _)) => true
+		  | ((SplayObj{value=(xk, x), ...}, r1), (SplayObj{value=(yk, y), ...}, r2)) => (
+		      case Key.compare(xk, yk)
+		       of LESS => cmp (r1, t2)
+                        | EQUAL => rngEx (x, y) andalso cmp (r1, r2)
+                        | GREATER => false
+		      (* end case *))
+		(* end case *))
+          in
+            (n1 >= n2) andalso cmp (start s1, start s2)
+          end
+      | extends _ (EMPTY, MAP _) = false
+      | extends _ _ = true
     end (* local *)
 
-	(* Apply a function to the entries of the dictionary *)
+    (* Apply a function to the entries of the dictionary *)
     fun appi af EMPTY = ()
       | appi af (MAP{root,...}) =
           let fun apply SplayNil = ()

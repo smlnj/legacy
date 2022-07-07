@@ -5,6 +5,14 @@ correspond to SML/NJ releases.
 SML/NJ 110.99.3
 -------------------
 
+[2022-06-03]
+	More and improved comparisons for the `ORD_MAP` interface.  The type of
+        the `collate` function has been made more polymorphic to allow maps with
+        different ranges to be compared.  We have also added the `equiv` function
+        for testing the equivalence of two maps (again, the range types may be
+        different), and the `extends` function that tests if one map extends
+        another.  These functions are linear in the size of the smaller map.
+
 [2022-06-01]
 	Fix for bug #307 (`SExpParser.parseFile` should return empty list on empty
 	file)
@@ -18,7 +26,6 @@ SML/NJ 110.99.3
 	Added `findAndRemove` function to `ORD_MAP` interface.
 
 --------------------------------------------------------------------------------
-
 SML/NJ 110.99.2
 -------------------
 
