@@ -32,7 +32,7 @@ FILES::
 == Summary
 
 This is a patch release that fixes a large number of bugs in the "legacy" version
-of SML/NJ.
+of *SML/NJ* and adds some new functions to the *SML/NJ Library*.
 
 == GitHub Migration
 
