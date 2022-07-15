@@ -8,11 +8,13 @@ body:
       value: >
         # Instructions
 
-        Please use this form to report problems in the **legacy** version of
-        [**Standard ML of New Jersey**](https://smlnj.org).
+        Please use this form to report problems in the **legacy** version (*e.g.*, 110.99.2)
+        of [**Standard ML of New Jersey**](https://smlnj.org).
+        To report bugs in the development version (*e.g.*, 2021.1), use the
+        [development version form](https://github.com/smlnj/smlnj/issues/new?template=bug_report.yaml).
 
         To request a feature, please use the
-        [feature-request form](https://github.com/smlnj/legacy/issues/new?template=feature_request).
+        [feature-request form](https://github.com/smlnj/legacy/issues/new?template=feature_request.yaml).
 
         Before creating a new bug report, please search the
         [open issues](https://github.com/smlnj/legacy/issues) to see if your
