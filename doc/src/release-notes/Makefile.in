@@ -1,6 +1,6 @@
 # Makefile for SML/NJ Release Notes
 #
-# COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+# COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
 # All rights reserved.
 #
 # @configure_input@
@@ -36,7 +36,7 @@ doc:		html
 .PHONY:	html
 html:		$(HTML_FILES)
 
-%.html : %.txt
+%.html : %.adoc
 	$(ASCIIDOCTOR) $(ATTRS) $(CONF) -b html5 $<
 
 #################### Cleanup ####################

@@ -4,6 +4,7 @@
 :date: @DATE@
 :dist-dir: https://smlnj.org/dist/working/{version}/
 :history: {dist-dir}HISTORY.html
+:issue-base: https://github.com/smlnj/legacy/issues/
 :stem: latexmath
 :source-highlighter: pygments
 :stylesheet: release-notes.css
@@ -83,14 +84,15 @@ and resume the build.
 
 == Bugs
 
-Here is a list of tracked bugs fixed (or closed) with this release, please see the
-https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[bug tracker]
-for more details.
+Here is a list of the issues that are fixed (or closed) with this release.
+We include the original bug numbers for bugs that were reported using the
+old https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[bug tracker].
 
-[.buglist,cols="^1,<15"]
+[.buglist,cols="^1,<15,^2",strips="none"]
 |=======
-// | [.bugid]#@ID#
-// | @DESCRIPTION@
+//| [.bugid]#@ID#
+//| {issue-base}[@DESCRIPTION@]
+//| [old bug #@OLDID]
 |=======
 
 // ***** include a list of unnumbered bugs here *****
@@ -103,10 +105,12 @@ tested some of them:
 [.support-table,cols="^2s,^4v,^3v",options="header",strips="none"]
 |=======
 | Architecture | Operating System | Status
-| AMD64 | FreeBSD 12.0 | Tested
+| AMD64 | FreeBSD 12.0 |
 | | macOS 10.14 (Mojave) | Tested
 | | macOS 10.15 (Catalina) | Tested
-| | Ubuntu 16.04.3 LTS | Tested
+| | macOS 11 (Big Sur) | Tested
+| | macOS 12 (Monterey) | Tested
+| | Ubuntu 16.04.3 LTS |
 | | Ubuntu 18.04.3 LTS | Tested
 | {nbsp} | |
 | Power PC | Mac OS X 10.5 (Leopard) |
@@ -121,12 +125,12 @@ tested some of them:
 | | Mac OS X 10.9 (Mavericks) |
 | | Mac OS X 10.10 (Yosemite) |
 | | Mac OS X 10.11 (El Capitan) |
-| | macOS 10.12 (Sierra) | Tested
-| | macOS 10.13 (High Sierra) | Tested
-| | macOS 10.14 (Mojave) | Tested
-| | Ubuntu 16.04.3 LTS | Tested
+| | macOS 10.12 (Sierra) |
+| | macOS 10.13 (High Sierra) |
+| | macOS 10.14 (Mojave) |
+| | Ubuntu 16.04.3 LTS |
 | | Other Linux variants |
-| | FreeBSD 12.0 | Tested
+| | FreeBSD 12.0 |
 | | Other BSD variants |
 | | Windows 7 |
 | | Windows 10 |
