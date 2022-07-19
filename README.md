@@ -52,6 +52,8 @@ current source from **GitHub**, the following steps should usually work.
 
 You should now have a version of the system in `$ROOT/bin/sml` that
 corresponds to the latest version of the source on **GitHub**.
+If you subsequently pull changes from the repository, you can rebuild
+starting at Step 3.
 
 These instructions are for Unix-like systems (including **macOS**).  We do not
 have scripts (*e.g.*, `makeml`) to support this process on **Windows**.
