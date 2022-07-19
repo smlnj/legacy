@@ -22,9 +22,9 @@ ATTRS =		-a stylesheet=release-notes.css -a stylesdir=../conf
 
 CONF =		-r ../conf/changelog-macros.rb
 
-TXT_FILES =	$(wildcard *.txt)
+ADOC_FILES =	$(wildcard *.adoc)
 
-HTML_FILES =	$(TXT_FILES:.txt=.html)
+HTML_FILES =	$(ADOC_FILES:.adoc=.html)
 
 # build rule for generating the distribution documentation
 #
