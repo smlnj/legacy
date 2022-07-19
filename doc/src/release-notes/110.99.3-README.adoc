@@ -98,16 +98,16 @@ old https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[bug tracker].
 [.buglist,cols="^1,<15,^2",strips="none"]
 |=======
 | [.bugid]#44#
-| {issue-base}81[Compiler bug: Contract: UsageMap on 132]
+| {issue-base}44[Compiler bug: Contract: UsageMap on 132]
 | [old bug #284]
 | [.bugid]#48#
-| {issue-base}81[Signals are not delivered for corresponding events]
+| {issue-base}48[Signals are not delivered for corresponding events]
 | [old bug #291]
 | [.bugid]#63#
-| {issue-base}81[Word8VectorSlice: mapping a subslice produces wrong result or crashes SML/NJ]
+| {issue-base}63[Word8VectorSlice: mapping a subslice produces wrong result or crashes SML/NJ]
 | [old bug #306]
 | [.bugid]#64#
-| {issue-base}81[`SExpParser.parseFile` should return empty list on empty file]
+| {issue-base}64[`SExpParser.parseFile` should return empty list on empty file]
 | [old bug #307]
 | [.bugid]#66#
 | {issue-base}66[SExp: parsing the output of the printer produces a different SExp]
