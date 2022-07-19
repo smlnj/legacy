@@ -97,9 +97,6 @@ old https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[bug tracker].
 
 [.buglist,cols="^1,<15,^2",strips="none"]
 |=======
-| [.bugid]#81#
-| {issue-base}81[Garbage collection does not trigger `sigGC`]
-| [old bug #65]
 | [.bugid]#44#
 | {issue-base}81[Compiler bug: Contract: UsageMap on 132]
 | [old bug #284]
@@ -118,9 +115,6 @@ old https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[bug tracker].
 | [.bugid]#67#
 | {issue-base}67[Error when REPL tries to print value of type `Posix.FileSys.ST.stat`]
 | [old bug #310]
-| [.bugid]#253#
-| {issue-base}253[`CM.make` is unable to handle filenames that contain a backslash]
-| [old bug #312]
 | [.bugid]#69#
 | {issue-base}69[`Real.fromLargeInt` crashes on large integer input]
 | [old bug #313]
@@ -142,6 +136,12 @@ old https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[bug tracker].
 | [.bugid]#75#
 | {issue-base}75[Type of `Real.fromDecimal` does not match the Basis Library]
 | [old bug #319]
+| [.bugid]#81#
+| {issue-base}81[Garbage collection does not trigger `sigGC`]
+| [old bug #65]
+| [.bugid]#253#
+| {issue-base}253[`CM.make` is unable to handle filenames that contain a backslash]
+| [old bug #312]
 |=======
 
 The following unnumbered bug was also fixed:
