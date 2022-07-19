@@ -159,6 +159,8 @@ body:
       label: Email address
       description: >
         Please provide an email address to allow us to contact you
-        if we require additional information.
+        if we require additional information.  Feel free to obsfucate the address
+        to avoid harvesting by spam bots (as long as a human can figure it out).
+
     validations:
       required: true
