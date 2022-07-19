@@ -115,6 +115,9 @@ old https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[bug tracker].
 | [.bugid]#67#
 | {issue-base}67[Error when REPL tries to print value of type `Posix.FileSys.ST.stat`]
 | [old bug #310]
+| [.bugid]#68#
+| {issue-base}68[Unable to interrupt execution by using `SIGINT`]
+| [old bug #311]
 | [.bugid]#69#
 | {issue-base}69[`Real.fromLargeInt` crashes on large integer input]
 | [old bug #313]

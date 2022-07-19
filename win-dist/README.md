@@ -40,15 +40,15 @@ We start by setting the `SMLNJ_HOME` variable to the path to the
   set SMLNJ_HOME=c:\path\to\smlnj
 ```
 
-Then we run the MSI building script in that directory:
+Then we run the script to build the MSI in that directory:
 
 ``` bat
   chdir %SMLNJ_HOME%
   build-msi.bat
 ```
 
-It uses the WiX Tools that can be found in the `win-dist\WinSetup`
-directory for this last step.
+It uses the [WiX Tools](https://wixtoolset.org) that can be found
+in the `win-dist\WinSetup` directory for this last step.
 
 ## WSL Notes
 
