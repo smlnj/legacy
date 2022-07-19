@@ -93,6 +93,9 @@ structure RealScan : sig
           fun infinity cs = if neg
                 then SOME(Real64Values.negInf, cs)
                 else SOME(Real64Values.posInf, cs)
+          fun nan cs = if neg
+                then SOME(Real64Values.negNaN, cs)
+                else SOME(Real64Values.posNaN, cs)
           in
             case getc cs
              of SOME((#"I" | #"i"), cs') => (case match (cs', nfChrs)
@@ -103,7 +106,8 @@ structure RealScan : sig
                     | NONE => NONE
                   (* end case *))
               | SOME((#"N" | #"n"), cs') => (case match (cs', anChrs)
-                   of SOME cs' => SOME(Real64Values.nan, cs')
+                   of SOME cs' => nan cs'
+                    | NONE => NONE
                   (* end case *))
               | _ => NONE
             (* end case *)

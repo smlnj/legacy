@@ -19,13 +19,16 @@ structure Real64Values : sig
     val posInf : real
   (* negative infinity *)
     val negInf : real
-  (* nan *)
-    val nan : real
+  (* nan with zero sign bit *)
+    val posNaN : real
+  (* nan with one sign bit *)
+    val negNaN : real
 
   end = struct
 
     structure Word = InlineT.Word
     structure Word64 = InlineT.Word64
+    structure Real64 = InlineT.Real64
 
   (* The next three values are computed laboriously, partly to
    * avoid problems with inaccurate string->float conversions
@@ -70,7 +73,7 @@ structure Real64Values : sig
 	    val y = r * 0.5
 	    in
 	       update(mem, 0, y);
-	       if InlineT.Real64.==(subscript(mem, 0), 0.0) then r else f ()
+	       if Real64.==(subscript(mem, 0), 0.0) then r else f ()
 	    end
     in
     val minPos = f()
@@ -78,6 +81,15 @@ structure Real64Values : sig
 
     val posInf = maxFinite * maxFinite
     val negInf = ~posInf
-    val nan = 0.0 / 0.0
+    val (negNaN, posNaN) = let
+        (* generate a NaN and then check its bits to figure out the positive
+         * and negative NaN values.
+         *)
+          val nan = 0.0 / 0.0
+          in
+            if Real64.signBit nan
+              then (nan, Real64.~ nan)
+              else (Real64.~ nan, nan)
+          end
 
   end
