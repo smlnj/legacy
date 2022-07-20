@@ -51,10 +51,6 @@ fun strength(ty) =
 fun stripMark (MarkExp(a,_)) = stripMark a
   | stripMark x = x
 
-fun trim [x] = []
-  | trim (a::b) = a::trim b
-  | trim [] = []
-
 fun pp_path ppstrm symbols =
     let fun pr ppstrm (symbol) = (PU.ppSym ppstrm symbol)
      in PU.ppSequence ppstrm
@@ -203,7 +199,7 @@ and ppExp sourceOp ppstrm =
 	       pps "(case "; ppExp'(expr,true,d-1); PU.nl_indent ppstrm 2;
 	       PU.ppvlist ppstrm ("of ","   | ",
 		 (fn ppstrm => fn r => ppRule sourceOp ppstrm (r,d-1)),
-                  trim rules);
+                  rules);
 	       rparen();
 	       closeBox ())
 	| ppExp' (LetExp {dec, expr},_,d) =
