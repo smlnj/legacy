@@ -89,7 +89,7 @@ shell script.  To fix the problem, remove the attribute using the command
 
 and resume the build.
 
-== Bugs
+== Closed Issues
 
 Here is a list of the issues that are fixed (or closed) with this release.
 We include the original bug numbers for bugs that were reported using the
@@ -109,6 +109,9 @@ old https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[bug tracker].
 | [.bugid]#64#
 | {issue-base}64[`SExpParser.parseFile` should return empty list on empty file]
 | [old bug #307]
+| [.bugid]#65#
+| {issue-base}65[Add function for converting `HTML4.html` to string]
+| [old bug #308]
 | [.bugid]#66#
 | {issue-base}66[SExp: parsing the output of the printer produces a different SExp]
 | [old bug #309]
