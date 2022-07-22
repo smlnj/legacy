@@ -74,7 +74,7 @@ structure InteractiveSystem : sig end =
       fun reset _ = (I.resetTimers (); Stats.reset ())
     in
     val _ = C.addCleaner ("initialize-timers-and-stats", [C.AtInit], reset)
-    end
+    end (* local *)
 
     (* initialize control *)
     val _ = ControlRegistry.init BasicControl.topregistry
