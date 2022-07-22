@@ -10,6 +10,9 @@ structure AbsynUtil : sig
 
     val TUPLEexp : Absyn.exp list -> Absyn.exp
     val TUPLEpat : Absyn.pat list -> Absyn.pat
+
+    val headStripExp : Absyn.exp -> Absyn.exp
+    val headStripPat : Absyn.pat -> Absyn.pat
     val stripPatMarks : Absyn.pat -> Absyn.pat
 
   end =
@@ -34,6 +37,20 @@ struct
        in RECORDpat { fields = build (1, l), flex = false,
 		      typ = ref Types.UNDEFty }
       end
+
+(* headStripExp : exp -> exp *)
+(* strip MARKexp and CONSTRAINTexp head constructors. Used to access the RECORDexp (pair)
+ * argument of an infix constructor in an APPexp (see PPAbsyn.ppAppExp) *)
+fun headStripExp (MARKexp(exp,_)) = headStripExp exp
+  | headStripExp (CONSTRAINTexp(exp,_)) = headStripExp exp
+  | headStripExp exp = exp
+
+(* headStripPat : pat -> pat *)
+(* strip MARKpat and CONSTRAINTpat head constructors. Used to access the RECORDpat (pair)
+ * argument of an infix constructor in an APPpat (see PPAbsyn.ppDconPat) *)
+fun headStripPat (MARKpat (p,_)) = headStripPat p
+  | headStripPat (CONSTRAINTpat (p, ty)) = headStripPat p
+  | headStripPat pat = pat
 
 fun stripPatMarks pat =
     case pat 

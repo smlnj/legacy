@@ -8,6 +8,9 @@ sig
 
   val saveLvarNames : bool ref
 
+  val ppabsyndebugging : bool ref
+      (* PPAbsyn *)
+
   val eedebugging : bool ref
       (* EntityEnv *)
 
@@ -22,6 +25,9 @@ sig
 
   val modulesInternals : bool ref
       (* show modules internal reps *)
+
+  val absynLineprint : bool ref
+      (* print positions as line number + column *)
 
   val absynInternals : bool ref
       (* show absyn internal reps (MARKS) *)
