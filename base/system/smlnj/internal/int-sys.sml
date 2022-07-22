@@ -17,7 +17,8 @@
  * for the current architecture.
  *)
 
-structure InteractiveSystem : sig end = struct
+structure InteractiveSystem : sig end =
+  struct
 
     (* first, we have to step back out of the boot directory... *)
     val bootdir = OS.FileSys.getDir ()
@@ -42,53 +43,61 @@ structure InteractiveSystem : sig end = struct
     (* establish default signal handlers *)
     fun handleINT _ = !Unsafe.topLevelCont
     fun handleTERM _ = OS.Process.exit OS.Process.failure
-    fun ifSignal (sigName, handler) =
-	(case Signals.fromString sigName of
-	     SOME s =>
-		 (Signals.overrideHandler (s, Signals.HANDLER handler); ())
-	   | _ => ())
+    fun ifSignal (sigName, handler) = (case Signals.fromString sigName
+           of SOME s => (Signals.overrideHandler (s, Signals.HANDLER handler); ())
+	    | _ => ()
+          (* end case *))
 
-    val _ =
-	(Signals.overrideHandler (Signals.sigINT, Signals.HANDLER handleINT);
-	 Signals.overrideHandler (Signals.sigTERM, Signals.HANDLER handleTERM);
-	 ifSignal ("QUIT", handleTERM))
+    (* function to set up the handers for INT, TERM, and QUIT signals; because we want signals
+     * that are ignored in the parent process to continue to be ignored, we need to delay
+     * running this to when we start up the process.
+     *)
+    fun establishSignalHandlers () = (
+	  Signals.overrideHandler (Signals.sigINT, Signals.HANDLER handleINT);
+	  Signals.overrideHandler (Signals.sigTERM, Signals.HANDLER handleTERM);
+	  ifSignal ("QUIT", handleTERM))
 
     (* install "use" functionality *)
     val _ = UseHook.useHook := (fn f => ignore(Backend.Interact.use f))
 
     (* put MLRISC controls into the main hierarchy of controls *)
-    val _ = BasicControl.nest (Control.MLRISC.prefix,
-			       Control.MLRISC.registry,
-			       Control.MLRISC.priority)
+    val _ = BasicControl.nest (
+              Control.MLRISC.prefix,
+              Control.MLRISC.registry,
+              Control.MLRISC.priority)
 
     (* add cleanup code that resets the internal timers and stats
      * when resuming from exportML... *)
     local
-	structure I = SMLofNJ.Internals
-	structure C = I.CleanUp
-	fun reset _ = (I.resetTimers (); Stats.reset ())
+      structure I = SMLofNJ.Internals
+      structure C = I.CleanUp
+      fun reset _ = (I.resetTimers (); Stats.reset ())
     in
-        val _ = C.addCleaner ("initialize-timers-and-stats", [C.AtInit], reset)
+    val _ = C.addCleaner ("initialize-timers-and-stats", [C.AtInit], reset)
     end
 
     (* initialize control *)
     val _ = ControlRegistry.init BasicControl.topregistry
 
     (* launch interactive loop *)
-    val _ =
-	let val f = SMLofNJ.Cont.callcc (fn k =>
-			(Backend.Interact.redump_heap_cont := k;
-			 heapfile))
-	in Control.Print.say "Generating heap image...\n";
-	   if SMLofNJ.exportML f then
-	       (print SMLNJVersion.banner;
+    val _ = let
+          val f = SMLofNJ.Cont.callcc (fn k => (
+                    Backend.Interact.redump_heap_cont := k;
+                    heapfile))
+	  in
+            Control.Print.say "Generating heap image...\n";
+	    if SMLofNJ.exportML f
+              then (
+                establishSignalHandlers ();
+	        print SMLNJVersion.banner;
 		print "\n";
 		getOpt (procCmdLine, fn () => ()) ();
 		Backend.Interact.interact ())
-	   else
-	       (print "This is...\n";
+	      else (
+	        print "This is...\n";
 		print SMLNJVersion.banner;
 		print "\n";
 		OS.Process.exit OS.Process.success)
-	end
-end
+	  end
+
+  end
