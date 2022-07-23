@@ -10,24 +10,40 @@ which is run in the Windows shell.
 ### Step 1 -- Build a Fresh Source Tree
 
 The first step is executed using a Unix shell (either WSL or Cygwin).
-We start by running the command
 
-``` shell
+Set the shell variable `VERSION` to the version of SML/NJ that you
+are distributing; *e.g.*,
+
+``` bash
+  VERSION=110.99.3
+  export VERSION
+```
+
+Then run the command to fetch the distribution
+
+``` bash
   ./fetch-dist.sh $VERSION
 ```
 
 which will fetch the required files for the specified version
-(e.g., 110.99.2) into the directory `win-dist/smlnj` (if the `smlnj`
-directory already exists, then the script does nothing).
+into the directory `win-dist/smlnj` (if the `smlnj`
+directory already exists, then the script complains and exits).
 
 This script assumes that the distribution files have already been uploaded
 to the standard distribution site
 
-	http://smlnj.cs.uchicago.edu/dist/working/$VERSION/
+```
+  https://smlnj.cs.uchicago.edu/dist/working/$VERSION/
+```
 
-and that the targets file is initialized correctly.
+and that the targets file is initialized correctly.  This
+script downloads the distribution files and upacks them into
+the correct places (similar to the `config/install.sh` script
+for building Unix installations).  It also patches the version
+number into the `smlnj.wsx` file that is used to build the MSI
+in Step 3.
 
-### Step 2 -- Bootstrapping and Building the MSI
+### Step 2 -- Bootstrapping
 
 The second step builds the runtime system, compiler, and tools,
 and then creates the MSI file.
@@ -40,7 +56,17 @@ We start by setting the `SMLNJ_HOME` variable to the path to the
   set SMLNJ_HOME=c:\path\to\smlnj
 ```
 
-Then we run the script to build the MSI in that directory:
+In the `smlnj` directory, run the installation script.
+
+``` bat
+  chdir %SMLNJ_HOME%
+  config\install.bat
+```
+
+### Step 3 -- Building the MSI
+
+Once the system has been successfully bootstrapped, we can
+build the installer package (MSI).
 
 ``` bat
   chdir %SMLNJ_HOME%
@@ -65,7 +91,7 @@ https://docs.microsoft.com/en-us/windows/wsl/install.
 
 Once installed, you need to run the commands
 
-``` shell
+``` bash
 sudo apt update && sudo apt upgrade
 
 sudo apt install subversion
