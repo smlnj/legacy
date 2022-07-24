@@ -41,9 +41,9 @@ With this release, we have migrated the legacy branch from our own **svn** serve
 to a https://github.com/smlnj/legacy[**GitHub** repository].  This is the first step
 in migrating everything to **GitHub**.
 
-In addition, we have retired the old bug tracking infrastructure in favor of using
+In addition, we have retired the gforge bug tracking infrastructure in favor of using
 **GitHub** issues.  We have prepopulated the issues for the legacy repository with
-the entries from the old bug database.
+the entries from the gforge bug database.
 
 Since issues are associated with a repository, we now have separate trackers for the
 legacy and main development versions.  While most bugs that are present in one version
@@ -93,72 +93,75 @@ and resume the build.
 
 Here is a list of the issues that are fixed (or closed) with this release.
 We include the original bug numbers for bugs that were reported using the
-old https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[bug tracker].
+https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 
 [.buglist,cols="^1,<15,^2",strips="none"]
 |=======
 | [.bugid]#44#
 | {issue-base}/44[Compiler bug: Contract: UsageMap on 132]
-| [old bug #284]
+| [gforge bug #284]
 | [.bugid]#48#
 | {issue-base}/48[Signals are not delivered for corresponding events]
-| [old bug #291]
+| [gforge bug #291]
+| [.bugid]#58#
+| {issue-base}/58[ml-build fails on Windows with error]
+| [gforge bug #301]
 | {issue-base}/60[Use raises wrong exception]
-| [old bug #303]
+| [gforge bug #303]
 | [.bugid]#63#
 | {issue-base}/63[Word8VectorSlice: mapping a subslice produces wrong result or crashes SML/NJ]
-| [old bug #306]
+| [gforge bug #306]
 | [.bugid]#64#
 | {issue-base}/64[`SExpParser.parseFile` should return empty list on empty file]
-| [old bug #307]
+| [gforge bug #307]
 | [.bugid]#65#
 | {issue-base}/65[Add function for converting `HTML4.html` to string]
-| [old bug #308]
+| [gforge bug #308]
 | [.bugid]#66#
 | {issue-base}/66[SExp: parsing the output of the printer produces a different SExp]
-| [old bug #309]
+| [gforge bug #309]
 | [.bugid]#67#
 | {issue-base}/67[Error when REPL tries to print value of type `Posix.FileSys.ST.stat`]
-| [old bug #310]
+| [gforge bug #310]
 | [.bugid]#68#
 | {issue-base}/68[Unable to interrupt execution by using `SIGINT`]
-| [old bug #311]
+| [gforge bug #311]
 | [.bugid]#69#
 | {issue-base}/69[`Real.fromLargeInt` crashes on large integer input]
-| [old bug #313]
+| [gforge bug #313]
 | [.bugid]#70#
 | {issue-base}/70[`IEEEReal.setRoundingMode` is a no-op on Linux]
-| [old bug #314]
+| [gforge bug #314]
 | [.bugid]#71#
 | {issue-base}/71[`IEEEReal.float_class` does not match the Basis Library]
-| [old bug #315]
+| [gforge bug #315]
 | [.bugid]#72#
 | {issue-base}/72[`Real.fromManExp` does not return expected value if `man = 0.0`]
-| [old bug #316]
+| [gforge bug #316]
 | [.bugid]#73#
 | {issue-base}/73[Conversion from string to real does not accept non-finite values]
-| [old bug #317]
+| [gforge bug #317]
 | [.bugid]#74#
 | {issue-base}/74[`IEEEReal.decimal_approx` does not match the Basis Library]
-| [old bug #318]
+| [gforge bug #318]
 | [.bugid]#75#
 | {issue-base}/75[Type of `Real.fromDecimal` does not match the Basis Library]
-| [old bug #319]
+| [gforge bug #319]
 | [.bugid]#81#
 | {issue-base}/81[Garbage collection does not trigger `sigGC`]
-| [old bug #65]
+| [gforge bug #65]
 | [.bugid]#103#
 | {issue-base}/103[makeml and installml scripts do not like locations with spaces]
-| [old bug #90#]
+| [gforge bug #90#]
 | [.bugid]#177#
 | {issue-base}/177[Pretty printing of Absyn in error message does not respect fixity]
-| [old bug #204]
+| [gforge bug #204]
 | [.bugid]#241#
 | {issue-base}/241[Last branch of case expression omitted from `PPAst`]
-| [old bug #270]
+| [gforge bug #270]
 | [.bugid]#253#
 | {issue-base}/253[`CM.make` is unable to handle filenames that contain a backslash]
-| [old bug #312]
+| [gforge bug #312]
 |=======
 
 The following unnumbered bug was also fixed:

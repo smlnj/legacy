@@ -109,6 +109,13 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //--------------------------------------------------------------------
 [2022/07/24]::
 +
+Fix for {issue-base}/58[ml-build fails on Windows with error].
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
+[2022/07/24]::
++
 Fix for {issue-base}/103[makeml and installml scripts do not like
 locations with spaces].
 +
