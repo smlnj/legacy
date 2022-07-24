@@ -95,73 +95,77 @@ Here is a list of the issues that are fixed (or closed) with this release.
 We include the original bug numbers for bugs that were reported using the
 https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 
-[.buglist,cols="^1,<15,^2",strips="none"]
+[.buglist,cols="^2,<10,^2",strips="none",options="header"]
 |=======
+| Issue No.
+| Description
+| Gforge Bug
 | [.bugid]#44#
 | {issue-base}/44[Compiler bug: Contract: UsageMap on 132]
-| [gforge bug #284]
+| 284
 | [.bugid]#48#
 | {issue-base}/48[Signals are not delivered for corresponding events]
-| [gforge bug #291]
+| 291
 | [.bugid]#58#
 | {issue-base}/58[ml-build fails on Windows with error]
-| [gforge bug #301]
+| 301
+| [.bugid]#60#
 | {issue-base}/60[Use raises wrong exception]
-| [gforge bug #303]
+| 303
 | [.bugid]#63#
 | {issue-base}/63[Word8VectorSlice: mapping a subslice produces wrong result or crashes SML/NJ]
-| [gforge bug #306]
+| 306
 | [.bugid]#64#
 | {issue-base}/64[`SExpParser.parseFile` should return empty list on empty file]
-| [gforge bug #307]
+| 307
 | [.bugid]#65#
 | {issue-base}/65[Add function for converting `HTML4.html` to string]
-| [gforge bug #308]
+| 308
 | [.bugid]#66#
 | {issue-base}/66[SExp: parsing the output of the printer produces a different SExp]
-| [gforge bug #309]
+| 309
 | [.bugid]#67#
 | {issue-base}/67[Error when REPL tries to print value of type `Posix.FileSys.ST.stat`]
-| [gforge bug #310]
+| 310
 | [.bugid]#68#
 | {issue-base}/68[Unable to interrupt execution by using `SIGINT`]
-| [gforge bug #311]
+| 311
 | [.bugid]#69#
 | {issue-base}/69[`Real.fromLargeInt` crashes on large integer input]
-| [gforge bug #313]
+| 313
 | [.bugid]#70#
 | {issue-base}/70[`IEEEReal.setRoundingMode` is a no-op on Linux]
-| [gforge bug #314]
+| 314
 | [.bugid]#71#
 | {issue-base}/71[`IEEEReal.float_class` does not match the Basis Library]
-| [gforge bug #315]
+| 315
 | [.bugid]#72#
 | {issue-base}/72[`Real.fromManExp` does not return expected value if `man = 0.0`]
-| [gforge bug #316]
+| 316
 | [.bugid]#73#
 | {issue-base}/73[Conversion from string to real does not accept non-finite values]
-| [gforge bug #317]
+| 317
 | [.bugid]#74#
 | {issue-base}/74[`IEEEReal.decimal_approx` does not match the Basis Library]
-| [gforge bug #318]
+| 318
 | [.bugid]#75#
 | {issue-base}/75[Type of `Real.fromDecimal` does not match the Basis Library]
-| [gforge bug #319]
+| 319
 | [.bugid]#81#
 | {issue-base}/81[Garbage collection does not trigger `sigGC`]
-| [gforge bug #65]
+| 65
 | [.bugid]#103#
 | {issue-base}/103[makeml and installml scripts do not like locations with spaces]
-| [gforge bug #90#]
+| 90
 | [.bugid]#177#
 | {issue-base}/177[Pretty printing of Absyn in error message does not respect fixity]
-| [gforge bug #204]
+| 204
 | [.bugid]#241#
 | {issue-base}/241[Last branch of case expression omitted from `PPAst`]
-| [gforge bug #270]
+| 270
 | [.bugid]#253#
 | {issue-base}/253[`CM.make` is unable to handle filenames that contain a backslash]
-| [gforge bug #312]
+| 312
 |=======
 
 The following unnumbered bug was also fixed:
