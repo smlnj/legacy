@@ -59,6 +59,9 @@ table.buglist {
   margin-left: 2em;
   font-size: 100%;
 }
+.buglist th {
+  border-bottom: 2px solid black;
+}
 span.bugid {
   font-weight: bold;
 }
