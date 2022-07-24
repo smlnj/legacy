@@ -107,6 +107,14 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //== Recent updates
 
 //--------------------------------------------------------------------
+[2022/07/24]::
++
+Fix for {issue-base}/103[makeml and installml scripts do not like
+locations with spaces].
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2022/07/22]::
 +
 Fix for {issue-base}/241[Last branch of case expression omitted by PPAst.ppAst].

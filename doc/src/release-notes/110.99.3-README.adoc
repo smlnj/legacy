@@ -147,6 +147,9 @@ old https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[bug tracker].
 | [.bugid]#81#
 | {issue-base}/81[Garbage collection does not trigger `sigGC`]
 | [old bug #65]
+| [.bugid]#103#
+| {issue-base}/103[makeml and installml scripts do not like locations with spaces]
+| [old bug #90#]
 | [.bugid]#177#
 | {issue-base}/177[Pretty printing of Absyn in error message does not respect fixity]
 | [old bug #204]
