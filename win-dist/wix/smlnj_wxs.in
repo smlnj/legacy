@@ -2,9 +2,9 @@
 <!--
     Copyright (c) The Fellowship of SML/NJ
 -->
-<Wix xmlns='http://schemas.microsoft.com/wix/2003/01/wi'>
-   <Product Id='f7ca0fdb-0c97-480b-a532-2a579917cfdb' Name='Standard ML of New Jersey' Language='1033' Version='@SMLNJ_VERSION@' Manufacturer='Fellowship of SML/NJ'>
-      <Package Id='????????-????-????-????-????????????' Description='SML of New Jersey.' InstallerVersion='200' Compressed='yes' />
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+   <Product Id="*" Name='Standard ML of New Jersey' Language='1033' Version='@SMLNJ_VERSION@' Manufacturer='Fellowship of SML/NJ'>
+      <Package Id="*" Description='SML of New Jersey.' InstallerVersion='400' Compressed='yes' />
 
       <Property Id='WIXUI_INSTALLDIR' Value='INSTALLDIR' />
 
