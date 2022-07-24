@@ -103,6 +103,8 @@ old https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[bug tracker].
 | [.bugid]#48#
 | {issue-base}/48[Signals are not delivered for corresponding events]
 | [old bug #291]
+| {issue-base}/60[Use raises wrong exception]
+| [old bug #303]
 | [.bugid]#63#
 | {issue-base}/63[Word8VectorSlice: mapping a subslice produces wrong result or crashes SML/NJ]
 | [old bug #306]
