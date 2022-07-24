@@ -71,36 +71,34 @@ case `uname -s` in
 	esac;;
       i386)
 	ARCH=$(pick_arch x86 amd64)
+	REQUIRE_64BIT=no
+	OPSYS=darwin
+	HEAP_OPSYS=darwin
 	case `uname -r` in
-	  9*) OPSYS=darwin;  HEAP_OPSYS=darwinz ;; # MacOS X 10.5 Leopard
-	  10*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # MacOS X 10.6 Snow Leopard
-	  11*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # MacOS X 10.7 Lion
-	  12*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # MacOS X 10.8 Mountain Lion
-	  13*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # MacOS X 10.9 Mavericks
-	  14*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # MacOS X 10.10 Yosemite
-	  15*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # MacOS X 10.11 El Capitan
-	  16*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # macOS 10.12 Sierra
-	  17*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # macOS 10.13 High Sierra
-	  18*) OPSYS=darwin;  HEAP_OPSYS=darwin ;; # macOS 10.14 Mojave
-	  19*)
-	    if [ $SIZE = 32 ] ; then # Catalina only supports 64-bit executables
-	      exit 1;
-	    fi
-	    OPSYS=darwin;  HEAP_OPSYS=darwin ;; # macOS 10.15 Catalina
-	  20*)
-	    if [ $SIZE = 32 ] ; then # Big Sur only supports 64-bit executables
-	      exit 1;
-	    fi
-	    OPSYS=darwin;  HEAP_OPSYS=darwin ;; # macOS 11 Big Sur
-	  21*)
-	    if [ $SIZE = 32 ] ; then # Monterey only supports 64-bit executables
-	      exit 1;
-	    fi
-	    OPSYS=darwin;  HEAP_OPSYS=darwin ;; # macOS 12 Monterey
-	  *) exit 1;;
-	esac;;
+	  9*) HEAP_OPSYS=darwinz ;; # MacOS X 10.5 Leopard
+	  10*) ;; # MacOS X 10.6 Snow Leopard
+	  11*) ;; # MacOS X 10.7 Lion
+	  12*) ;; # MacOS X 10.8 Mountain Lion
+	  13*) ;; # MacOS X 10.9 Mavericks
+	  14*) ;; # MacOS X 10.10 Yosemite
+	  15*) ;; # MacOS X 10.11 El Capitan
+	  16*) ;; # macOS 10.12 Sierra
+	  17*) ;; # macOS 10.13 High Sierra
+	  18*) ;; # macOS 10.14 Mojave
+	  19*) REQUIRE_64BIT=yes ;; # macOS 10.15 Catalina
+	  20*) REQUIRE_64BIT=yes ;; # macOS 11 Big Sur
+	  21*) REQUIRE_64BIT=yes ;; # macOS 12 Monterey
+	  22*) REQUIRE_64BIT=yes ;; # macOS 13 Ventura
+          *) exit 1 ;;
+        esac
+        if [ x"$REQUIRE_64BIT" = xyes -a $SIZE = 32 ] ; then
+	  # only 64-bit executables are supported in recent macOS versions
+          exit 1;
+        fi
+	;;
       arm)
-	# we are going to try to use Rosetta until we have native arm64 support
+	# we use Rosetta since we do not have native arm64 support in
+        # the legacy version of SML/NJ
 	ARCH="amd64"
 	OPSYS=darwin;
 	HEAP_OPSYS=darwin
