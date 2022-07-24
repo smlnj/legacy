@@ -17,6 +17,10 @@ structure Execute : sig
 			 * go to the next input prompt.
 			 *)
 
+  (* turn the byte-vector-like code into an executable closure.
+   * The resulting closure will wrap any uncaught exception raised by the code using
+   * the `exnWrapper` function.
+   *)
     val mkExec : { cs : CodeObj.csegments, exnWrapper : exn -> exn } -> CodeObj.executable
 
     val execute : {
@@ -36,7 +40,6 @@ structure Execute : sig
     val say = Control_Print.say
     fun bug s = ErrorMsg.impossible ("Execute: " ^ s)
 
-  (** turn the byte-vector-like code into an executable closure *)
     fun mkExec { cs = {code, data}, exnWrapper } = let
 	  val exec = CodeObj.exec code
 	  val nex = if (Word8Vector.length data > 0)
