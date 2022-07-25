@@ -27,7 +27,8 @@ OBJS =	posix-tty-lib.o \
 	tcgetpgrp.o \
 	tcsendbreak.o \
 	tcsetattr.o \
-	tcsetpgrp.o
+	tcsetpgrp.o \
+	getwinsz.o
 
 $(LIBRARY)	: $(VERSION) $(OBJS)
 	rm -rf $(LIBRARY)

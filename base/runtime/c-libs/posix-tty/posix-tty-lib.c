@@ -25,4 +25,3 @@ c_library_t	    POSIX_TTY_Library = {
 	NIL(clib_init_fn_t),
 	CFunTable
     };
-

@@ -7,8 +7,8 @@
 
 #ifndef CLIB_NAME
 #define CLIB_NAME	"POSIX-TTY"
-#define CLIB_VERSION	"1.0"
-#define CLIB_DATE	"August 22, 1995"
+#define CLIB_VERSION	"1.1"
+#define CLIB_DATE	"July 25, 2022"
 #endif
 
 CFUNC("osval",	     _ml_P_TTY_osval,          "string -> int")
@@ -20,4 +20,5 @@ CFUNC("tcflush",     _ml_P_TTY_tcflush,        "int * int -> unit")
 CFUNC("tcflow",      _ml_P_TTY_tcflow,         "int * int -> unit")
 CFUNC("tcgetpgrp",   _ml_P_TTY_tcgetpgrp,      "int -> int")
 CFUNC("tcsetpgrp",   _ml_P_TTY_tcsetpgrp,      "int * int -> unit")
-
+/* Basis Library proposal 2021-001 */
+CFUNC("getwinsz",    _ml_P_TTY_getwinsz,       "int -> (int * int) option")
