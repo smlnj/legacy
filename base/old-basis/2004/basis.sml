@@ -1,6 +1,6 @@
 (* basis-2004.sml
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *
  * This file rebinds various basis module names to their 2004 versions.
@@ -17,6 +17,8 @@ signature MONO_ARRAY_SLICE = MONO_ARRAY_SLICE_2004
 signature MONO_VECTOR = MONO_VECTOR_2004
 signature MONO_VECTOR_SLICE = MONO_VECTOR_SLICE_2004
 signature OPTION = OPTION_2004
+signature POSIX = POSIX_2004
+signature POSIX_TTY = POSIX_TTY_2004
 signature REAL = REAL_2004
 signature STRING = STRING_2004
 signature TEXT = TEXT_2004
@@ -30,6 +32,7 @@ structure ArraySlice : ARRAY_SLICE = ArraySlice
 structure List : LIST = List
 structure ListPair : LIST_PAIR = ListPair
 structure Option : OPTION = Option
+structure Posix : POSIX = Posix
 structure Math : MATH = Math
 structure Real : REAL = Real
 structure Real64 : REAL = Real64
