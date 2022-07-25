@@ -52,6 +52,16 @@ when reporting a bug.
 
 == Details
 
+=== Basis Library
+
+Added support for the following proposed https://github.com/SMLFamily/BasisLibrary[**Basis
+Library** extensions]:
+
+--
+  * https://github.com/SMLFamily/BasisLibrary/wiki/2022-001-Add-value-tau-to-MATH-signature[
+    2022-001 Add value tau to MATH signature]
+--
+
 === SML/NJ Library
 
 --

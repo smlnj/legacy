@@ -107,6 +107,15 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //== Recent updates
 
 //--------------------------------------------------------------------
+[2022/07/25]::
++
+Implemented Basis Library proposal
+https://github.com/SMLFamily/BasisLibrary/wiki/2022-001-Add-value-tau-to-MATH-signature[2022-001]
+(add `tau` to `MATH` signature).
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2022/07/24]::
 +
 Fix for {issue-base}/58[ml-build fails on Windows with error].
