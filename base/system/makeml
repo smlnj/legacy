@@ -131,6 +131,8 @@ while [ "$#" != "0" ] ; do
     @SML*)
 	ARGS="$ARGS $arg"
 	;;
+    -C*) ARGS="$ARGS $arg" ;;
+    -D*) ARGS="$ARGS $arg" ;;
     *)
 	echo "$this: unknown argument \"$arg\""
 	exit 1

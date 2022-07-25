@@ -1,8 +1,13 @@
-/* cfun-list.h
- *
- * COPYRIGHT (c) 1995 AT&T Bell Laboratories.
+/*! \file cfun-list.h
  *
  * This file lists the directory library of C functions that are callable by ML.
+ *
+ * \author John Reppy
+ */
+
+/*
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
  */
 
 #ifndef CLIB_NAME
