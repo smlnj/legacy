@@ -1,7 +1,7 @@
 // A template for creating release notes for a version
 //
 :version: 110.99.3
-:date: ??
+:date: July 27, 2022
 :dist-dir: https://smlnj.org/dist/working/{version}/
 :history: {dist-dir}HISTORY.html
 :issue-base: https://github.com/smlnj/legacy/issues
@@ -32,16 +32,16 @@ FILES::
 
 == Summary
 
-This is a patch release that fixes a large number of bugs in the "legacy" version
+This patch release fixes a large number of bugs in the "legacy" version
 of *SML/NJ* and adds some new functions to the *SML/NJ Library*.
 
 == GitHub Migration
 
 With this release, we have migrated the legacy branch from our own **svn** server
-to a https://github.com/smlnj/legacy[**GitHub** repository].  This is the first step
-in migrating everything to **GitHub**.
+to a https://github.com/smlnj/legacy[**GitHub** repository].  This migration
+is the first step in migrating everything to **GitHub**.
 
-In addition, we have retired the gforge bug tracking infrastructure in favor of using
+In addition, we have retired the gforge bug-tracking infrastructure in favor of using
 **GitHub** issues.  We have prepopulated the issues for the legacy repository with
 the entries from the gforge bug database.
 
@@ -57,7 +57,7 @@ when reporting a bug.
 --
   * Added the `findAndRemove` function to `ORD_MAP` interface.
   * Generalized comparisons on ordered maps; added `equiv` and
-    `extends` functions to `ORD_MAP` interface and made type of
+    `extends` functions to `ORD_MAP` interface and made the type of
     `collate` more polymorphic.
   * The *SExp* library now uses *Scheme* syntax for string values.
   * The *SExp* parser accepts empty files as valid input (producing
@@ -100,6 +100,9 @@ https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 | Issue No.
 | Description
 | Gforge Bug
+| [.bugid]#43#
+| {issue-base}/43[smlnj installation: error in first cm file memory.cm from nlffi]
+| 283
 | [.bugid]#44#
 | {issue-base}/44[Compiler bug: Contract: UsageMap on 132]
 | 284
@@ -186,6 +189,7 @@ tested some of them:
 | | macOS 10.15 (Catalina) | Tested
 | | macOS 11 (Big Sur) | Tested
 | | macOS 12 (Monterey) | Tested
+| | macOS 13 (Ventura) |
 | | Ubuntu 16.04.3 LTS |
 | | Ubuntu 18.04.3 LTS | Tested
 | {nbsp} | |
