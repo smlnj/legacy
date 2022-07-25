@@ -58,6 +58,9 @@ Added support for the following proposed https://github.com/SMLFamily/BasisLibra
 Library** extensions]:
 
 --
+  * https://github.com/SMLFamily/BasisLibrary/wiki/2021-001-Add-getWindowSz-function-to-Posix.TTY-structure[
+    2021-001 Add getWindowSz function to Posix.TTY structure]
+
   * https://github.com/SMLFamily/BasisLibrary/wiki/2022-001-Add-value-tau-to-MATH-signature[
     2022-001 Add value tau to MATH signature]
 --

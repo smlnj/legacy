@@ -1,12 +1,12 @@
 (* posix-tty.sig
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *
  * Signature for POSIX 1003.1 operations on terminal devices
  *)
 
-signature POSIX_TTY =
+signature POSIX_TTY_2004 =
   sig
 
     eqtype pid       (* process ID *)
@@ -178,3 +178,14 @@ signature POSIX_TTY =
 
   end (* signature POSIX_TTY *)
 
+(* includes Basis Library proposal 2021-001 *)
+signature POSIX_TTY_2021 =
+  sig
+
+    include POSIX_TTY_2004
+
+    val getWindowSz : file_desc -> { nLines : int, nCols : int } option
+
+  end
+
+signature POSIX_TTY = POSIX_TTY_2021
