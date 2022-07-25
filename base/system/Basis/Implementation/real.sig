@@ -6,12 +6,11 @@
  * The Standard ML Basis Library interface to floating-point structures.
  *)
 
-signature REAL =
+(* the REAL signature without the Math submodule *)
+signature REAL_WO_MATH =
   sig
-    type real
 
-    structure Math : MATH
-      where type real = real
+    type real
 
     val radix     : Int.int
     val precision : Int.int
@@ -93,4 +92,20 @@ signature REAL =
     val toDecimal   : real -> IEEEReal.decimal_approx
     val fromDecimal : IEEEReal.decimal_approx -> real option
 
+  end (* signature REAL_WO_MATH *)
+
+(* REAL signature from 2004 Basis specification *)
+signature REAL_2004 =
+  sig
+    include REAL_WO_MATH
+    structure Math : MATH_2004 where type real = real
   end
+
+(* REAL signature with Basis Library proposal 2022-1 *)
+signature REAL_2022 =
+  sig
+    include REAL_WO_MATH
+    structure Math : MATH_2022 where type real = real
+  end
+
+signature REAL = REAL_2022

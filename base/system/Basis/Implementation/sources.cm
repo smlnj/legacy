@@ -70,11 +70,13 @@ Group
 	signature ARRAY_SLICE_2004
 	signature LIST_2004
 	signature LIST_PAIR_2004
+        signature MATH_2004
 	signature MONO_ARRAY_2004
 	signature MONO_ARRAY_SLICE_2004
 	signature MONO_VECTOR_2004
 	signature MONO_VECTOR_SLICE_2004
 	signature OPTION_2004
+        signature REAL_2004
 	signature STRING_2004
 	signature TEXT_2004
 	signature VECTOR_2004
@@ -101,6 +103,10 @@ Group
 	signature MONO_VECTOR_SLICE_2018
 	signature TEXT_2018
 	signature VECTOR_SLICE_2018
+
+      (* basis signatures with extensions from proposal 2022-001 added *)
+        signature MATH_2022
+        signature REAL_2022
 
       (* backward compatibility with the SML'90 version of the basis *)
 	signature SML90

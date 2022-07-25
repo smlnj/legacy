@@ -1,10 +1,10 @@
 (* math.sig
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
 
-signature MATH =
+signature MATH_2004 =
   sig
     type real
 
@@ -27,4 +27,12 @@ signature MATH =
     val tanh  : real -> real
   end
 
+(* includes Basis Library proposal 2022-001 *)
+signature MATH_2022 =
+  sig
+    include MATH_2004
 
+    val tau : real
+  end
+
+signature MATH = MATH_2022
