@@ -110,6 +110,14 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //== Version 110.99.3; 2022/07/27
 
 //--------------------------------------------------------------------
+[2022/07/27]::
++
+Fix for {issue-base}/59[MSI installer for SMLNJ 110.99.2 reports as
+version 0.0.0.0].
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2022/07/25]::
 +
 Implemented Basis Library proposal

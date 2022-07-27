@@ -8,7 +8,10 @@
             Version='@SMLNJ_VERSION@'
             Language='1033'
             Manufacturer='Fellowship of SML/NJ'>
-      <Package Id="@PACKAGE_ID@" Description='SML of New Jersey.' InstallerVersion='400' Compressed='yes' />
+      <Package Id="@PACKAGE_ID@"
+	       Description='SML of New Jersey.'
+	       InstallerVersion='400'
+	       Compressed='yes' />
 
       <Property Id='WIXUI_INSTALLDIR' Value='INSTALLDIR' />
 

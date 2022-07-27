@@ -77,6 +77,13 @@ Library** extensions]:
     an empty list of S-Expressions).
 --
 
+=== Windows
+
+The MSI installer now correctly sets the version of *SML/NJ* (see
+https://github.com/smlnj/legacy/issues/59[issue 59] for details).
+We also add a shortcut for uninstalling *SML/NJ* to the Program
+Menu.
+
 === 32-bit macOS issues
 
 While the {dist-dir}smlnj-x86-{version}.pkg[x86 installer]
@@ -125,6 +132,9 @@ https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 | [.bugid]#58#
 | {issue-base}/58[ml-build fails on Windows with error]
 | 301
+| [.bugid]#59#
+| {issue-base}/59[MSI installer for SMLNJ 110.99.2 reports as version 0.0.0.0]
+| 302
 | [.bugid]#60#
 | {issue-base}/60[Use raises wrong exception]
 | 303
