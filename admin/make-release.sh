@@ -14,4 +14,5 @@ fi
 relno=$1
 reltag="v"$relno
 
-git tag -a -m "tag release $relno" $reltag
+git tag -a -m "tag release $relno" $reltag || exit 1
+git push || exit 1

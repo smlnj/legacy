@@ -104,6 +104,8 @@ echo "***** echo $DATE > releasedate" >> $LOG
 echo $DATE > releasedate
 echo "***** git commit -a -m \"updating version number to $VERSION\"" >> $LOG
 git commit -a -m "updating version number to $VERSION" >> $LOG 2>&1 || exit 1
+echo "***** git push" >> $LOG
+git push >> $LOG 2>&1 || exit 1
 echo "***** cd $HERE" >> $LOG
 cd $HERE
 
