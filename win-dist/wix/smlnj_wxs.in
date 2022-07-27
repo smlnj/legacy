@@ -3,8 +3,8 @@
     Copyright (c) The Fellowship of SML/NJ
 -->
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
-   <Product Id="*" Name='Standard ML of New Jersey' Language='1033' Version='@SMLNJ_VERSION@' Manufacturer='Fellowship of SML/NJ'>
-      <Package Id="*" Description='SML of New Jersey.' InstallerVersion='400' Compressed='yes' />
+   <Product Id="@PRODUCT_ID@" Name='Standard ML of New Jersey' Language='1033' Version='@SMLNJ_VERSION@' Manufacturer='Fellowship of SML/NJ'>
+      <Package Id="@PACKAGE_ID@" Description='SML of New Jersey.' InstallerVersion='400' Compressed='yes' />
 
       <Property Id='WIXUI_INSTALLDIR' Value='INSTALLDIR' />
 
@@ -69,6 +69,12 @@
                     <File Id='mlulex' Name='ulex.x86' LongName='ml-ulex.x86-win32' src='bin\.heap\ml-ulex.x86-win32' />
                     <File Id='mlyacc' Name='yacc.x86' LongName='ml-yacc.x86-win32' src='bin\.heap\ml-yacc.x86-win32' />
                     <File Id='sml' Name='sml.x86' LongName='sml.x86-win32' src='bin\.heap\sml.x86-win32' />
+		    <Shortcut Id="UninstallSMLNJ"             
+			      Name="UnSMLNJ"
+			      Target="[SystemFolder]msiexec.exe"
+			      Directory='ProgramMenuFolder'
+			      Arguments="/x [ProductCode]"
+			      Description="Uninstalls Standard ML of New Jersey (v @SMLNJ_VERSION@)" />
 		  </Component>
 		</Directory>
 		<Directory Id='run' Name='.run'>

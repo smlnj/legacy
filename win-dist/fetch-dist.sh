@@ -94,7 +94,12 @@ fi
 
 # customize the smlnj.wxs file with the SML/NJ version number
 #
-sed -e "s,@SMLNJ_VERSION@,$VERSION,g" $ROOT/wix/smlnj_wxs.in > $CONFIGDIR/WinSetup/smlnj.wxs
+PRODUCT_ID=$(uuidgen)
+PACKAGE_ID=$(uuidgen)
+sed -e "s,@SMLNJ_VERSION@,$VERSION,g" \
+    -e "s,@PRODUCT_ID@,$PRODUCT_ID,g" \
+    -e "s,@PACKAGE_ID@,$PACKAGE_ID,g" \
+    $ROOT/wix/smlnj_wxs.in > $CONFIGDIR/WinSetup/smlnj.wxs
 
 #
 # create the base source subdirectory
