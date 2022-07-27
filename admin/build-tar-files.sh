@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# create the source tar files for a distribution
+# create the source tar files for a distribution.
 #
 # usage:
 #	admin/build-tar-files.sh
@@ -8,12 +8,11 @@
 
 set +x
 
-here=`pwd`
-path_to_me=`dirname $0`
-
-# export all source files
+# export all source files into the smlnj directory
 #
-$path_to_me/checkout-all.sh --export
+git clone git@github.com:smlnj/legacy.git smlnj
+cd smlnj
+here=`pwd`
 
 # cleanup stuff that shouldn't be in the release
 #
