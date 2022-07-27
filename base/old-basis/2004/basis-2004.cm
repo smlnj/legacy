@@ -27,8 +27,8 @@ Library
 	signature MONO_VECTOR_2004
 	signature MONO_VECTOR_SLICE_2004
 	signature OPTION_2004
-        signature POSIX = POSIX_2004
-        signature POSIX_TTY = POSIX_TTY_2004
+        signature POSIX_2004
+        signature POSIX_TTY_2004
         signature REAL_2004
 	signature STRING_2004
 	signature TEXT_2004

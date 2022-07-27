@@ -1,8 +1,9 @@
 #!/bin/sh
 #
-# "tag" a release snapshot by copying all of the trees into a fresh release tree.
+# "tag" a release snapshot
 #
-# Note that this version has been modified for the legacy-branch
+# Note that this version has been modified for the legacy-branch, which now
+# lives at GitHub
 #
 
 if [ $# -lt 1 ] ; then
@@ -11,12 +12,6 @@ if [ $# -lt 1 ] ; then
 fi
 
 relno=$1
+reltag="v"$relno
 
-legacy_url=https://smlnj-gforge.cs.uchicago.edu/svn/smlnj/legacy
-release_url=https://smlnj-gforge.cs.uchicago.edu/svn/smlnj/sml/releases/release-$1
-
-here=`pwd`
-
-echo "tagging legacy release ..."
-svn cp $legacy_url $release_url -m "Legacy release $relno"
-
+git tag -a -m "tag release $relno" $reltag
