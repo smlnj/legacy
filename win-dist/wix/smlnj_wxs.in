@@ -3,7 +3,11 @@
     Copyright (c) The Fellowship of SML/NJ
 -->
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
-   <Product Id="@PRODUCT_ID@" Name='Standard ML of New Jersey' Language='1033' Version='@SMLNJ_VERSION@' Manufacturer='Fellowship of SML/NJ'>
+   <Product Id="@PRODUCT_ID@"
+            Name='Standard ML of New Jersey'
+            Version='@SMLNJ_VERSION@'
+            Language='1033'
+            Manufacturer='Fellowship of SML/NJ'>
       <Package Id="@PACKAGE_ID@" Description='SML of New Jersey.' InstallerVersion='400' Compressed='yes' />
 
       <Property Id='WIXUI_INSTALLDIR' Value='INSTALLDIR' />
@@ -69,10 +73,11 @@
                     <File Id='mlulex' Name='ulex.x86' LongName='ml-ulex.x86-win32' src='bin\.heap\ml-ulex.x86-win32' />
                     <File Id='mlyacc' Name='yacc.x86' LongName='ml-yacc.x86-win32' src='bin\.heap\ml-yacc.x86-win32' />
                     <File Id='sml' Name='sml.x86' LongName='sml.x86-win32' src='bin\.heap\sml.x86-win32' />
-		    <Shortcut Id="UninstallSMLNJ"             
-			      Name="UnSMLNJ"
-			      Target="[SystemFolder]msiexec.exe"
+		    <Shortcut Id="UninstallSMLNJ"
 			      Directory='ProgramMenuFolder'
+			      Name="UnSMLNJ"
+                              LongName='Uninstall SML of NJ'
+			      Target="[SystemFolder]msiexec.exe"
 			      Arguments="/x [ProductCode]"
 			      Description="Uninstalls Standard ML of New Jersey (v @SMLNJ_VERSION@)" />
 		  </Component>
@@ -80,7 +85,13 @@
 		<Directory Id='run' Name='.run'>
 		  <Component Id='SMLNJBinRun' Guid='e2186124-ef2f-4058-acd5-14682f4cc68c' DiskId='1'>
                     <File Id='run' Name='run.exe' LongName='run.x86-win32.exe' src='bin\.run\run.x86-win32.exe' >
-                     <Shortcut Id='SMLNJProductShortcut' Directory='ProgramMenuFolder' Name='SMLNJ' LongName='SML of New Jersey' Description='SML of New Jersey Interpreter' Target='[#run]' Arguments='&quot;@SMLload=[heap]sml&quot;'/>
+                      <Shortcut Id='SMLNJProductShortcut'
+                                Directory='ProgramMenuFolder'
+                                Name='SMLNJ'
+                                LongName='SML of New Jersey'
+                                Description='Standard ML of New Jersey'
+                                Target='[#run]'
+                                Arguments='&quot;@SMLload=[heap]sml&quot;'/>
                   </File>
 		  </Component>
 		</Directory>
