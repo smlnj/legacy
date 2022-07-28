@@ -139,6 +139,12 @@ sed -e "s,@SMLNJ_VERSION@,$VERSION,g" \
     -e "s,@PACKAGE_ID@,$PACKAGE_ID,g" \
     $ROOT/wix/smlnj_wxs.in > $CONFIGDIR/WinSetup/smlnj.wxs
 
+# add the WinSetup directory
+#
+if [ ! -d $CONFIGDIR/WinSetup ] ; then
+  cp -rp $ROOT/WinSetup $CONFIGDIR/WinSetup
+fi
+
 # customize the smlnj.wxs file with the SML/NJ version number
 #
 PRODUCT_ID=$(uuidgen)
