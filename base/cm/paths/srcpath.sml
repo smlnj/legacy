@@ -64,7 +64,15 @@ signature SRCPATH =
     (* non-destructive bindings for anchors (for anchor scoping) *)
     val bind: env -> rebindings -> env
 
-    (* make abstract paths *)
+    (* convert strings to abstract paths.  There are three different
+     * ways to interpret the string:
+     *   1) a raw path uses the native pathname syntax and does not
+     *      contain CM anchors.
+     *   2) a native path also uses the native pathname syntax, but
+     *      may have an initial anchor.
+     *   3) a standard path uses the CM pathname syntax and may
+     *      have an initial anchor.
+     *)
     val raw : { err: string -> unit } ->
               { context: dir, spec: string } -> prefile
     val native : { err: string -> unit, env: env } ->
@@ -516,7 +524,7 @@ structure SrcPath :> SRCPATH =
 
     datatype stdspec
       = RELATIVE of string list
-      | ABSOLUTE of string list
+      | ABSOLUTE of string * string list
       | ANCHORED of anchor * string list
 
     fun parseNativeSpec err s = let
@@ -537,7 +545,7 @@ structure SrcPath :> SRCPATH =
 	          if String.sub(arc1, 0) = #"$"
                     then ANCHORED(String.extract(arc1, 1, NONE), arcn)
                   else if isAbs
-                    then ABSOLUTE arcs
+                    then ABSOLUTE(vol, arcs)
                     else RELATIVE arcs
             (* end case *)
           end
@@ -554,7 +562,7 @@ structure SrcPath :> SRCPATH =
 	case map transl (String.fields delim s) of
 	    [""] => impossible "zero-length name"
 	  | [] => impossible "no fields"
-	  | "" :: arcs => ABSOLUTE arcs
+	  | "" :: arcs => ABSOLUTE("", arcs)
 	  | arcs as (["$"] | "$" :: "" :: _) =>
 	    (err (concat ["invalid zero-length anchor name in: `", s, "'"]);
 	     RELATIVE arcs)
@@ -589,22 +597,23 @@ structure SrcPath :> SRCPATH =
 
     fun prefile (c, l, e) = { context = c, arcs = l, err = e }
 
-    fun raw { err } { context, spec } =
-	case P.fromString spec of
-	    { arcs, vol, isAbs = true } => prefile (ROOT vol, arcs, err)
-	  | { arcs, ... } => prefile (context, arcs, err)
+    fun raw { err } { context, spec } = (
+	  case P.fromString spec
+	   of { arcs, vol, isAbs = true } => prefile (ROOT vol, arcs, err)
+	    | { arcs, ... } => prefile (context, arcs, err)
+        (* end case *))
 
     fun native { env, err }  { context, spec } = (
-          case parseNativeSpec err spec
+       case parseNativeSpec err spec
            of RELATIVE l => prefile (context, l, err)
-            | ABSOLUTE l => prefile (ROOT "", l, err)
+            | ABSOLUTE(vol, l) => prefile (ROOT vol, l, err)
             | ANCHORED(a, l) => prefile (ANCHOR(mk_anchor (env, a, err)), l, err)
         (* end case *))
 
     fun standard { env, err } { context, spec } = (
 	case parseStdspec err spec
 	 of RELATIVE l => prefile (context, l, err)
-	  | ABSOLUTE l => prefile (ROOT "", l, err)
+	  | ABSOLUTE(_, l) => prefile (ROOT "", l, err)
 	  | ANCHORED (a, l) =>
 	      prefile (ANCHOR (mk_anchor (env, a, err)), l, err)
         (* end case *))
