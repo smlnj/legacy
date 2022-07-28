@@ -130,15 +130,6 @@ done
 #
 touch smlnj-lib/HTML4/*.l.sml smlnj-lib/HTML4/*.g.sml
 
-# customize the smlnj.wxs file with the SML/NJ version number
-#
-PRODUCT_ID=$(uuidgen)
-PACKAGE_ID=$(uuidgen)
-sed -e "s,@SMLNJ_VERSION@,$VERSION,g" \
-    -e "s,@PRODUCT_ID@,$PRODUCT_ID,g" \
-    -e "s,@PACKAGE_ID@,$PACKAGE_ID,g" \
-    $ROOT/wix/smlnj_wxs.in > $CONFIGDIR/WinSetup/smlnj.wxs
-
 # add the WinSetup directory
 #
 if [ ! -d $CONFIGDIR/WinSetup ] ; then
