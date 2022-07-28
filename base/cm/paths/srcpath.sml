@@ -516,7 +516,7 @@ structure SrcPath :> SRCPATH =
 
     datatype stdspec
       = RELATIVE of string list
-      | ABSOLUTE of string list
+      | ABSOLUTE of string * string list
       | ANCHORED of anchor * string list
 
     fun parseNativeSpec err s = let
@@ -537,7 +537,7 @@ structure SrcPath :> SRCPATH =
 	          if String.sub(arc1, 0) = #"$"
                     then ANCHORED(String.extract(arc1, 1, NONE), arcn)
                   else if isAbs
-                    then ABSOLUTE arcs
+                    then ABSOLUTE(vol, arcs)
                     else RELATIVE arcs
             (* end case *)
           end
@@ -554,7 +554,7 @@ structure SrcPath :> SRCPATH =
 	case map transl (String.fields delim s) of
 	    [""] => impossible "zero-length name"
 	  | [] => impossible "no fields"
-	  | "" :: arcs => ABSOLUTE arcs
+	  | "" :: arcs => ABSOLUTE("", arcs)
 	  | arcs as (["$"] | "$" :: "" :: _) =>
 	    (err (concat ["invalid zero-length anchor name in: `", s, "'"]);
 	     RELATIVE arcs)
@@ -597,14 +597,14 @@ structure SrcPath :> SRCPATH =
     fun native { env, err }  { context, spec } = (
           case parseNativeSpec err spec
            of RELATIVE l => prefile (context, l, err)
-            | ABSOLUTE l => prefile (ROOT "", l, err)
+            | ABSOLUTE(vol, l) => prefile (ROOT vol, l, err)
             | ANCHORED(a, l) => prefile (ANCHOR(mk_anchor (env, a, err)), l, err)
         (* end case *))
 
     fun standard { env, err } { context, spec } = (
 	case parseStdspec err spec
 	 of RELATIVE l => prefile (context, l, err)
-	  | ABSOLUTE l => prefile (ROOT "", l, err)
+	  | ABSOLUTE(_, l) => prefile (ROOT "", l, err)
 	  | ANCHORED (a, l) =>
 	      prefile (ANCHOR (mk_anchor (env, a, err)), l, err)
         (* end case *))

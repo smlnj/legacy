@@ -173,6 +173,11 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 	      SrcPath.file
 	        (SrcPath.native { err = fn s => raise Fail s, env = penv }
                                 { context = SrcPath.cwd (), spec = s })
+          (* make a source path from a string using CM standard path syntax *)
+	  fun mkStdSrcPath s =
+	      SrcPath.file
+	        (SrcPath.standard { err = fn s => raise Fail s, env = penv }
+				  { context = SrcPath.cwd (), spec = s })
 
 	  fun getPending () =
 	      map (Symbol.describe o #1)
@@ -598,7 +603,7 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 				   work = readpidmap,
 				   cleanup = fn _ => () }
 
-	      val initgspec = mkNativeSrcPath BtNames.initgspec
+	      val initgspec = mkStdSrcPath BtNames.initgspec
 	      val ginfo = { param = { fnpolicy = fnpolicy,
 				      penv = penv,
 				      symval = SSV.symval,
