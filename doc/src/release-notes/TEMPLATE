@@ -86,10 +86,13 @@ and resume the build.
 
 Here is a list of the issues that are fixed (or closed) with this release.
 We include the original bug numbers for bugs that were reported using the
-old https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[bug tracker].
+https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 
-[.buglist,cols="^1,<15,^2",strips="none"]
+[.buglist,cols="^1,<10,^2",strips="none",options="header"]
 |=======
+| Issue
+| Description
+| Gforge Bug
 //| [.bugid]#@ID#
 //| {issue-base}[@DESCRIPTION@]
 //| [old bug #@OLDID]

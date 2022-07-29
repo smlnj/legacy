@@ -9,7 +9,7 @@ this=$0
 here=`pwd`
 cd ../..
 twoup=`pwd`
-cd $here
+cd "$here"
 
 #
 # Parse command line
@@ -39,36 +39,36 @@ while [ "$#" != "0" ] ; do
     esac
 done
 
-MAIN_HEAP_DIR=$twoup/bin/.heap
-MAIN_LIB_DIR=$twoup/lib
-MAIN_CONFIG_DIR=$twoup/config
+MAIN_HEAP_DIR="$twoup/bin/.heap"
+MAIN_LIB_DIR="$twoup/lib"
+MAIN_CONFIG_DIR="$twoup/config"
 
 # A function to move all stable library files to a parallel directory
 # hierarchy.
 # The first argument must be a simple path (no / inside), and
 # the second argument must be an absolute path.
 move() {
-    if [ -d $1 ] ; then
-	if [ ! -d $2 ] ; then
-	    if [ -f $2 ] ; then
-		echo $this: $2 exists as a non-directory.
+    if [ -d "$1" ] ; then
+	if [ ! -d "$2" ] ; then
+	    if [ -f "$2" ] ; then
+		echo $this: '$2' exists as a non-directory.
 		exit 1
 	    fi
-	    mkdir $2
+	    mkdir "$2"
 	fi
-	cd $1
+	cd "$1"
 	for i in * .[a-zA-Z0-9]* ; do
-	    move $i $2/$i
+	    move $i "$2/$i"
 	done
 	cd ..
-    elif [ -f $1 ] ; then
-	rm -f $2
-	mv $1 $2
+    elif [ -f "$1" ] ; then
+	rm -f "$2"
+	mv "$1" "$2"
     fi
 }
 
-if [ -f $twoup/bin/.arch-n-opsys ]; then
-  ARCH_N_OPSYS=`$twoup/bin/.arch-n-opsys $SIZE_OPT`
+if [ -f "$twoup/bin/.arch-n-opsys" ]; then
+  ARCH_N_OPSYS=`"$twoup/bin/.arch-n-opsys" $SIZE_OPT`
   if [ "$?" = "0" ]; then
     eval $ARCH_N_OPSYS
   else
@@ -110,12 +110,12 @@ SRC_DIRS="\
 
 if $CLEAN ; then
     echo "cleaning $MAIN_LIB_DIR and $MAIN_HEAP_DIR"
-    rm -rf $MAIN_LIB_DIR/* $MAIN_HEAP_DIR/*
+    rm -rf "$MAIN_LIB_DIR"/* "$MAIN_HEAP_DIR"/*
     if $CLEAN_CM ; then
 	echo "removing old CM files"
 	for d in $SRC_DIRS ; do
-	    if [ -d $twoup/$d ] ; then
-		find $twoup/$d \( -name .cm -exec rm -rf {} \; -prune -print \)
+	    if [ -d "$twoup/$d" ] ; then
+		find "$twoup/$d" \( -name .cm -exec rm -rf {} \; -prune -print \)
 	    fi
 	done
     fi
@@ -124,21 +124,21 @@ fi
 #
 # create heap and lib directories, if necessary
 #
-if test ! -d $MAIN_HEAP_DIR ; then
-  mkdir -p $MAIN_HEAP_DIR
+if test ! -d "$MAIN_HEAP_DIR" ; then
+  mkdir -p "$MAIN_HEAP_DIR"
 fi
-if test ! -d $MAIN_LIB_DIR ; then
-  mkdir -p $MAIN_LIB_DIR
+if test ! -d "$MAIN_LIB_DIR" ; then
+  mkdir -p "$MAIN_LIB_DIR"
 fi
 
 # Moving the heap image to its place
-mv $HEAP_FILE $MAIN_HEAP_DIR/sml.$HEAP_SUFFIX
+mv $HEAP_FILE "$MAIN_HEAP_DIR/sml.$HEAP_SUFFIX"
 
 # Moving each individual library...
-cd $LIB_DIR
+cd "$LIB_DIR"
 for anchor in * ; do
     if [ -d $anchor ] ; then
-	move $anchor $MAIN_LIB_DIR/$anchor
+	move $anchor "$MAIN_LIB_DIR/$anchor"
     fi
 done
 cd ..
@@ -147,19 +147,19 @@ cd ..
 #  The awk script below replaces the original binding in $pcfile
 #  with its fresh counterpart should there be one.  Other bindings
 #  are retained and brand new ones are added.
-pcfile=$MAIN_LIB_DIR/pathconfig
-if [ -f $pcfile ] ; then
-    cp $pcfile $tmpfile
+pcfile="$MAIN_LIB_DIR/pathconfig"
+if [ -f "$pcfile" ] ; then
+    cp "$pcfile" "$tmpfile"
 fi
-rm -f $pcfile
-cat $LIB_DIR/pathconfig >>$tmpfile
-if [ -f $MAIN_CONFIG_DIR/extrapathconfig ] ; then
-    cat $MAIN_CONFIG_DIR/extrapathconfig >>$tmpfile
+rm -f "$pcfile"
+cat "$LIB_DIR/pathconfig" >>"$tmpfile"
+if [ -f "$MAIN_CONFIG_DIR/extrapathconfig" ] ; then
+    cat "$MAIN_CONFIG_DIR/extrapathconfig" >>"$tmpfile"
 fi
-awk <$tmpfile 'NF == 2 { mapping[$1] = $2 }
+awk <"$tmpfile" 'NF == 2 { mapping[$1] = $2 }
 NF != 2 { print $0 }
 END { for (i in mapping) print i, mapping[i] }' \
- | sort >$pcfile
+ | sort >"$pcfile"
 
-rm -r $LIB_DIR
-rm -f $tmpfile
+rm -r "$LIB_DIR"
+rm -f "$tmpfile"

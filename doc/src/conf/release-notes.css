@@ -59,10 +59,8 @@ table.buglist {
   margin-left: 2em;
   font-size: 100%;
 }
-table.buglist span.bugid {
-  padding-right: 1em;
-  padding-left: 0px;
-  margin-left: 0px;
+.buglist th {
+  border-bottom: 2px solid black;
 }
 span.bugid {
   font-weight: bold;
@@ -88,3 +86,16 @@ p.tableblock {
   margin-top: 0pt;
   margin-bottom: 0pt;
 }
+th.halign-left,
+td.halign-left {
+  text-align: left;
+}
+th.halign-right,
+td.halign-right {
+  text-align: right;
+}
+th.halign-center,
+td.halign-center {
+  text-align: center;
+}
+

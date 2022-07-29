@@ -26,11 +26,11 @@ this=$0
 here=`pwd`
 cd ../..
 twoup=`pwd`
-cd $here
+cd "$here"
 
-LINK=$twoup/bin/.link-sml
+LINK="$twoup/bin/.link-sml"
 
-if [ ! -x $LINK ] ; then
+if [ ! -x "$LINK" ] ; then
     echo $this: link script $LINK is not operational.
     exit 1
 fi
@@ -131,6 +131,8 @@ while [ "$#" != "0" ] ; do
     @SML*)
 	ARGS="$ARGS $arg"
 	;;
+    -C*) ARGS="$ARGS $arg" ;;
+    -D*) ARGS="$ARGS $arg" ;;
     *)
 	echo "$this: unknown argument \"$arg\""
 	exit 1
@@ -143,14 +145,14 @@ done
 # (using an absolute path!)
 # ... unless it was already set at the time we run this script.
 #
-CM_PATHCONFIG=${CM_PATHCONFIG:-$twoup/lib/pathconfig}
+CM_PATHCONFIG=${CM_PATHCONFIG:-"$twoup/lib/pathconfig"}
 export CM_PATHCONFIG
 
 #
 # use the arch-n-opsys script to determine the ARCH/OS if possible
 #
-if [ -f $twoup/bin/.arch-n-opsys ]; then
-    ARCH_N_OPSYS=`$twoup/bin/.arch-n-opsys $SIZE_OPT`
+if [ -f "$twoup/bin/.arch-n-opsys" ]; then
+    ARCH_N_OPSYS=`"$twoup/bin/.arch-n-opsys" $SIZE_OPT`
     if [ "$?" = "0" ]; then
 	eval $ARCH_N_OPSYS
 	echo $this: architecture = $ARCH
@@ -162,22 +164,22 @@ fi
 # The first argument must be a simple path (no / inside), and
 # the second argument must be an absolute path.
 link() {
-    if [ -d $1 ] ; then
-	if [ ! -d $2 ] ; then
-	    if [ -f $2 ] ; then
-		echo $this: $2 exists as a non-directory
+    if [ -d "$1" ] ; then
+	if [ ! -d "$2" ] ; then
+	    if [ -f "$2" ] ; then
+		echo $this: '$2' exists as a non-directory
 		exit 1
 	    fi
-	    mkdir $2
+	    mkdir "$2"
 	fi
-	cd $1
+	cd "$1"
 	for i in * .[a-zA-Z0-9]* ; do
-	    link $i $2/$i
+	    link $i "$2/$i"
 	done
 	cd ..
-    elif [ -f $1 ] ; then
-	rm -f $2
-	ln $1 $2
+    elif [ -f "$1" ] ; then
+	rm -f "$2"
+	ln "$1" "$2"
     fi
 }
 
@@ -189,13 +191,17 @@ if [ x"$BOOT_DIR" = x ] ; then
     fi
 fi
 
-cd $BOOT_DIR
+pwd
+cd "$BOOT_DIR"
 
-echo $LINK $RUN $SIZE_OPT \
-    @SMLboot=BOOTLIST @SMLheap=$HEAP @SMLalloc=$ALLOC \
+# FIXME: if the "-run" option is given with a pathname that
+# involves spaces, this step will fail.
+#
+echo "$LINK" $RUN $SIZE_OPT \
+    @SMLboot=BOOTLIST @SMLheap="$HEAP" @SMLalloc=$ALLOC \
     $VERBOSITY $ARGS $MODE
-if $LINK $RUN $SIZE_OPT \
-    @SMLboot=BOOTLIST @SMLheap=$HEAP @SMLalloc=$ALLOC \
+if "$LINK" $RUN $SIZE_OPT \
+    @SMLboot=BOOTLIST @SMLheap="$HEAP" @SMLalloc=$ALLOC \
     $VERBOSITY $ARGS $MODE
 then
 #
@@ -215,21 +221,21 @@ fi
 # Now move the libraries, generate the pathconfig file, and delete the bootdir.
 #
 
-cd $here
+cd "$here"
 if [ $bare = no ] ; then
-    LIB_DIR=`pwd`/${HEAP}.lib
+    LIB_DIR="`pwd`/${HEAP}.lib"
 
-    rm -rf $LIB_DIR
-    mkdir $LIB_DIR
+    rm -rf "$LIB_DIR"
+    mkdir "$LIB_DIR"
 
-    cd $BOOT_DIR
+    cd "$BOOT_DIR"
 
     for anchor in * ; do
-	if [ -d $anchor ] ; then
-	    link $anchor $LIB_DIR/$anchor
-	    echo $anchor $anchor
+	if [ -d "$anchor" ] ; then
+	    link "$anchor" "$LIB_DIR/$anchor"
+	    echo "$anchor" "$anchor"
 	fi
-    done >$LIB_DIR/pathconfig
+    done >"$LIB_DIR/pathconfig"
 
     cd $here
 fi

@@ -128,8 +128,17 @@ base/compiler/Parse/parse/ml.grm.sml
 base/compiler/Parse/parse/sml.grm.desc
 base/compiler/Parse/parse/sml.grm.sig
 base/compiler/Parse/parse/sml.grm.sml
+base/runtime/objs/gen-offsets
+base/runtime/objs/gen-sizes
+base/runtime/objs/gen-unix-signals
+base/runtime/objs/gen-unix-sigtbl
+base/runtime/objs/ml-sizes.h
+base/runtime/objs/mlstate-offsets.h
+base/runtime/objs/prim.s
 base/runtime/objs/run.*
 base/runtime/objs/runx.*
+base/runtime/objs/system-signals.h
+base/runtime/objs/unix-sigtbl.c
 base/system/sml.boot*
 base/system/sml.*-*
 doc/mk/doc-rules.gmk
@@ -176,5 +185,6 @@ lib
 
 # files created when building a distribution (macOS or Windows)
 osx-dist/smlnj.dst
+osx-dist/smlnj-*.pkg
 win-dist/smlnj
 

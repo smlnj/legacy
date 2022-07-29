@@ -1,6 +1,6 @@
 (* posix-tty.sml
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *
  * Structure for POSIX 1003.1 operations on terminal devices
@@ -28,6 +28,22 @@ structure POSIX_TTY =
     fun cfun x = CInterface.c_function "POSIX-TTY" x
     val osval : string -> s_int = cfun "osval"
     val w_osval = SysWord.fromInt o osval
+
+   (* for now, we will protect against the function not being defined in the runtime
+    * system, but this code can be simplified.
+    *)
+    val getWindowSz : file_desc -> { nLines : int, nCols : int } option = (
+          (* try *)
+            let
+            val getwinsz : int -> (int * int) option =
+                  CInterface.c_function "POSIX-TTY" "getwinsz"
+            in
+              fn (POSIX_FileSys.FD{fd}) => (case getwinsz fd
+                 of SOME(nr, nc) => SOME{nLines=nr, nCols=nc}
+                  | NONE => NONE
+                (* end case *))
+            end)
+              handle CInterface.CFunNotFound _ => (fn _ => NONE)
 
     structure V =
       struct

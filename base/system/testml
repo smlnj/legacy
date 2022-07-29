@@ -14,8 +14,8 @@
 
 this=$0
 cmddir=`dirname $0`
-cmddir=`cd $cmddir; pwd`
-bindir=`cd $cmddir/../../bin; pwd`
+cmddir=`cd "$cmddir"; pwd`
+bindir=`cd "$cmddir/../../bin"; pwd`
 
 ARGS=""
 
@@ -49,7 +49,7 @@ done
 # use the arch-n-opsys script to determine the ARCH/OS if possible
 #
 if [ -f $twoup/bin/.arch-n-opsys ]; then
-    ARCH_N_OPSYS=`$bindir/.arch-n-opsys $SIZE_OPT`
+    ARCH_N_OPSYS=`"$bindir/.arch-n-opsys" $SIZE_OPT`
     if [ "$?" = "0" ]; then
 	eval $ARCH_N_OPSYS
     fi
@@ -57,13 +57,13 @@ fi
 
 heapdir=`dirname $HEAP_IMAGE`
 [ -f "$heapdir/$HEAP_IMAGE.$HEAP_SUFFIX" ] || heapdir="$cmddir/$heapdir"
-HEAP_IMAGE=`cd $heapdir; pwd`/$HEAP_IMAGE
+HEAP_IMAGE=`cd "$heapdir"; pwd`/$HEAP_IMAGE
 
-LIB_DIR=${HEAP_IMAGE}.lib
-LPC=${LIB_DIR}/local_pathconfig
+LIB_DIR="${HEAP_IMAGE}.lib"
+LPC="${LIB_DIR}/local_pathconfig"
 
-rm -f $LPC
-cp ../../config/extrapathconfig $LPC
+rm -f "$LPC"
+cp ../../config/extrapathconfig "$LPC"
 
-CM_PATHCONFIG=$LIB_DIR/pathconfig CM_LOCAL_PATHCONFIG=$LPC \
-    $bindir/sml $SIZE_OPT @SMLload=$HEAP_IMAGE "$@"
+CM_PATHCONFIG="$LIB_DIR/pathconfig" CM_LOCAL_PATHCONFIG="$LPC" \
+    "$bindir/sml" $SIZE_OPT @SMLload="$HEAP_IMAGE" "$@"

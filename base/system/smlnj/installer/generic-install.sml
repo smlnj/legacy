@@ -382,7 +382,7 @@ structure GenericInstall : sig
 	       *   name is relative to smlnjroot and in standard syntax *)
 		val nrelname = native relname
 		val ndir = native dir
-		val libname = concat ["$", anchor, "/", relname]
+		val libname = P.concat ("$" ^ anchor, nrelname)
 		val adir = P.concat (smlnjroot, ndir)
 		val finalanchor = getOpt (altanchor, anchor)
 		val { dir = nreldir, file = relbase } = P.splitDirFile nrelname

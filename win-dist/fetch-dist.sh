@@ -92,10 +92,6 @@ if [ x"$VERSION" != x"$CONFIG_VERSION" ] ; then
   complain "version in config/version is $CONFIG_VERSION"
 fi
 
-# customize the smlnj.wxs file with the SML/NJ version number
-#
-sed -e "s,@SMLNJ_VERSION@,$VERSION,g" $ROOT/wix/smlnj_wxs.in > $CONFIGDIR/WinSetup/smlnj.wxs
-
 #
 # create the base source subdirectory
 #
@@ -133,6 +129,21 @@ done
 # so that the config\install.bat script works
 #
 touch smlnj-lib/HTML4/*.l.sml smlnj-lib/HTML4/*.g.sml
+
+# add the WinSetup directory
+#
+if [ ! -d $CONFIGDIR/WinSetup ] ; then
+  cp -rp $ROOT/WinSetup $CONFIGDIR/WinSetup
+fi
+
+# customize the smlnj.wxs file with the SML/NJ version number
+#
+PRODUCT_ID=$(uuidgen)
+PACKAGE_ID=$(uuidgen)
+sed -e "s,@SMLNJ_VERSION@,$VERSION,g" \
+    -e "s,@PRODUCT_ID@,$PRODUCT_ID,g" \
+    -e "s,@PACKAGE_ID@,$PACKAGE_ID,g" \
+    $ROOT/wix/smlnj_wxs.in > $CONFIGDIR/WinSetup/smlnj.wxs
 
 #
 # remove tar files

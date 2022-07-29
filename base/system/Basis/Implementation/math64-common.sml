@@ -36,6 +36,7 @@ structure Math64Common : sig
 
     val pi : real
     val e  : real
+    val tau : real              (* Basis Library proposal 2022-001 *)
     val atan  : real -> real
     val atan2 : real * real -> real
     val exp   : real -> real
@@ -75,8 +76,12 @@ structure Math64Common : sig
 
     val lessu : int * int -> bool = I.ltu
 
+    (* Note: 64-bit floats have a max of 16 digits of precision, so these
+     * values are overkill.
+     *)
     val pi = 3.14159265358979323846
     val e  = 2.7182818284590452354
+    val tau = 6.2831853071795864769     (* Basis Library proposal 2022-001 *)
 
     fun isNan x =  Bool.not(x==x)
     val plusInfinity = 1E300 * 1E300

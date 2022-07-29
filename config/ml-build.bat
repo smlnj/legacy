@@ -42,7 +42,7 @@ echo structure %rare% = struct val _ = SMLofNJ.exportFn ("%heap%", %main%) end >
 
 echo Group structure %rare% is $/basis.cm "%root%" %smlfile% >%cmfile%
 
-%COMSPEC% /C "%SMLNJ_HOME%\bin\sml.bat %flags% %setup% @CMbuild %root% %cmfile% %heap% %listfile% %linkargsfile%"
+%COMSPEC% /C ""%SMLNJ_HOME%\bin\sml.bat" %flags% %setup% @CMbuild %root% %cmfile% %heap% %listfile% %linkargsfile%"
 if ERRORLEVEL 1 goto ERR
 if NOT EXIST %linkargsfile% goto END
 "%SMLNJ_HOME%\bin\.run\run.x86-win32.exe" @SMLboot=%listfile%

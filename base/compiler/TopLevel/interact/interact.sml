@@ -24,55 +24,55 @@ functor Interact(EvalLoop : EVALLOOP) : INTERACT =
 
     in
 
-      fun use fname = let
+    fun use fname = let
 	  val isOuter = !outerUse
 	  val _ = outerUse := false
 	  fun restore () = (outerUse := isOuter)
 	  (* for nested calls to "use", we want to propagate compilation errors
            * so as to abort the outermost call.
            *)
-	    fun compileError () = (
-		  if isOuter
-		    then false
-		    else raise CompileError)
-	    in
-	      if OS.FileSys.access(fname, [OS.FileSys.A_READ])
-		then let
-		  val _ = app Control.Print.say ["[opening ", fname, "]\n"]
-		  val strm = TextIO.openIn fname
-		  in
-		    (EvalLoop.evalStream (fname, strm); restore(); true)
-		      handle exn => (
-			restore ();
-			case exn
-			 of CompileError => compileError()
-			  | ErrorMsg.Error => compileError()
-			  | EvalLoop.ExnDuringExecution CompileError => compileError()
-			  | EvalLoop.ExnDuringExecution exn' =>
+          fun compileError () = (
+                if isOuter
+                  then false
+                  else raise CompileError)
+          in
+            if OS.FileSys.access(fname, [OS.FileSys.A_READ])
+              then let
+                val _ = app Control.Print.say ["[opening ", fname, "]\n"]
+                val strm = TextIO.openIn fname
+                in
+                  (EvalLoop.evalStream (fname, strm); restore(); true)
+                    handle exn => (
+                      restore ();
+                      case exn
+                       of CompileError => compileError()
+                        | ErrorMsg.Error => compileError()
+                        | EvalLoop.ExnDuringExecution CompileError => compileError()
+                        | EvalLoop.ExnDuringExecution exn' =>
 (* FIXME: it would be useful to have a way to raise exn' without modifying its
  * trace-back history so that the message displayed to the user does not include
  * a confusing reference to this line of compiler code!
  *)
-			      if isOuter then raise exn' else raise exn
-			  | _ => (
-			    (* this is probably an error in the compiler! *)
-			      if isOuter
-				then (
-				  app Control.Print.say [
-				      "[unexpected exception: ", General.exnMessage exn,
-				      "]\n"
-				    ];
-				  raise exn)
-				else raise EvalLoop.ExnDuringExecution exn)
-			(* end case *))
-		  end
-		else (
-		  restore();
-		  app Control.Print.say [
-		      "[use failed: '", fname,
-		      "' does not exist or is unreadable]\n"
-		    ];
-		  compileError())
+                            if isOuter then raise exn' else raise exn
+                        | _ => (
+                          (* this is probably an error in the compiler! *)
+                            if isOuter
+                              then (
+                                app Control.Print.say [
+                                    "[unexpected exception: ", General.exnMessage exn,
+                                    "]\n"
+                                  ];
+                                raise exn)
+                              else raise EvalLoop.ExnDuringExecution exn)
+                      (* end case *))
+                end
+              else (
+                restore();
+                app Control.Print.say [
+                    "[use failed: '", fname,
+                    "' does not exist or is unreadable]\n"
+                  ];
+                compileError())
 	    end (* use *)
 
   (* compile a file; returns true if okay and false on either compile-time

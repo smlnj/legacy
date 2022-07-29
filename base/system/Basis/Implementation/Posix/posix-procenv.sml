@@ -75,33 +75,31 @@ structure POSIX_ProcEnv =
     val time' : unit -> Int32.int = cfun "time"
     val time = Time.fromSeconds o Int32Imp.toLarge o time'
 
-      (* times in clock ticks *)
+    (* times in clock ticks *)
     val times' : unit -> Int32.int * Int32.int * Int32.int * Int32.int * Int32.int
 	  = cfun "times"
 
     val ticksPerSec = IntImp.toLarge (SysWord.toIntX (sysconf "CLK_TCK"))
 
-    val ticksToTime =
-	case IntInfImp.quotRem (TimeImp.fractionsPerSecond, ticksPerSec) of
-	    (factor, 0) =>
-	      (fn ticks => Time.fromFractions
-			       (factor * Int32Imp.toLarge ticks))
-	  | _ =>
-	      (fn ticks =>
-		  Time.fromFractions
-		      (IntInfImp.quot (TimeImp.fractionsPerSecond
-				       * Int32Imp.toLarge ticks,
-				       ticksPerSec)))
+    val ticksToTime = (case IntInfImp.quotRem (TimeImp.fractionsPerSecond, ticksPerSec)
+           of (factor, 0) =>
+	        (fn ticks => Time.fromFractions (factor * Int32Imp.toLarge ticks))
+	    | _ =>
+	        (fn ticks => Time.fromFractions (
+                      IntInfImp.quot (
+                        TimeImp.fractionsPerSecond * Int32Imp.toLarge ticks,
+                        ticksPerSec)))
+          (* end case *))
 
     fun times () = let
-        val (e,u,s,cu,cs) = times' ()
-    in
-        { elapsed = ticksToTime e,
-          utime = ticksToTime u,
-          stime = ticksToTime s,
-          cutime = ticksToTime cu,
-          cstime = ticksToTime cs }
-    end
+          val (e,u,s,cu,cs) = times' ()
+          in {
+            elapsed = ticksToTime e,
+            utime = ticksToTime u,
+            stime = ticksToTime s,
+            cutime = ticksToTime cu,
+            cstime = ticksToTime cs
+          } end
 
     val getenv  : string -> string option = cfun "getenv"
     val environ : unit -> string list = cfun "environ"

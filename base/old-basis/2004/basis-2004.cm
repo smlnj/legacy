@@ -2,7 +2,7 @@
  *
  * The 2004 version of the Standard ML Basis Library.
  *
- * Copyright (c) 2015 by The Fellowship of SML/NJ
+ * Copyright (c) 2022 by The Fellowship of SML/NJ
  *)
 
 Library
@@ -21,11 +21,17 @@ Library
 	signature ARRAY_SLICE_2004
 	signature LIST_2004
 	signature LIST_PAIR_2004
+        signature MATH_2004
 	signature MONO_ARRAY_2004
 	signature MONO_ARRAY_SLICE_2004
 	signature MONO_VECTOR_2004
 	signature MONO_VECTOR_SLICE_2004
 	signature OPTION_2004
+#if defined(OPSYS_UNIX)
+        signature POSIX_2004
+        signature POSIX_TTY_2004
+#endif
+        signature REAL_2004
 	signature STRING_2004
 	signature TEXT_2004
 	signature VECTOR_2004
@@ -40,6 +46,9 @@ is
 
 (* code to rebind modules and signatures to the old APIs *)
   basis.sml
+#if defined(OPSYS_UNIX)
+  basis-unix.sml
+#endif
 #if defined(SIZE_64)
   target32-basis.sml
 #else (* SIZE_32 *)

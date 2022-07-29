@@ -88,8 +88,8 @@ function build_from_fixpt {
 # step 1: refresh output
 #
 echo "refresh sources ..."
-echo "***** ./admin/refresh-all.sh" > $LOG
-./admin/refresh-all.sh >> $LOG 2>&1 || exit 1
+echo "***** git pull" > $LOG
+git pull >> $LOG 2>&1 || exit 1
 
 # steps 2-6
 build_from_fixpt
@@ -102,8 +102,10 @@ echo "***** echo $VERSION > version" >> $LOG
 echo $VERSION > version
 echo "***** echo $DATE > releasedate" >> $LOG
 echo $DATE > releasedate
-echo "***** svn commit -m \"updating version number to $VERSION\"" >> $LOG
-svn commit -m "updating version number to $VERSION" >> $LOG 2>&1 || exit 1
+echo "***** git commit -a -m \"updating version number to $VERSION\"" >> $LOG
+git commit -a -m "updating version number to $VERSION" >> $LOG 2>&1 || exit 1
+echo "***** git push" >> $LOG
+git push >> $LOG 2>&1 || exit 1
 echo "***** cd $HERE" >> $LOG
 cd $HERE
 
