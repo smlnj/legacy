@@ -34,6 +34,21 @@ current source from **GitHub**, the following steps should usually work.
     % ./makeml
     ```
 
+    The "`../bin/sml`" argument is optional; if omitted, then the `sml` command in the
+    user's `PATH` will be used.  Once can also specify a different path to an `sml`
+    command, when appropriate.
+
+    Also note that because of a flaw in the way that **CM** handles conditionals in CM
+    files, it is necessary that the **ml-yacc** and **ml-ulex** commands be available
+    in the `PATH`.  If you do not have an installation of **SML/NJ** available, then use
+    the following steps:
+
+    ``` sh
+    % cd base/system
+    % PATH=$PATH:$PWD/../../bin ./cmb-make ../../bin/sml
+    % ./makeml
+    ```
+
 4. At this point, you can test the compiled code while in the
    `system` directory.
 
