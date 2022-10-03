@@ -110,14 +110,13 @@ case `uname -s` in
     case `uname -m` in
       *86)
 	ARCH=x86
-      # we no longer support Linux before the 2.4 kernel.
+      # version 4.9 is the oldest "supported" version of Linux, so we
+      # only go back to the 3.x versions
 	case `uname -r` in
-	  2.4.*) ;;
-	  2.5.*) ;;
-	  2.6.*) ;;
-	  3.*) ;;
-	  4.*) ;;
-	  5.*) ;;
+	  3.*) ;; # 2011 -- 2015
+	  4.*) ;; # 2015 -- 2018
+	  5.*) ;; # 2019 -- 2022
+	  6.*) ;; # 2022 --
 	  *) exit 1 ;;
 	esac
 	;;
