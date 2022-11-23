@@ -21,8 +21,8 @@ structure StrEqlCnv : sig
 
     val wordSzInBytes = if Target.is64 then 8 else 4
     val bytesToWords = if Target.is64
-	  then (fn n => Word.toIntX(Word.>>(Word.fromInt n + 0w3, 0w2)))
-	  else (fn n => Word.toIntX(Word.>>(Word.fromInt n + 0w7, 0w3)))
+	  then (fn n => Word.toIntX(Word.>>(Word.fromInt n + 0w7, 0w3)))
+	  else (fn n => Word.toIntX(Word.>>(Word.fromInt n + 0w3, 0w2)))
 
     val wordTy = C.NUMt{sz = Target.mlValueSz, tag = false}
     val neqTest = C.P.CMP{oper = C.P.NEQ, kind = C.P.UINT Target.mlValueSz}
