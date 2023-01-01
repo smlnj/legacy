@@ -104,7 +104,15 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //////////////////////////////////////////////////////////////////////
 
 //====================================================================
-//== Recent updates
+== Recent updates
+
+//--------------------------------------------------------------------
+[2022/12/19]::
++
+Merge fixes for Slice `all` combinators (see
+https://github.com/smlnj/legacy/pull/264[pull request 264]).
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
 
 //====================================================================
 == Version 110.99.3; 2022/07/27
