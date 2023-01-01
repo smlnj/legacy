@@ -32,13 +32,15 @@ xref:str-AwkSyntax.adoc[`[.kw]#structure# AwkSyntax`]::
   A parser for the regular-expression syntax defined by the AWK language.
 
 xref:sig-REGEXP_ENGINE.adoc#str:BackTrackEngine[`[.kw]#structure# BackTrackEngine`]::
-  something
+  A regular-expression search engine implemented as a back-tracking
+  interpreter.
 
 xref:sig-REGEXP_ENGINE.adoc#str:DfaEngine[`[.kw]#structure# DfaEngine`]::
-  something
+  A regular-expression search engine implemented as a deterministic
+  finite automata.
 
 xref:sig-REGEXP_ENGINE.adoc#str:ThompsonEngine[`[.kw]#structure# ThompsonEngine`]::
-  something
+  A regular-expression search engine based on Ken Thompson's design.
 
 xref:fun-RegExpFn.adoc[`[.kw]#functor# RegExpFn`]::
   Provides a functor for combining a regular-expression parser with an engine to

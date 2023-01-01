@@ -17,7 +17,7 @@ simple applications a bit less obvious.  This tutorial shows how the
 == Assembling an Regular Expression Matcher
 
 Before we can do anything else, we must assemble a regular-expression
-matcher.  For the purposes of this tutorial, we will use a combination
+matcher.  For the purposes of this tutorial, we use a combination
 of the `AwkSyntax` front-end and the `BackTrackEngine` back-end.
 
 [source,sml]
@@ -28,6 +28,14 @@ structure RE = RegExpFn(
 ------------
 
 == Match trees
+
+Regular expressions may contain xref:str-RegExpSyntax.adoc#con:Group[grouping]
+operators.  When a pattern matches a string, these groups induce a nested
+tree structure on the matched string.
+The xref:str-MatchTree.adoc[``MatchTree``] structure defines
+a polymorphic representation of this structure, along with a
+number of utility functions for extracting information from
+a match.
 
 [source,sml]
 ------------
