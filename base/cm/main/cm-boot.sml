@@ -694,8 +694,7 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 	fun procCmdLine () = let
 	    val autoload' = errorwrap (ignore o autoload mkStdSrcPath)
 	    val make' = errorwrap (ignore o makeStd)
-            fun processFile (file, mk, ext) = (
-				case ext
+            fun processFile (file, mk, ext) = (case ext
 		  of ("sml" | "sig" | "fun") => useFile file
 		   | "cm" => mk file
 		   | _ => Say.say [
@@ -814,7 +813,7 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 		     \    <file>.cm        (CM.make or CM.autoload)\n\
 		     \    -m               (switch to CM.make)\n\
 		     \    -a               (switch to CM.autoload; default)\n\
-			 \    --script         (execute scripts)\n\
+		     \    --script         (execute scripts)\n\
 		     \    <file>.sig       (use)\n\
 		     \    <file>.sml       (use)\n\
 		     \    <file>.fun       (use)\n\
@@ -915,7 +914,7 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 	      | args ("-S" :: _ :: _, mk) = (showcur NONE; nextarg mk)
 	      | args (["-E"], _) = (show_envvars NONE; quit ())
 	      | args ("-E" :: _ :: _, mk) = (show_envvars NONE; nextarg mk)
-		  | args ("--script" :: _, _) = (nextargscript ())  (* line added by Daya HWU *)
+	      | args ("--script" :: _, _) = (nextargscript ())  (* line added by Daya HWU *)
 	      | args ("@CMbuild" :: rest, _) = mlbuild rest
 	      | args (["@CMredump", heapfile], _) = redump_heap heapfile
 	      | args (f :: rest, mk) =
