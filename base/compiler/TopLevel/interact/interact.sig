@@ -27,6 +27,7 @@ signature INTERACT =
     val useFile : string -> bool
 
     val useStream : TextIO.instream -> unit
+    val useScriptFile : string * TextIO.instream -> unit (* Addded by DAYA *)
     val evalStream : TextIO.instream * Environment.environment -> Environment.environment
 
     val withErrorHandling : bool -> (* true: treat all exns like usercode exns *)

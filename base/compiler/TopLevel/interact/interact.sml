@@ -91,6 +91,16 @@ functor Interact(EvalLoop : EVALLOOP) : INTERACT =
 
     fun useStream stream = EvalLoop.evalStream ("<instream>", stream)
 
+    (* Added by DAYA*)
+    
+    fun useScriptFile (fname, stream) = ( 
+      
+      (EvalLoop.evalStream (fname, stream))
+        handle exn => ( 
+          EvalLoop.uncaughtExnMessage exn
+          )  
+      )
+
     fun evalStream (stream, baseEnv) = let
 	  val r = ref Environment.emptyEnv
 	  val base = { set = fn _ => raise Fail "evalStream: #set base",
