@@ -92,4 +92,5 @@ functor BackendFn (
     structure Machine = M.Machine
     val architecture = M.architecture
     val abi_variant = M.abi_variant
+	structure Mutecompiler = Mutecompiler
 end

@@ -6,6 +6,7 @@ signature BACKEND = sig
     structure Profile : PROFILE
     structure Compile : COMPILE
     structure Interact : INTERACT
+    structure Mutecompiler : MUTECOMPILER
     structure Machine : MACHINE
     val architecture: string
     val abi_variant: string option
