@@ -91,6 +91,22 @@ functor Interact(EvalLoop : EVALLOOP) : INTERACT =
 
     fun useStream stream = EvalLoop.evalStream ("<instream>", stream)
 
+    (* Added by DAYA*)
+    
+    fun useScriptFile (fname, stream) = ( 
+      
+      Mutecompiler.silenceCompiler () ;
+      EvalLoop.evalStream ("<instream>", (TextIO.openString "Backend.Mutecompiler.mcdummyfn ();") ) ;
+      Mutecompiler.unsilenceCompiler () ;
+
+      (EvalLoop.evalStream (fname, stream))
+        handle exn => ( 
+          Mutecompiler.printStashedCompilerOutput ();
+          Mutecompiler.unsilenceCompiler ();
+          EvalLoop.uncaughtExnMessage exn
+          )  
+      )
+
     fun evalStream (stream, baseEnv) = let
 	  val r = ref Environment.emptyEnv
 	  val base = { set = fn _ => raise Fail "evalStream: #set base",
