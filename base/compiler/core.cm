@@ -166,7 +166,6 @@ TopLevel/interact/interact.sml
 TopLevel/interact/mutecompiler.sig
 TopLevel/interact/mutecompiler.sml
 
-
 TopLevel/backend/backend.sig
 TopLevel/backend/backend-fn.sml
 
@@ -370,4 +369,3 @@ $/pickle-lib.cm
 $smlnj/init/init.cmi : cm          (* to gain access at CoreIntInf *)
 
 $smlnj/internal/smlnj-version.cm
-
