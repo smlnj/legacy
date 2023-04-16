@@ -690,7 +690,8 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 	  end
       end
   in
-    fun init (bootdir, de, er, useStream, useScriptFile, useFile, errorwrap, icm) = let
+    (* New function useScriptFile included in the argument list as part of 'Execute as a script' change *)
+	fun init (bootdir, de, er, useStream, useScriptFile, useFile, errorwrap, icm) = let
 	fun procCmdLine () = let
 	    val autoload' = errorwrap (ignore o autoload mkStdSrcPath)
 	    val make' = errorwrap (ignore o makeStd)
@@ -702,7 +703,7 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 		      ]
 		  (* end case *))
 
-		  (* DAYA change starts here *)
+		  (* 'Execute as a script' change starts here - *)
 			fun eatuntilnewline (instream : TextIO.instream): bool = let
     			val c = TextIO.input1 instream
   				in
@@ -734,7 +735,7 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
   					then	( Say.say [ "!* Script file doesn't start with #!. \n" ] ) 
 					else	( useScriptFile (fname, stream) )
 				end
-			(* DAYA change ends here *)
+			(* 'Execute as a script' change ends here *)
 
 	    fun inc n = n + 1
 	    fun show_controls (getarg, getval, padval) level = let
@@ -813,7 +814,7 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 		     \    <file>.cm        (CM.make or CM.autoload)\n\
 		     \    -m               (switch to CM.make)\n\
 		     \    -a               (switch to CM.autoload; default)\n\
-		     \    --script         (execute scripts)\n\
+		     \    --script         (execute as a script)\n\
 		     \    <file>.sig       (use)\n\
 		     \    <file>.sml       (use)\n\
 		     \    <file>.fun       (use)\n\
@@ -914,7 +915,7 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 	      | args ("-S" :: _ :: _, mk) = (showcur NONE; nextarg mk)
 	      | args (["-E"], _) = (show_envvars NONE; quit ())
 	      | args ("-E" :: _ :: _, mk) = (show_envvars NONE; nextarg mk)
-	      | args ("--script" :: _, _) = (nextargscript ())  (* line added by Daya HWU *)
+	      | args ("--script" :: _, _) = (nextargscript ())  (* added as part of 'Execute as a script' change *)
 	      | args ("@CMbuild" :: rest, _) = mlbuild rest
 	      | args (["@CMredump", heapfile], _) = redump_heap heapfile
 	      | args (f :: rest, mk) =
@@ -928,7 +929,7 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 		in SMLofNJ.shiftArgs (); args (l, mk)
 		end
 
-		(* nextargscript added by Daya HWU *)
+		(* nextargscript added as part of 'Execute as a script' change *)
 		and nextargscript () =
 		let val l = SMLofNJ.getArgs ()
 		in SMLofNJ.shiftArgs (); processFileScript (hd l); quit ()
