@@ -91,8 +91,7 @@ functor Interact(EvalLoop : EVALLOOP) : INTERACT =
 
     fun useStream stream = EvalLoop.evalStream ("<instream>", stream)
 
-    (* Added by DAYA*)
-    
+    (* Added as part of Execute as a script change*)
     fun useScriptFile (fname, stream) = ( 
       
       (EvalLoop.evalStream (fname, stream))
