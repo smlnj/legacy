@@ -93,8 +93,8 @@ functor Interact(EvalLoop : EVALLOOP) : INTERACT =
 
     (* Added by DAYA*)
     
+    (* Added as part of Execute as a script change with Mutecompiler *)
     fun useScriptFile (fname, stream) = ( 
-      
       Mutecompiler.silenceCompiler () ;
       EvalLoop.evalStream ("<instream>", (TextIO.openString "Backend.Mutecompiler.mcdummyfn ();") ) ;
       Mutecompiler.unsilenceCompiler () ;
