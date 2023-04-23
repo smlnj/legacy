@@ -70,7 +70,7 @@ structure Random :> RANDOM =
     val kUMask : W32.word = 0wx80000000         (* most significant w-r bits *)
     val kLMask : W32.word = 0wx7FFFFFFF         (* least significant r bits *)
 
-    datatype t = RandState of {
+    datatype rand = RandState of {
         mt : W32A.array,
         mti : int ref
       }
@@ -242,6 +242,8 @@ structure Random :> RANDOM =
           in
             y
           end
+
+    fun rand (a, b) = fromList [W32.fromInt a, W32.fromInt b]
 
     fun randNativeInt rs = Int32.fromLarge(W32.toLargeIntX(W32.>>(randNativeWord rs, 0w1)))
 
