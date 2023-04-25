@@ -17,7 +17,7 @@ SML/NJ 110.99.4
         This change fixes issue #256 (https://github.com/smlnj/legacy/issues/256).
 
 [2022-12-19]
-        Added the `NativeInt` and `NativeWord` structure aliases to provice
+        Added the `NativeInt` and `NativeWord` structure aliases to provide
         a portable way to refer to the native numeric types in signatures.
         While these are not necessary for the development branch (which only
         supports 64-bit platforms), we include them to minimize differences
