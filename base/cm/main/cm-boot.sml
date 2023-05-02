@@ -7,6 +7,9 @@
  * structure CM people find in $smlnj/cm/full.cm.
  *
  * author: Matthias Blume (blume@cs.princeton.edu)
+ *
+ * This module amended to include 'Execute as a script' change done by Dayanandan Natarajan, Heriot Watt University
+ *
  *)
 
 functor LinkCM (structure HostBackend : BACKEND) = struct
@@ -703,7 +706,7 @@ functor LinkCM (structure HostBackend : BACKEND) = struct
 		      ]
 		  (* end case *))
 
-		  (* 'Execute as a script' change starts here - *)
+		  (* 'Execute as a script' change starts here. Change added by Dayanandan Natarajan *)
 			fun eatuntilnewline (instream : TextIO.instream): bool = let
     			val c = TextIO.input1 instream
   				in

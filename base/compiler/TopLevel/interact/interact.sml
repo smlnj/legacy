@@ -2,6 +2,9 @@
  *
  * COPYRIGHT (c) 2017 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
+ *
+ * This module amended to include 'Execute as a script' change done by Dayanandan Natarajan, Heriot Watt University
+ *
  *)
 
 functor Interact(EvalLoop : EVALLOOP) : INTERACT =
@@ -91,7 +94,7 @@ functor Interact(EvalLoop : EVALLOOP) : INTERACT =
 
     fun useStream stream = EvalLoop.evalStream ("<instream>", stream)
 
-    (* Added as part of Execute as a script change*)
+    (* Function added as part of Execute as a script change*)
     fun useScriptFile (fname, stream) = ( 
       
       (EvalLoop.evalStream (fname, stream))
