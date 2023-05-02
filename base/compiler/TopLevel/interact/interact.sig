@@ -2,6 +2,9 @@
  *
  * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
+ *
+ * This module amended to include 'Execute as a script' change done by Dayanandan Natarajan, Heriot Watt University
+ *
  *)
 
 signature INTERACT =

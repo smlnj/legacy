@@ -2,6 +2,9 @@
  *
  * COPYRIGHT (c) 2017 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
+ *
+ * This module amended to include 'Execute as a script' change done by Dayanandan Natarajan, Heriot Watt University
+ *
  *)
 
 functor Interact(EvalLoop : EVALLOOP) : INTERACT =
@@ -91,20 +94,18 @@ functor Interact(EvalLoop : EVALLOOP) : INTERACT =
 
     fun useStream stream = EvalLoop.evalStream ("<instream>", stream)
 
-    (* Added by DAYA*)
-    
-    (* Added as part of Execute as a script change with Mutecompiler *)
+    (* Function added as part of Execute as a script change*)
     fun useScriptFile (fname, stream) = ( 
-      Mutecompiler.silenceCompiler () ;
-      EvalLoop.evalStream ("<instream>", (TextIO.openString "Backend.Mutecompiler.mcdummyfn ();") ) ;
-      Mutecompiler.unsilenceCompiler () ;
+       Mutecompiler.silenceCompiler () ;
+       EvalLoop.evalStream ("<instream>", (TextIO.openString "Backend.Mutecompiler.mcdummyfn ();") ) ; (* Idea from Dr Joe Wells HWU, to preload structure *)
+       Mutecompiler.unsilenceCompiler () ;
 
-      (EvalLoop.evalStream (fname, stream))
-        handle exn => ( 
-          Mutecompiler.printStashedCompilerOutput ();
-          Mutecompiler.unsilenceCompiler ();
-          EvalLoop.uncaughtExnMessage exn
-          )  
+       (EvalLoop.evalStream (fname, stream))
+         handle exn => ( 
+           Mutecompiler.printStashedCompilerOutput ();
+           Mutecompiler.unsilenceCompiler ();
+           EvalLoop.uncaughtExnMessage exn
+           )  
       )
 
     fun evalStream (stream, baseEnv) = let

@@ -2,6 +2,10 @@
  *
  * COPYRIGHT (c) 2017 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
+ *
+ * This module introduced as part 'Execute as a script' change done by Dayanandan Natarajan, Heriot Watt University 
+ * and functions derived from 'smlnj-script' developed by Dr Joe Wells, Heriot Watt University
+ *
  *)
 
 structure Mutecompiler : MUTECOMPILER =

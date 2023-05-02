@@ -5,6 +5,9 @@
  *   completely redone by M.Blume (5/1998)
  *   ... and again in the course of switching over to the new CM
  *       (M. Blume, 7/1999)
+ *
+ * This module amended to include 'Execute as a script' change done by Dayanandan Natarajan, Heriot Watt University
+ *
  *)
 signature BOOTENV = sig
     val init:
