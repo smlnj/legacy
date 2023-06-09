@@ -103,7 +103,11 @@ https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 //| [old bug #@OLDID]
 |=======
 
-// ***** include a list of unnumbered bugs here *****
+The following unnumbered bug was also fixed:
+--
+  * The `ULexBuffer.getu` function did not handle 4-byte UTF-8 sequences in some
+    situations.
+--
 
 == Supported systems
 

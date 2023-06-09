@@ -26,17 +26,17 @@ structure ULexBuffer : sig
 
     structure W = Word
 
-    datatype stream = S of (buf * int * bool) 
-    and buf = B of { 
+    datatype stream = S of (buf * int * bool)
+    and buf = B of {
       data : string,
       basePos : AntlrStreamPos.pos,
       more : more ref,
       input : unit -> string
     }
     and more = UNKNOWN | YES of buf | NO
-        
-    fun mkStream (pos, input) = 
-	  (S (B {data = "", basePos = pos, 
+
+    fun mkStream (pos, input) =
+	  (S (B {data = "", basePos = pos,
 		 more = ref UNKNOWN,
 		 input = input},
 	      0, true))
@@ -45,7 +45,7 @@ structure ULexBuffer : sig
     fun advance (data, input, basePos, more) = (case !more
 	   of UNKNOWN => (case input()
 		 of "" => (more := NO; NO)
-		  | data' => let 
+		  | data' => let
 		      val buf' = B {
 			  data = data',
 			  basePos = AntlrStreamPos.forward (basePos, String.size data),
@@ -60,7 +60,7 @@ structure ULexBuffer : sig
 	    | m => m
 	  (* end case *))
 
-    fun getc (S(buf as B{data, basePos, more, input}, pos, lastWasNL)) = 
+    fun getc (S(buf as B{data, basePos, more, input}, pos, lastWasNL)) =
 	  if pos < String.size data
 	    then let
 	      val c = String.sub (data, pos)
@@ -84,7 +84,7 @@ structure ULexBuffer : sig
 		if (c < 0w128)
 		  then SOME(c, S(buf, pos+1, c = 0w10))  (* ord #"\n" = 10 *)
 		  else let (* multibyte character *)
-		    fun getByte (S(buf as B{data, basePos, more, input}, pos, _)) = 
+		    fun getByte (S(buf as B{data, basePos, more, input}, pos, _)) =
 			  if pos < String.size data
 			    then let
 			      val c = W.fromInt(Char.ord(String.sub(data, pos)))
@@ -104,11 +104,16 @@ structure ULexBuffer : sig
 			  (* end case *))
 		    val strm = S(buf, pos+1, false)
 		    in
-		      case (W.andb(0wxe0, c))
-		       of 0wxc0 => SOME(getContByte (W.andb(0wx1f, c), strm))
-			| 0wxe0 => SOME(getContByte(getContByte(W.andb(0wx0f, c), strm)))
-			| _ => raise Incomplete
-		      (* end case *)
+                      if (W.andb(c, 0wxe0) = 0wxc0)
+                        (* 2-byte character *)
+                        then SOME(getContByte (W.andb(0wx1f, c), strm))
+                      else if (W.andb(c, 0wxf0) = 0wxe0)
+                        (* 3-byte character *)
+                        then SOME(getContByte(getContByte(W.andb(0wx0f, c), strm)))
+                      else if (W.andb(c, 0wxf8) = 0wxf0)
+                        (* 3-byte character *)
+                        then SOME(getContByte(getContByte(getContByte(W.andb(0wx0f, c), strm))))
+                        else raise Incomplete
 		    end
 	      end
 	  (* advance buffer *)
@@ -122,7 +127,7 @@ structure ULexBuffer : sig
 
     fun subtract (new, old) = let
 	  val (S (B {data = ndata, basePos = nbasePos, ...}, npos, _)) = new
-	  val (S (B {data = odata, basePos = obasePos, 
+	  val (S (B {data = odata, basePos = obasePos,
 		     more, input}, opos, _)) = old
 	  in
 	    if nbasePos = obasePos then
@@ -130,7 +135,7 @@ structure ULexBuffer : sig
 	    else case !more
 		  of NO =>      raise Fail "BUG: ULexBuffer.subtract, but buffers are unrelated"
 		   | UNKNOWN => raise Fail "BUG: ULexBuffer.subtract, but buffers are unrelated"
-		   | YES buf => 
+		   | YES buf =>
 		       Substring.extract (
 			 Substring.concat [
 			   Substring.extract (odata, opos, NONE),
