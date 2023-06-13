@@ -118,7 +118,7 @@ structure ULexBuffer : sig
 			  val (w, strm') = getCByte(getCByte(W.andb(0wx0f, c), strm))
                           in
                             (* check for surrogate halves, which are not valid UTF-8 *)
-                            if (w < 0wxd800) orelse (0wxdff < w)
+                            if (w < 0wxd800) orelse (0wxdfff < w)
                               then SOME(w, strm')
                               else raise Invalid
                           end
@@ -126,7 +126,7 @@ structure ULexBuffer : sig
                         (* 4-byte character *)
                         then let
                           val (w, strm') =
-                                getCByte(getCByte(getCByte(W.andb(0wx0f, c), strm)))
+                                getCByte(getCByte(getCByte(W.andb(0wx07, c), strm)))
                           in
                             (* check for too-big values *)
                             if (w <= 0wx10ffff)
