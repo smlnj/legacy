@@ -5,6 +5,13 @@ correspond to SML/NJ releases.
 SML/NJ 110.99.4
 -------------------
 
+[2023-06-14]
+	Reworked the code for determining the maximum hash-table size (used
+	in the `HashSetFn` and `HashTableRep` modules) so that it does not
+	depend on `Int.int` and `Word.word` being the same size (an issue
+	for MLton).  Also split that code out into the internal `MaxHashTableSize`
+	module.  These changes fix issue #279.
+
 [2023-01-01]
         Reimplementation of the `Random` structure to use the Mersenne Twister
         algorithm.  There are both 32-bit and 64-bit versions of the generator
