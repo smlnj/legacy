@@ -109,6 +109,7 @@ structure ULexBuffer : sig
 			  (* end case *))
 		    val strm = S(buf, pos+1, false)
 		    in
+(* TODO: should also be checking for over-long sequences *)
                       if (W.andb(c, 0wxe0) = 0wxc0)
                         (* 2-byte character *)
                         then SOME(getCByte (W.andb(0wx1f, c), strm))
