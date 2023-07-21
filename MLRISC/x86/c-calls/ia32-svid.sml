@@ -67,8 +67,8 @@ functor IA32SVID_CCalls (
 
     fun error msg = MLRiscErrorMsg.error ("IA32SVID_CCalls", msg)
 
-    datatype  c_arg 
-      = ARG of T.rexp	    
+    datatype c_arg
+      = ARG of T.rexp
       | FARG of T.fexp
       | ARGS of c_arg list
 
@@ -86,8 +86,8 @@ functor IA32SVID_CCalls (
 
     val paramAreaOffset = 0 (* stack offset to param area *)
 
-  (* This annotation is used to indicate that a call returns a fp value 
-   * in %st(0) 
+  (* This annotation is used to indicate that a call returns a fp value
+   * in %st(0)
    *)
     val fpReturnValueInST0 = #create MLRiscAnnotations.RETURN_ARG C.ST0
 
@@ -408,7 +408,7 @@ functor IA32SVID_CCalls (
 	  val defs = definedRegs(#retTy proto)
 	  val { save, restore } = saveRestoreDedicated defs
 	  val callStm = T.CALL{
-		  funct=name, targets=[], defs=defs, uses=[], 
+		  funct=name, targets=[], defs=defs, uses=[],
 		  region = mem,
 		  pops = if calleePops
 		      then Int32.fromInt(#szb argMem)
@@ -418,7 +418,7 @@ functor IA32SVID_CCalls (
 		 of NONE => callStm
 		  | SOME c => T.ANNOTATION (callStm, #create MLRiscAnnotations.COMMENT c)
 		(* end case *))
-	(* If return type is floating point then add an annotation RETURN_ARG 
+	(* If return type is floating point then add an annotation RETURN_ARG
 	 * This is currently a hack.  Eventually MLTREE *should* support
 	 * return arguments for CALLs.
 	 * --- Allen
@@ -439,15 +439,21 @@ functor IA32SVID_CCalls (
 		  | SOME(Reg(ty, r, _)) => let
 		      val resReg = C.newReg()
 		      in
+(* FIXME: the ABI specifies that the high bits of %eax are undefined when the return
+ * type is an 8 or 16-bit integer type (see https://github.com/smlnj/legacy/issues/272).
+ * We should be zero/sign extending the result in those cases.  This means that we
+ * also need to know if the result is signed so we may need a different type for
+ * result locations.
+ *)
 			([T.GPR(T.REG(ty, resReg))], [T.COPY(ty, [resReg], [r])])
 		      end
 		  | SOME(FReg(ty, r, _)) => let
 		      val resReg = C.newFreg()
 		      val res = [T.FPR(T.FREG(ty, resReg))]
 		      in
-        	      (* If we are using fast floating point mode then do NOT 
+        	      (* If we are using fast floating point mode then do NOT
         	       * generate FSTP.
-        	       * --- Allen 
+        	       * --- Allen
         	       *)
 			if !fast_floating_point
 			  then (res, [T.FCOPY(ty, [resReg], [r])])
