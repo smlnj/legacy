@@ -10,7 +10,7 @@ SML/NJ 110.99.4
 	in the `HashSetFn` and `HashTableRep` modules) so that it does not
 	depend on `Int.int` and `Word.word` being the same size (an issue
 	for MLton).  Also split that code out into the internal `MaxHashTableSize`
-	module.  These changes fix issue #279.
+	module.  These changes fix issue #279 (https://github.com/smlnj/legacy/issues/279).
 
 [2023-01-01]
         Reimplementation of the `Random` structure to use the Mersenne Twister
