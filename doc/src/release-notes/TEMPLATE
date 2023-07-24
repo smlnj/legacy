@@ -5,6 +5,7 @@
 :dist-dir: https://smlnj.org/dist/working/{version}/
 :history: {dist-dir}HISTORY.html
 :issue-base: https://github.com/smlnj/legacy/issues/
+:pull-base: https://github.com/smlnj/pull/issues/
 :stem: latexmath
 :source-highlighter: pygments
 :stylesheet: release-notes.css
