@@ -108,6 +108,7 @@ functor CPSCCalls (
    structure Set = LambdaVar.Set  (* typed set for liveness *)
    structure D   = MS.ObjDesc     (* ML Object Descriptors *)
    structure CB  = CellsBasis
+   structure CTy = CTypes
 
    fun error msg = MLRiscErrorMsg.error("CPSCalls", msg)
 
@@ -272,30 +273,27 @@ functor CPSCCalls (
               (reentrant, linkage, p, vl, wtl, e) =
    let
 
-       val { retTy, paramTys, ... } = p : CTypes.c_proto
+       val { retTy, paramTys, ... } = p : CTy.c_proto
 
        fun build_args vl = let
-           open CTypes
-           fun m (C_double, v :: vl) = ([CCalls.FARG (fregbind v)], vl)
-             | m (C_float, v :: vl) =
+           fun m (CTy.C_double, v :: vl) = ([CCalls.FARG (fregbind v)], vl)
+             | m (CTy.C_float, v :: vl) =
                  ([CCalls.FARG (M.CVTF2F (32, 64, fregbind v))], vl)
-             | m ((C_unsigned (I_char | I_short | I_int | I_long) |
-                   C_signed (I_char | I_short | I_int | I_long) |
-                   C_PTR),
-                  v :: vl) = ([CCalls.ARG (regbind v)], vl)
-             | m ((C_STRUCT _ | C_UNION _), v :: vl) =
-                 (* pass struct using the pointer to its beginning *)
-                 ([CCalls.ARG (regbind v)], vl)
-	     | m ((C_signed I_long_long | C_unsigned I_long_long), v :: vl) =
+	     | m ((CTy.C_signed CTy.I_long_long | CTy.C_unsigned CTy.I_long_long), v :: vl) =
 	       let fun field off =
 		       M.LOAD (ity, M.LOAD (pty, ea (regbind v, off), R.memory),
 			       R.memory)
 	       in ([CCalls.ARG (field 4), CCalls.ARG (field 0)], vl)
 	       end
-	     | m (C_long_double, _) =
+             | m ((CTy.C_unsigned _ | CTy.C_signed _ | CTy.C_PTR), v :: vl) =
+		 ([CCalls.ARG (regbind v)], vl)
+             | m ((CTy.C_STRUCT _ | CTy.C_UNION _), v :: vl) =
+                 (* pass struct using the pointer to its beginning *)
+                 ([CCalls.ARG (regbind v)], vl)
+	     | m (CTy.C_long_double, _) =
 	         error "RCC: unexpected long double argument"
-	     | m (C_ARRAY _, _) = error "RCC: unexpected array argument"
-	     | m (C_void, _) = error "RCC: unexpected void argument"
+	     | m (CTy.C_ARRAY _, _) = error "RCC: unexpected array argument"
+	     | m (CTy.C_void, _) = error "RCC: unexpected void argument"
              | m (_, []) = error "RCC: not enough ML args"
 
            and ml (tl, vl) = let
@@ -309,17 +307,15 @@ functor CPSCCalls (
            | _ => error "RCC: too many ML args"
        end (* build_args *)
 
-       val (f, sr, a) =
-           case (retTy, vl) of
-               ((CTypes.C_STRUCT _ | CTypes.C_UNION _), fv :: srv :: avl) =>
-               let val s = regbind srv
-               in (regbind fv, fn _ => s, build_args avl)
-               end
-             | (_, fv :: avl) =>
-               (regbind fv,
-                fn _ => error "RCC: unexpected struct return",
-                build_args avl)
-             | _ => error "RCC: prototype/arglist mismatch"
+       val (f, sr, a) = (case (retTy, vl)
+	      of ((CTy.C_STRUCT _ | CTy.C_UNION _), fv :: srv :: avl) => let
+                   val s = regbind srv
+		   in (regbind fv, fn _ => s, build_args avl)
+		   end
+               | (_, fv :: avl) =>
+		   (regbind fv, fn _ => error "RCC: unexpected struct return", build_args avl)
+               | _ => error "RCC: prototype/arglist mismatch"
+	     (* end case *))
 
        fun srd defs = let
            fun loop ([], s, r) = { save = s, restore = r }
@@ -358,7 +354,7 @@ functor CPSCCalls (
                  saveRestoreDedicated = srd,
                  paramAlloc = paramAlloc,
                  callComment =
-                 SOME ("C prototype is: " ^ CTypes.protoToString p),
+                 SOME ("C prototype is: " ^ CTy.protoToString p),
                  args = a }
 
        fun withVSP f = let
@@ -404,19 +400,27 @@ functor CPSCCalls (
                                   M.ANDB (pty, LimitPtrMask,
                                                C.limitptr(vfp))))));
        (* Find result *)
-       val result =
-       case (result, retTy) of
-           (([] | [_]), (CTypes.C_void | CTypes.C_STRUCT _ | CTypes.C_UNION _)) => []
-         | ([], _) => error "RCC: unexpectedly few results"
-         | ([M.FPR x], CTypes.C_float) => [M.FPR(M.CVTF2F (64, 32, x))]
-         | ([r as M.FPR x], CTypes.C_double) => [r]
-         | ([M.FPR _], _) => error "RCC: unexpected FP result"
-	 | ([r1 as M.GPR _, r2 as M.GPR _],
-	    (CTypes.C_signed CTypes.I_long_long |
-	     CTypes.C_unsigned CTypes.I_long_long)) =>
-	    [r1, r2]
-         | ([r as M.GPR x], _) => [r] (* more sanity checking here ? *)
-         | _ => error "RCC: unexpectedly many results"
+       val result = (case (result, retTy)
+	      of (([] | [_]), (CTy.C_void | CTy.C_STRUCT _ | CTy.C_UNION _)) => []
+	       | ([], _) => error "RCC: unexpectedly few results"
+	       | ([M.FPR x], CTy.C_float) => [M.FPR(M.CVTF2F (64, 32, x))]
+	       | ([r as M.FPR x], CTy.C_double) => [r]
+	       | ([M.FPR _], _) => error "RCC: unexpected FP result"
+	       | ([r1 as M.GPR _, r2 as M.GPR _],
+		  (CTy.C_signed CTy.I_long_long | CTy.C_unsigned CTy.I_long_long)) =>
+		    [r1, r2]
+	       | ([r as M.GPR x], CTy.C_signed cty) => (case cty
+	            of CTy.I_char => [M.GPR(M.SX(ity, 8, x))]
+		     | CTy.I_short => [M.GPR(M.SX(ity, 16, x))]
+                     | _ => [r]  (* assuming 32-bit result *)
+		   (* end case *))
+	       | ([r as M.GPR x], CTy.C_unsigned cty) => (case cty
+	            of CTy.I_char => [M.GPR(M.ZX(ity, 8, x))]
+		     | CTy.I_short => [M.GPR(M.ZX(ity, 16, x))]
+                     | _ => [r]  (* assuming 32-bit result *)
+		   (* end case *))
+	       | _ => error "RCC: unexpectedly many results"
+	     (* end case *))
    in  { result = result,
          hp     = hp
        }
