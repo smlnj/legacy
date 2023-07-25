@@ -33,11 +33,10 @@ FILES::
 
 == Summary
 
-// **** summary description of release
+This patch release fixes a number of bugs in the "legacy" version
+of *SML/NJ*.
 
 == Details
-
-// **** details: include those sections that are relevant
 
 === Compiler
 
@@ -45,11 +44,31 @@ FILES::
 
 === MLRISC
 
+Modified the way that zero-extension (`ZX`) is handled when the source bit width is
+smaller than the target.  Previously, the code assumed that the high bits would be
+zero, but as demonstrated by {issue-base}/272[issue #272], this is not guaranteed,
+so we now mask out the high bits.
+
 === Runtime System
 
 === Basis Library
 
 === SML/NJ Library
+
+--
+  * Added the `NativeInt` and `NativeWord` structure aliases to provide
+    a portable way to refer to the native numeric types in signatures.
+
+  * Reimplementation of the `Random` structure to use the Mersenne Twister
+    algorithm.  There are both 32-bit and 64-bit versions of the generator
+    (which one is included depends on the target platform).
+
+  * Reworked the code for determining the maximum hash-table size (used
+    in the `HashSetFn` and `HashTableRep` modules) so that it does not
+    depend on `Int.int` and `Word.word` being the same size (an issue
+    for MLton).  Also split that code out into the internal `MaxHashTableSize`
+    module.
+--
 
 === Successor ML
 
@@ -58,6 +77,8 @@ FILES::
 === Documentation
 
 === Installation
+
+Added *macOS* 14 (Sonoma) as a recognized system.
 
 === 32-bit macOS issues
 

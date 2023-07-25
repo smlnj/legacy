@@ -107,6 +107,26 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
+[2023/07/25]::
++
+Modified the way that *MLRISC* handles zero-extension (`ZX`) when the
+source bit width is smaller than the target.  Previously, the code assumed
+that the high bits would be zero, but as demonstrated by
+{issue-base}/272[issue #272], this is not guaranteed, so we now mask
+out the high bits (see `MLRISC/mltree/mltree-gen.sml`).
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
+[2023/07/25]::
++
+Changed code generation for the `RCC` (Raw C Call) operation to
+sign/zero-extend the result when it is smaller than 32 bits.
+Note that the `RCC` operation is not supported on 64-bit platforms.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2023/07/24]::
 +
 Added **macOS** 14 (Sonoma) to the systems recognized by the `.arch-n-opsys`
