@@ -252,7 +252,7 @@ structure PPCps : PPCPS =
 			space n;
 			if k then say "reentrant " else ();
 			if l = "" then () else (say l; say " ");
-			say "rcc("; sayvlist vl; say ") -> ";
+			say "rcc("; say(CTypes.protoToString p); say"; "; sayvlist vl; say ") -> ";
 			app (fn (w, t) => (sayv (VAR w); sayt(t))) wtl;
 			nl(); f e)
 		in
