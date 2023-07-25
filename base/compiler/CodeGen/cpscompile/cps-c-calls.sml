@@ -419,6 +419,7 @@ functor CPSCCalls (
 		     | CTy.I_short => [M.GPR(M.ZX(ity, 16, x))]
                      | _ => [r]  (* assuming 32-bit result *)
 		   (* end case *))
+               | ([r as M.GPR _], CTy.C_PTR) => [r]
 	       | _ => error "RCC: unexpectedly many results"
 	     (* end case *))
    in  { result = result,
