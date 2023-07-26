@@ -114,6 +114,9 @@ https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 | [.bugid]#267#
 | {pull-base}/267[Update makefile]
 | **n.a.**
+| [.bugid]#272#
+| {issue-base}/272[Calling C function via NLFFI binding may give result outside range of its C return type]
+| **n.a.**
 | [.bugid]#278#
 | {issue-base}/278[`CharBuffer.addSlice` does not properly handle starting offsets]
 | **n.a.**
