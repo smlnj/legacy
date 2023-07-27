@@ -107,6 +107,14 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
+[2023/07/27]::
++
+Fix for {issue-base}/258[issue #258 (Thompson NFA regex engine
+doesn’t advance stream position when matching)].
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2023/07/25]::
 +
 Modified the way that *MLRISC* handles zero-extension (`ZX`) when the
