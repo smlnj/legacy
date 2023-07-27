@@ -68,6 +68,9 @@ so we now mask out the high bits.
     depend on `Int.int` and `Word.word` being the same size (an issue
     for MLton).  Also split that code out into the internal `MaxHashTableSize`
     module.
+
+  * Added support for the end-of-line assertion ("$") and full support for
+    intervals to the Thompson engine in the RegExp library.
 --
 
 === Successor ML
