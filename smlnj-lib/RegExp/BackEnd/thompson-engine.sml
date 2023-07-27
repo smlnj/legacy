@@ -57,6 +57,10 @@ structure ThompsonEngine : REGEXP_ENGINE =
 	    | FINAL' => FINAL
 	  (* end case *))
 
+    (* the representation of the NFA.  The `start` field is the start state.
+     * The `state` vector maps state indices to states.  By convention,
+     * state 0 is the accepting state.
+     *)
     datatype regexp = RE of {start : int, states : state vector}
 
     fun compile re = let
@@ -119,7 +123,7 @@ structure ThompsonEngine : REGEXP_ENGINE =
 		      in
 			{start = newBOL out, out = [out]}
 		      end
-		  | RE.End => raise RE.CannotCompile
+		  | RE.End => raise RE.CannotCompile (* end-of-line not supported yet *)
 		(* end case *))
 	(* compile re1 . re2 *)
 	  and cat (re1, re2) = let
@@ -166,7 +170,7 @@ structure ThompsonEngine : REGEXP_ENGINE =
 	    RE{ start = idOf(#start frag), states = Vector.fromList states }
 	  end
 
-(* +DEBUG *)
+(* +DEBUG **
     fun stateToString (CHR(c, out)) =
 	  concat["CHR (#\"", Char.toString c, "\", ", Int.toString out, ")"]
       | stateToString (CSET(cs, out)) = concat["CSET (-, ", Int.toString out, ")"]
@@ -180,21 +184,25 @@ structure ThompsonEngine : REGEXP_ENGINE =
 	  fun prState st = print(stateToString st)
 	  in
 	    print(concat["start = ", Int.toString start, "\n"]);
-	    Vector.appi (fn (i, st) => (print(Int.toString i ^ ": "); prState st; print "\n"))
-	      states
+	    Vector.appi
+              (fn (i, st) => (print(Int.toString i ^ ": "); prState st; print "\n"))
+	        states
 	  end
-(* -DEBUG *)
+** -DEBUG *)
+
 
   (* scan the stream for the first occurrence of the regular expression *)
     fun scan (RE{start, states}, getc : (char,'a) StringCvt.reader) = let
-(*val _ = dump (RE{start=start, states=states})*)
+(* DEBUG val _ = dump (RE{start=start, states=states}) *)
 	(* to make elimination of duplicates in a state set cheap, we map state IDs
 	 * to a stamp of the last set that they were added to.
 	 *)
 	  val stamp = ref 0w1
+          fun incr () = let val s = !stamp + 0w1 in stamp := s; s end
 	  val lastStamp = Array.array(Vector.length states, 0w0)
 	  fun addState (stamp', stateList, id) =
 		if (Array.sub(lastStamp, id) = stamp')
+                  (* the state is already in the list *)
 		  then stateList
 		  else (
 		    Array.update(lastStamp, id, stamp');
@@ -203,27 +211,46 @@ structure ThompsonEngine : REGEXP_ENGINE =
 			  addState (stamp', addState (stamp', stateList, out1), out2)
 		      | state => state :: stateList
 		    (* end case *))
-	  fun startState () = let
-		val stamp' = !stamp
+          (* get the list of start states by performing epsilon moves *)
+	  fun startStates () = let
+		val stamp' = incr()
 		in
-		  stamp := stamp' + 0w1;
 		  addState (stamp', [], start)
 		end
-	  fun isMatch stamp' = (Array.sub(lastStamp, 0) = stamp')
-	(* attempt to match the RE starting with the stream startPos *)
-	  fun find' (isFirst, startPos) = let
-		fun scan (_, _, _, lastAccepting, []) = lastAccepting
-		  | scan (isFirst, n, strm, lastAccepting, nfaState) = (case getc strm
-		       of NONE => if isMatch (!stamp)
-			    then SOME(n, startPos)
-			    else lastAccepting
-			| SOME(c, strm') => let
-			    val stamp' = !stamp
-			    val _ = (stamp := stamp' + 0w1)
-			    fun test ([], nextStates) = nextStates
-			      | test (s::r, nextStates) = let
+          (* is the accepting state in the current set of states? *)
+	  fun isMatch stamp = (Array.sub(lastStamp, 0) = stamp)
+	  (* attempt to match the RE; the parameters are
+           *   - isFirst      true if the current stream position is the start of
+           *                  a line (or the input)
+           *   - strm         the initial stream to scan
+           *)
+	  fun find' (isFirst, strm) = let
+                (* scanning the input; the parameters are
+                 *   - isFirst      true if the current position is the start of
+                 *                  a line (or the input)
+                 *   - n            the number of characters matched so far
+                 *   - strm         the current position of the input stream
+                 *   - nfaStates    the current list of NFA states (guaranteed to be
+                 *                  non-empty)
+                 *   - lastMatch    if we were previously in a accepting state during
+                 *                  this scan, then `lastMatch` is the value
+                 *                  `SOME(startPos, k, strm')`, where `k` is the length
+                 *                  of the match and `strm'` is stream position
+                 *                  immediately following the match.
+                 *)
+                fun scan (isFirst, n, strm, nfaStates, lastMatch) = (case getc strm
+                       of NONE => lastMatch
+                        | SOME(c, strm') => let
+                            (* bump the stamp counter *)
+			    val stamp' = incr()
+                            (* compute the next set of NFA states by seeing if there
+                             * is a transition labeled with the character `c`
+                             *)
+                            fun test ([], nextStates) = nextStates
+                              | test (s::r, nextStates) = let
 				  fun continue nextStates = test(r, nextStates)
-				  fun add out = continue(addState (stamp', nextStates, out))
+				  fun add out =
+                                        continue(addState (stamp', nextStates, out))
 				  in
 				    case s
 				     of CHR(c', out) => if (c = c')
@@ -238,46 +265,74 @@ structure ThompsonEngine : REGEXP_ENGINE =
 				      | BOL out => if isFirst
 					  then test(Vector.sub(states, out)::r, nextStates)
 					  else continue nextStates
-				      | EOL out => raise Fail "end-of-line not supported yet"
+				      | EOL out =>
+                                          raise Fail "end-of-line not supported yet"
 				      | _ => continue nextStates
 				    (* end case *)
 				  end
-			    val nextNfaState = test (nfaState, [])
-			    val lastAccepting = if isMatch stamp'
-				  then SOME(n+1, startPos)
-				  else lastAccepting
-			    in
-(*
+                            val next = test (nfaStates, [])
+(* +DEBUG **
 print(concat[
-"{", String.concatWith "," (List.map stateToString nfaState), "} -- ",
+"{", String.concatWithMap "," stateToString nfaState, "} -- ",
 "#\"", Char.toString c, "\" --> {",
-String.concatWith "," (List.map stateToString nextNfaState), "}\n"]);
-*)
-			      scan ((c = #"\n"), n+1, strm', lastAccepting, nextNfaState)
-			    end
-		      (* end case *))
-		in
-		  case scan (isFirst, 0, startPos, NONE, startState())
-		   of NONE => NONE
-		    | SOME(n, strm) => SOME(M.Match({pos=startPos, len=n}, []), strm)
-		  (* end case *)
-		end
+String.concatWithMap "," stateToString nextNfaState, "}\n"]);
+let val stamps = Array.foldri (fn (i, s, stmps) => (i, s)::stmps) [] lastStamp
+fun w2s w = Int.toString(Word.toIntX w)
+fun stamp2s (i, s) = concat[Int.toString i, ":", w2s s]
+in
+print(concat[
+"  stamps [", String.concatWithMap "," stamp2s stamps, "] @ ", w2s stamp', "\n"]);
+case lastMatch
+ of NONE => print "  lastMatch = NONE\n"
+  | SOME(_, n, _) => print(concat["  lastMatch = SOME(-, ", Int.toString n, ", -)\n"])
+(* end case *)
+end;
+** -DEBUG *)
+                            in
+                              case next
+                               of [] => lastMatch
+                                | _ => let
+                                    val n = n+1
+                                    val isFirst = (c = #"\n")
+                                    val lastMatch = if isMatch stamp'
+                                          then SOME(n, strm')
+                                          else lastMatch
+                                    in
+                                      scan (isFirst, n, strm', next, lastMatch)
+                                    end
+                              (* end case *)
+                            end
+                      (* end case *))
+                val nfaStart = startStates()
+                val lastMatch = if isMatch(!stamp)
+                      then SOME(0, strm)
+                      else NONE
+                in
+                  scan (isFirst, 0, strm, nfaStart, lastMatch)
+                end (* find' *)
 	  in
-	    find'
+	    fn (isFirst, strm) => (case find'(isFirst, strm)
+                 of SOME(n, strm') => SOME(M.Match({pos=strm, len=n}, []), strm')
+                  | NONE => NONE
+                (* end case *))
 	  end
 
-	fun find re getc stream = let
+	fun find re getc strm = let
 	      val scan = scan (re, getc)
+(* TODO: this is potentially expensive backtracking at the top level; is we had
+ * support for groups, then we could modify the state machine to match ".*|(re)",
+ * which would avoid backtracking.
+ *)
 	      fun loop (isFirst, s) = (case (scan (isFirst, s))
 		     of NONE => (case (getc s)
 			   of SOME(#"\n", s') => loop (true, s')
 			    | SOME(_, s') => loop (false, s')
 			    | NONE => NONE
 			  (* end case *))
-		      | SOME v => SOME v
+		      | someMatch => someMatch
 		    (* end case *))
 	      in
-		loop (true, stream)
+		loop (true, strm)
 	      end
 
 	fun prefix re getc strm = scan (re, getc) (true, strm)
@@ -289,7 +344,8 @@ String.concatWith "," (List.map stateToString nextNfaState), "}\n"]);
 	      fun match' getc strm = let
 		  (* find the longest SOME *)
 		    fun loop ([], max, _) = max
-		      | loop ((re, act)::r, max, maxLen) = (case scan(re, getc) (true, strm)
+		      | loop ((re, act)::r, max, maxLen) = (
+                          case scan(re, getc) (true, strm)
 			   of NONE => loop (r, max, maxLen)
 			    | SOME(m as MatchTree.Match({len, ...}, _), cs) =>
 				if (len > maxLen)
