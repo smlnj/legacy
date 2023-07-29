@@ -612,8 +612,8 @@ fun extractSig (env, epContext, context,
  * matching should be done transparently (true) or opaquely (false).
  * (called 3 times within this module).
  ****************************************************************************)
-fun constrStr(transp, sign, str, strDec, strExp, evOp, tdepth, entEnv, rpath,
-              env, region, compInfo) : A.dec * M.Structure * M.strExp =
+fun constrStr (transp, sign, str, strDec, strExp, evOp, tdepth, entEnv, rpath,
+               env, region, compInfo) : A.dec * M.Structure * M.strExp =
   let val {resDec=matchedDec, resStr=matchedStr, resExp=matchedExp} =
           SM.matchStr{sign=sign, str=str, strExp=strExp, evOp=evOp,
                       tdepth=tdepth, entEnv=entEnv, statenv=env, rpath=rpath,
@@ -1002,7 +1002,7 @@ case fctexp
 	  val body = if curried then body
 		     else BaseStr(StrDec[Strb{name=resultId, def=body,
 					      constraint=constraint}])
-	  val constraint = if curried then constraint else NoSig
+	  val constraint = if curried then constraint else NoSig (* BUG! Issue xxx (23.7.18) ??? *)
           val (flex, depth) =
             case context
              of EU.INFCT {flex=f,depth=d} => (f, d)
