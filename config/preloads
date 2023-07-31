@@ -27,7 +27,7 @@ autoload $smlnj/smlnj-lib/smlnj-lib.cm
 # The "Configurable Controls" portion of the SML/NJ library
 #autoload $smlnj/smlnj-lib/controls-lib.cm
 
-# The "HTML" portion of the SML/NJ library
+# The "HTML3" portion of the SML/NJ library
 #autoload $smlnj/smlnj-lib/html-lib.cm
 
 
