@@ -1,7 +1,7 @@
 // A template for creating release notes for a version
 //
-:version: @VERSION@
-:date: @DATE@
+:version: 110.99.4
+:date: August 1, 2023
 :dist-dir: https://smlnj.org/dist/working/{version}/
 :history: {dist-dir}HISTORY.html
 :issue-base: https://github.com/smlnj/legacy/issues/
@@ -38,20 +38,12 @@ of *SML/NJ*.
 
 == Details
 
-=== Compiler
-
-=== CM
-
 === MLRISC
 
 Modified the way that zero-extension (`ZX`) is handled when the source bit width is
 smaller than the target.  Previously, the code assumed that the high bits would be
 zero, but as demonstrated by {issue-base}/272[issue #272], this is not guaranteed,
 so we now mask out the high bits.
-
-=== Runtime System
-
-=== Basis Library
 
 === SML/NJ Library
 
@@ -72,12 +64,6 @@ so we now mask out the high bits.
   * Added support for the end-of-line assertion ("$") and full support for
     intervals to the Thompson engine in the RegExp library.
 --
-
-=== Successor ML
-
-=== ML-LPT
-
-=== Documentation
 
 === Installation
 
@@ -129,9 +115,6 @@ https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 | [.bugid]#279#
 | {issue-base}/279[`HashSetFn`'s calculation of `maxSize` can cause `Overflow` during functor instantiation]
 | **n.a.**
-//| [.bugid]#@ID#
-//| {issue-base}/@ID[@DESCRIPTION]
-//| [old bug #@OLDID]
 |=======
 
 The following unnumbered bugs were also fixed:
