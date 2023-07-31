@@ -732,7 +732,7 @@ fun elab (BaseStr decl, env, entEnv, region) =
        in elab(strexp', env, entEnv, region)
       end
 
-  | elab (AppStrI(spath,[(arg,b)]), env, entEnv, region) =
+  | elab (AppStrI(spath,[(arg,_)]), env, entEnv, region) =
       let val _ = debugmsg ">>elab[AppStr-one]"
 
           val fct = LU.lookFct(env, SP.SPATH spath, error region)
@@ -844,38 +844,39 @@ fun elab (BaseStr decl, env, entEnv, region) =
                               entEnv=entEnv, epContext=epContext,
                               region=region, compInfo=compInfo}
 
-                val (csigOp, transp) =
-                 (case constraint
-                   of Transparent x => (SOME (h x), true)
-                    | Opaque x => (SOME (h x), false)
-                    | _ => (NONE, true))
+                val (csigOp, transparent) =
+                    (case constraint
+                       of Transparent x => (SOME (h x), true)
+			| Opaque x => (SOME (h x), false)
+			| _ => (NONE, true))
 
                 val (entsv, evOp) =
-                  case constraint
-                   of NoSig => (entsv, NONE)
-                    | _ => let val nentv = SOME(mkStamp())
-                            in (nentv, nentv)
-                           end
-             in (entsv, evOp, csigOp, transp)
+                    case constraint
+                       of NoSig => (entsv, NONE)
+			| _ => let val nentv = SOME(mkStamp())
+                                in (nentv, nentv)
+                               end
+
+             in (entsv, evOp, csigOp, transparent)
             end
 
           (** elaborating the structure body *)
           val (strDecAbsyn, str, exp, deltaEntEnv) =
-            elabStr(strexp, NONE, env, entEnv, context, tdepth,
-                    epContext, entsv, rpath, region, compInfo)
+              elabStr(strexp, NONE, env, entEnv, context, tdepth,
+                      epContext, entsv, rpath, region, compInfo)
 
           val resDee =
-            case constraint
-             of NoSig => deltaEntEnv
-              | _ =>
-                 (case evOp
-                   of SOME tmpev =>
-                       let val strEnt =
-                             case str of M.STR { rlzn, ... } => rlzn
-                                       | _ => M.bogusStrEntity
-                        in (EE.bind(tmpev, M.STRent strEnt, deltaEntEnv))
-                       end
-                    | _ => bug "unexpected while elaborating constrained str")
+	      case constraint
+		of NoSig => deltaEntEnv
+		 | _ =>
+		   (case evOp
+		     of SOME tmpev =>
+			 let val strEnt =
+			       case str of M.STR { rlzn, ... } => rlzn
+					 | _ => M.bogusStrEntity
+			  in (EE.bind(tmpev, M.STRent strEnt, deltaEntEnv))
+			 end
+		      | _ => bug "unexpected while elaborating constrained str")
 
           (** elaborating the signature matching *)
           val (resDec, resStr, resExp) =
@@ -960,7 +961,7 @@ case fctexp
 				  SM.matchFct
 				    {sign=fsig, fct=fct, fctExp=uncoercedExp,
 				     tdepth=depth, entEnv=entEnv,
-				     rpath=rpath, statenv=env, region=region,
+ 				     rpath=rpath, statenv=env, region=region,
 				     compInfo=compInfo}
 			   in (resDec, resFct, resExp, EE.empty)
 			  end
@@ -1078,7 +1079,7 @@ case fctexp
 				 entEnv=entEnv', epContext=epContext',
 				 region=region, compInfo=compInfo}
 	       in case constraint
-		   of NoSig => (NONE, NONE, true)
+		   of NoSig => (NONE, NONE, true)  (* csigTrans not used in this case *)
 		    | Transparent x => (SOME(mkStamp()), SOME (doSig x), true)
 		    | Opaque x =>      (SOME(mkStamp()), SOME (doSig x), false)
 	      end
@@ -1156,7 +1157,7 @@ case fctexp
 		    body=BaseStr(
                            FctDec[Fctb{name=functorId,
                                        def=BaseFct{params=lparam, body=body,
-                                                  constraint=constraint}}]),
+                                                   constraint=constraint}}]),
 		    constraint=NoSig}
 
        in elabFct(fctexp', true, name, env, entEnv, context, tdepth, epContext,
