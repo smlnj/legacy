@@ -27,7 +27,6 @@ structure DfaEngine : REGEXP_ENGINE =
     fun scan (regexp, getc, p, stream) = let
           val move = D.move regexp
           val accepting = D.accepting regexp
-          val canStart = D.canStart regexp
           fun loop (state, p, inits, lastAccepting) = (case getc inits
                  of NONE => lastAccepting
                   | SOME(c, s') => (case move (state, c)
