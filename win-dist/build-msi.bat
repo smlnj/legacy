@@ -8,6 +8,8 @@ REM
 if "%SMLNJ_HOME%"=="" (echo Please set the SMLNJ_HOME environment variable && goto :EOF)
 if NOT EXIST %SMLNJ_HOME%\sml.boot.x86-win32 (echo Please expand the boot.x86-win32.tgz file to the root of your SMLNJ source tree && goto :EOF)
 
+chdir %SMLNJ_HOME%
+
 REM start by building the runtime, compiler, and other tools and libraries
 REM
 
