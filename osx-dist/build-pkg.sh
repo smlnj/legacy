@@ -34,7 +34,7 @@ VERSION=""
 while [ "$#" != "0" ] ; do
     arg=$1; shift
     case $arg in
-    -32) SIZE=$arg ; ARCH="x86" ;;
+    -32) SIZE=32 ; ARCH="x86" ;;
     -64) SIZE=64 ; ARCH="amd64" ;;
     --no-sign) SIGNER="none" ;;
     -*) usage 1 ;;
