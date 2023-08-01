@@ -7,37 +7,58 @@
 #
 
 CMD="build-pkg.sh"
+ROOT=$(pwd)
+
+cleanup () {
+  cd $ROOT
+  rm -rf $RSRC $DISTROOT smlnj.pkg
+}
+
+usage() {
+  echo "usage: build-pkg.sh [-32 | -64] [--no-sign] <version>"
+  exit $1
+}
+
+complain() {
+    echo "$CMD [Error]: $@"
+    exit 1
+}
 
 SIZE="64"
 ARCH="amd64"
-if [ x"$1" = x-32 ] ; then
-  SIZE=32
-  ARCH="x86"
-  shift
-elif [ x"$1" = x-64 ] ; then
-  SIZE=64
-  ARCH="amd64"
-  shift
-fi
+SIGNER="$USER"
+VERSION=""
 
-# get the version number
+# process command-line arguments
 #
-if [ $# != 1 ] ; then
-  echo "usage: $CMD [-32 | -64] version"
-  exit 1
+while [ "$#" != "0" ] ; do
+    arg=$1; shift
+    case $arg in
+    -32) SIZE=$arg ; ARCH="x86" ;;
+    -64) SIZE=64 ; ARCH="amd64" ;;
+    --no-sign) SIGNER="none" ;;
+    -*) usage 1 ;;
+    *) VERSION=$arg ; break ;;
+    esac
+done
+
+if [ x"$VERSION" = x ] ; then
+  usage 1
 fi
-VERSION=$1
+if [ "$#" != "0" ] ; then
+  usage 1
+fi
 
 CONFIGURL=http://smlnj.cs.uchicago.edu/dist/working/$VERSION/config.tgz
 DISTROOT=smlnj.dst
 ID=org.smlnj.$ARCH.pkg
-ROOT=$(pwd)
 RSRC=Resources
 
 # you need a developer ID to sign the final package;
 #
-case x"$USER" in
+case x"$SIGNER" in
   xjhr) SIGN="Developer ID Installer: John Reppy" ;;
+  xnone) SIGN=none ;;
   *)
     echo "$CMD [Warning]: unknown user, so package will not be signed!"
     SIGN=none
@@ -45,8 +66,7 @@ case x"$USER" in
 esac
 
 if [ -d $DISTROOT ] ; then
-  echo "$CMD [Error]: please remove $DISTROOT first"
-  exit 1
+  complain "please remove $DISTROOT first"
 fi
 mkdir $DISTROOT
 cd $DISTROOT
@@ -58,32 +78,28 @@ tar -xzf config.tgz
 if [ "$?" != 0 ] ; then
   # note that if config.tgz does not exist, curl will still work (it will get a
   # 404 page from the server)
-  echo "$CMD [Error]: unable to download/unpack config.tgz"
-  cd $ROOT
-  rm -rf $DISTROOT
-  exit 1
+  cleanup
+  complain "unable to download/unpack config.tgz"
 fi
 
 # check that the version numbers match
 #
 if [ ! -r config/version ] ; then
-  echo "$CMD [Error]: config/version is missing"
-  exit 1
+  cleanup
+  complain "config/version is missing"
 fi
 CONFIG_VERSION=$(cat config/version)
 if [ x"$VERSION" != x"$CONFIG_VERSION" ] ; then
-  echo "$CMD [Error]: version in config/version is $CONFIG_VERSION"
-  cd $ROOT
-  rm -rf $DISTROOT
-  exit 1
+  cleanup
+  complain "version in config/version is $CONFIG_VERSION"
 fi
 
 # build the distribution (note that this assumes that config/targets is what we want!)
 #
 config/install.sh -default $SIZE
 if [ "$?" != 0 ] ; then
-  echo "$CMD [Error]: problem building SML/NJ"
-  exit 1
+  cleanup
+  complain "problem building SML/NJ"
 fi
 
 # get the other files to include in the distribution
@@ -93,7 +109,7 @@ cp -p $ROOT/components/license.html .
 # as of 110.78, README is included in doc/html/readme/
 #svn export https://smlnj-gforge.cs.uchicago.edu/svn/smlnj/sml/trunk/READMES/$VERSION-README.html
 
-# cleanup
+# remove the tarballs
 #
 rm *tgz
 
@@ -146,6 +162,4 @@ else
   productbuild --sign "$SIGN" $BUILD_OPTS
 fi
 
-# cleanup
-#
-rm -rf $RSRC $DISTROOT smlnj.pkg
+cleanup

@@ -1,6 +1,6 @@
 REM build-msi.bat
 REM
-REM (C) 2020 The Fellowship of SML/NJ.
+REM (C) 2023 The Fellowship of SML/NJ.
 REM
 REM Script to build the MSI installer for SML/NJ on Windows.
 REM
@@ -13,11 +13,12 @@ chdir %SMLNJ_HOME%
 REM start by building the runtime, compiler, and other tools and libraries
 REM
 
-config\install.bat
+%COMSPEC% /K config\install.bat
 
 REM now we can build the installer using the WiX Toolset
 REM
 
+echo build MSI package
 setlocal
 SET SCRIPTDIR=config\WinSetup
 
