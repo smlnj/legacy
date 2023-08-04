@@ -6,11 +6,11 @@ body:
   - type: markdown
     attributes:
       value: >
-	This issue template is for requesting new features in the
+        This issue template is for requesting new features in the
         **legacy** version of [**Standard ML of New Jersey**](https://smlnj.org).
-	Since the primary purpose of the legacy version is to maintain a stable
-	system while we make radical changes in the development version,
-	we will only make minor changes to the system.
+        Since the primary purpose of the legacy version is to maintain a stable
+        system while we make radical changes in the development version,
+        we will only make minor changes to the system.
 
         To report a bug, please use the
         [bug-report form](https://github.com/smlnj/legacy/issues/new?template=bug_report.yaml).
