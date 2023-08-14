@@ -11,7 +11,7 @@ SHELL =		/bin/sh
 
 MAKE =		make
 AS =		/usr/bin/as -arch x86_64
-CC =		/usr/bin/clang -m64 -std=c99
+CC =		/usr/bin/clang -m64 -std=c99 -target x86_64-apple-darwin
 CFLAGS =	-g -O2 -D_DARWIN_C_SOURCE
 CPP =           /usr/bin/clang -x assembler-with-cpp -E -P -std=c99
 AR =		/usr/bin/ar
