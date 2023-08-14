@@ -216,9 +216,8 @@ PVT FILE *OpenBinFile (const char *fname, bool_t isBinary)
  */
 PVT void ReadBinFile (FILE *file, void *buf, int nbytes, const char *fname)
 {
-    /* if (fread(buf, nbytes, 1, file) == -1) */
-	/* Die ("cannot read file \"%s\"", fname); */
 
+#if (defined(OPSYS_DARWIN))
     char *bufc = buf;
     for (size_t i = 0; i < (size_t) nbytes; i++) {
         int byte = fgetc(file);
@@ -228,6 +227,10 @@ PVT void ReadBinFile (FILE *file, void *buf, int nbytes, const char *fname)
 
         bufc[i] = byte;
     }
+#else
+    if (fread(buf, nbytes, 1, file) == -1)
+        Die ("cannot read file \"%s\"", fname);
+#endif
 
 } /* end of ReadBinFile */
 
