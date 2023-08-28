@@ -32,7 +32,8 @@ body:
       label: Version
       description: What version of SML/NJ are you using?
       options:
-        - "110.99.3 (Latest)"
+        - "110.99.4 (Latest)"
+        - "110.99.3"
         - "110.99.2"
         - "110.99.1"
         - "110.99"
