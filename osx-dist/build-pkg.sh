@@ -131,7 +131,7 @@ if [ -d $RSRC ] ; then
   rm -rf $RSRC
 fi
 mkdir $RSRC
-sed -e "s/VERSION/$VERSION/g" components/distribution_xml.in > $RSRC/distribution.xml
+sed -e "s/VERSION/$VERSION/g" -e "s/ARCH/$ARCH/g" components/distribution_xml.in > $RSRC/distribution.xml
 cp -p components/smlnj-background.jpg $RSRC/background.jpg
 sed -e "s/VERSION/$VERSION/g" components/welcome_html.in > $RSRC/welcome.html
 cp -p components/license.html $RSRC/license.html
@@ -146,7 +146,8 @@ sed -E 's/font-size: [0-9]+pt;/font-size: 9pt;/' \
 
 # build package
 #
-PKG_OPTS="--identifier $ID --version $VERSION --scripts components/scripts/ \
+SCRIPTS_DIR="components/scripts"$SIZE"/"
+PKG_OPTS="--identifier $ID --version $VERSION --scripts $SCRIPTS_DIR \
   --install-location /usr/local/smlnj --root $DISTROOT"
 pkgbuild $PKG_OPTS smlnj.pkg
 

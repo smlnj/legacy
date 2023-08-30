@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+# COPYRIGHT (c) 2023 The Fellowship of SML/NJ (http://www.smlnj.org)
+# All rights reserved.
+#
+# post-upgrade script for 32-bit macOS installs
+#
+# usage:
+#
+#	postupgrade <pkg-path> <dst-path> <dst-vol> <root-dir>
+#
+# where
+#
+#	<pkg-path>	Full path to the installation package the Installer application
+#			is processing. For example: /Volumes/Users/jhr/Desktop/smlnj-x86.pkg
+#
+#	<dst-path>	Full path to the installation destination. For example: /usr/local/smlnj
+#
+#	<dst-vol>	Installation volume (or mount point) to receive the payload.
+#
+#	<root-dir>	The root directory for the system
+#
+
+# the directory where the scripts live
+#
+SCRIPTDIR=`pwd`
+
+# switch to the installation destination
+#
+DST=$2
+cd $DST
+
+config/install.sh -default 32 -nolib
+
+$SCRIPTDIR/copy-doc $DST
+
+exit 0
