@@ -216,8 +216,30 @@ PVT FILE *OpenBinFile (const char *fname, bool_t isBinary)
  */
 PVT void ReadBinFile (FILE *file, void *buf, int nbytes, const char *fname)
 {
+    /* When Apple Silicon platforms execute x64 code through Rosetta,
+     * fread (and POSIX read) sometimes reads incorrect bytes from a
+     * file and corrupts the permission of the memory region in which
+     * the buffer resides. The following code is a workaround that uses
+     * fgetc, which seems to behaves correctly.
+     *
+     * TODO: Remove this special case when Apple has fixed the issue or
+     * when we have a native Arm build.
+     */
+
+#if (defined(OPSYS_DARWIN))
+    char *bufc = buf;
+    for (size_t i = 0; i < (size_t) nbytes; i++) {
+        int byte = fgetc(file);
+        if (byte == EOF) {
+            Die("cannot read file \"%s\"", fname);
+        }
+
+        bufc[i] = byte;
+    }
+#else
     if (fread(buf, nbytes, 1, file) == -1)
-	Die ("cannot read file \"%s\"", fname);
+        Die ("cannot read file \"%s\"", fname);
+#endif
 
 } /* end of ReadBinFile */
 
