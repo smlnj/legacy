@@ -57,7 +57,7 @@ RSRC=Resources
 # you need a developer ID to sign the final package;
 #
 case x"$SIGNER" in
-  xjhr) SIGN="Developer ID Installer: John Reppy" ;;
+  xjhr) SIGN="Developer ID Installer: John Reppy (8A296SNBSN)" ;;
   xnone) SIGN=none ;;
   *)
     echo "$CMD [Warning]: unknown user, so package will not be signed!"
