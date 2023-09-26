@@ -76,21 +76,29 @@ SayDebug ("Flip generation %d: (%d GCs)\n", i+1, numGCs);
 	    }
 	    else {
 		ap->frspSizeB = 0;  /* to ensure accurate stats */
-		if ((ap->reqSizeB == 0) && (prevOldSz[j] == 0))
+		if ((ap->reqSizeB == 0) && (prevOldSz[j] == 0)) {
+                    /* there will be no data copied into this arena, so skip it */
+                    minSize[j] = 0;
 		    continue;
-		else
+                }
+		else {
 		    thisMinSz = 0;
+                }
 	    }
 	    minSz = prevOldSz[j] + thisMinSz + ap->reqSizeB;
-            if (j == STRING_INDX)
-              /* Strings can require aligment fixups, which in the worst
+            if (j == STRING_INDX) {
+#ifdef SIZE_32
+              /* Doubles can require aligment fixups, which in the worst
                * case are 1/3 the size of the object. Round up the minimum
                * size to avoid an overrun on the end of TO space.
                */
                 minSz *= 1.33;
-	    else if (j == PAIR_INDX)
-	      /* first slot isn't used, but may need the space for poly = */
+#endif
+            }
+	    else if (j == PAIR_INDX) {
+	      /* the first slot isn't used, but may need the space for poly = */
 		minSz += 2*WORD_SZB;
+            }
 	    minSize[j] = minSz;
 
 #ifdef OLD_POLICY
@@ -113,10 +121,11 @@ SayDebug ("Flip generation %d: (%d GCs)\n", i+1, numGCs);
 	   * (unless minSz > maxSizeB).
 	   */
 	    newSz = prevOldSz[j] + ap->reqSizeB + (g->ratio * (thisMinSz / numGCs));
-	    if (newSz < minSz)
+	    if (newSz < minSz) {
 		newSz = minSz;
+            }
 #ifdef VERBOSE
-SayDebug ("  %s: min = %d, prev = %d, thisMin = %d, req = %d, new = %d, max = %d\n",
+SayDebug ("  %s: min = %u, prev = %u, thisMin = %u, req = %u, new = %u, max = %u\n",
 ArenaName[j+1], minSz, prevOldSz[j], thisMinSz, ap->reqSizeB, newSz, ap->maxSizeB);
 #endif
 	    if (newSz > ap->maxSizeB)
@@ -125,7 +134,7 @@ ArenaName[j+1], minSz, prevOldSz[j], thisMinSz, ap->reqSizeB, newSz, ap->maxSize
 	    if (newSz > 0) {
 		ap->tospSizeB = RND_MEMOBJ_SZB(newSz);
 #ifdef VERBOSE
-SayDebug ("    alloc %d\n", ap->tospSizeB);
+SayDebug ("    alloc %u\n", ap->tospSizeB);
 #endif
 	    }
 	    else {
