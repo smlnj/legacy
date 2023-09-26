@@ -77,7 +77,7 @@ SayDebug ("Flip generation %d: (%d GCs)\n", i+1, numGCs);
 	    if (isACTIVE(ap)) {
 		FLIP_ARENA(ap);
 		HeapMon_MarkFromSp (heap, ap->frspBase, ap->frspSizeB);
-                ASSERT((Addr_t)(ap->oldTop) < (Addr_t)(ap->frspTop));
+                ASSERT((Addr_t)(ap->oldTop) <= (Addr_t)(ap->frspTop));
 		thisMinSz = ((Addr_t)(ap->frspTop) - (Addr_t)(ap->oldTop));
 	    }
 	    else {
