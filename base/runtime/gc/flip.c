@@ -33,8 +33,13 @@ int Flip (heap_t *heap, int min_gc_level)
 #ifdef VERBOSE
 SayDebug ("Flip: min_gc_level = %d\n", min_gc_level);
 #endif
-    for (i = 0;  i < NUM_ARENAS;  i++)
+
+    /* for the first generation, we make a worst-case assumption that all of the
+     * data could be forwarded to any arena.
+     */
+    for (i = 0;  i < NUM_ARENAS;  i++) {
 	prevOldSz[i] = heap->allocSzB;
+    }
 
     prevGC = heap->numMinorGCs;
     for (i = 0;  i < heap->numGens;  i++) {
@@ -48,7 +53,7 @@ SayDebug ("checking generation %d\n", i+1);
 	    for (j = 0;  j < NUM_ARENAS; j++) {
 		arena_t	*ap = g->arena[j];
 #ifdef VERBOSE
-SayDebug ("  %s: avail = %d, prev = %d\n",
+SayDebug ("  %s: avail = %u, prev = %u\n",
 ArenaName[j+1], (isACTIVE(ap) ? AVAIL_SPACE(ap) : 0), prevOldSz[j]);
 #endif
 		if ((isACTIVE(ap) ? AVAIL_SPACE(ap) : 0) < prevOldSz[j])
@@ -72,6 +77,7 @@ SayDebug ("Flip generation %d: (%d GCs)\n", i+1, numGCs);
 	    if (isACTIVE(ap)) {
 		FLIP_ARENA(ap);
 		HeapMon_MarkFromSp (heap, ap->frspBase, ap->frspSizeB);
+                ASSERT((Addr_t)(ap->oldTop) < (Addr_t)(ap->frspTop));
 		thisMinSz = ((Addr_t)(ap->frspTop) - (Addr_t)(ap->oldTop));
 	    }
 	    else {
