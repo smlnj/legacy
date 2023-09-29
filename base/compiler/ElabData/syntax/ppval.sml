@@ -97,7 +97,7 @@ fun ppConBinding ppstrm =
 			  (TypesUtil.equalTycon
 			      (LU.lookTyc
 			         (env,SymPath.SPATH
-				       [InvPath.last(TypesUtil.tycPath tyc)],
+				       [InvPath.last(TypesUtil.tycPath tyc, SpecialSymbols.errorTycId)],
 				  fn _ => raise Hidden),
 			       tyc)
 			     handle Hidden => false)

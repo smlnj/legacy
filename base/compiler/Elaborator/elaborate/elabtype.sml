@@ -6,6 +6,7 @@ struct
 
 local structure EM = ErrorMsg
       structure S  = Symbol
+      structure SS = SpecialSymbols
       structure SP = SymPath
       structure IP = InvPath
       structure SE = StaticEnv
@@ -193,7 +194,7 @@ fun elabTBlist(tbl:Ast.tb list,notwith:bool,env0,rpath,region,
 		       val _ = TU.compressTy ty
 		       val tycon =
 			   DEFtyc{stamp=mkStamp(),
-				  path=InvPath.extend(rpath,name),
+				  path=IP.extend(rpath,name),
 				  strict=TU.calcStrictness(arity,ty),
 				  tyfun=TYFUN{arity=arity, body=ty}}
 		    in (tycon,name)
@@ -427,7 +428,7 @@ fun elabDATATYPEdec({datatycs,withtycs}, env0, sigContext,
 
         fun augTycmap (tyc as DEFtyc{tyfun=TYFUN{arity,body},stamp,
                                      strict,path}, tycmap) =
-            {old=tyc,name=IP.last path,
+            {old=tyc,name=IP.last (path, SS.errorTycId),
 	     new=DEFtyc{tyfun=TYFUN{arity=arity,body=applyMap tycmap body},
 			strict=strict,stamp=stamp,path=path}}
 	    :: tycmap
