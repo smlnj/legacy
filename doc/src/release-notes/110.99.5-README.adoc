@@ -98,6 +98,9 @@ https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 | Issue
 | Description
 | Gforge Bug
+| [.bugid]#286#
+| {issue-base}/286[Get "fgrep is obsolescent" when run **sml** on Fedora]
+| **n.a.**
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]
