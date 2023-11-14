@@ -4,8 +4,9 @@
 :date: @DATE@
 :dist-dir: https://smlnj.org/dist/working/{version}/
 :history: {dist-dir}HISTORY.html
-:issue-base: https://github.com/smlnj/legacy/issues/
-:pull-base: https://github.com/smlnj/legacy/pull/
+:issue-base: https://github.com/smlnj/legacy/issues
+:smlnj-issue-base: https://github.com/smlnj/smlnj/issues
+:pull-base: https://github.com/smlnj/legacy/pull
 :stem: latexmath
 :source-highlighter: pygments
 :stylesheet: release-notes.css
@@ -102,14 +103,12 @@ https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 //| [old bug #@OLDID]
 |=======
 
-We also back-ported the following fixes from the development
-version:
+We also fixed the following bugs that did not have issues
+associated with them (or were bug fixes back-ported from the
+development repository):
 --
-* https://github.com/smlnj/smlnj/issues/276[Issue 276 (`UTF8.getu` should validate
-  that it's input is UTF-8)]
+* {smlnj-issue-base}/276[`UTF8.getu` should validate that it's input is UTF-8]
 --
-
-// ***** include a list of unnumbered bugs here *****
 
 == Supported systems
 
