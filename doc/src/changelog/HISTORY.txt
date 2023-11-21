@@ -104,14 +104,14 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //////////////////////////////////////////////////////////////////////
 
 //====================================================================
-//== Recent updates
+== Recent updates
 
 //--------------------------------------------------------------------
 [2023/11/21]::
 +
 Fix bug in `new-literals.sml`, where the integer value 2^31^ was being
 stored as a 32-bit signed integer in the literal table, instead of as
-a 64-bit signed integer.  This change fixes {issue-base}/258[Issue #287
+a 64-bit signed integer.  This change fixes {issue-base}/287[Issue #287
 (The word literal `0wx80000000` is incorrectly converted to
 `0wx7FFFFFFF80000000`)].
 +
