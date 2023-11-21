@@ -101,6 +101,9 @@ https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 | [.bugid]#286#
 | {issue-base}/286[Get "fgrep is obsolescent" when run **sml** on Fedora]
 | **n.a.**
+| [.bugid]#287#
+| {issue-base}/287[The word literal `0wx80000000` is incorrectly converted to `0wx7FFFFFFF80000000`]
+| **n.a.**
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]

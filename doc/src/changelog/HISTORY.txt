@@ -107,6 +107,17 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //== Recent updates
 
 //--------------------------------------------------------------------
+[2023/11/21]::
++
+Fix bug in `new-literals.sml`, where the integer value 2^31^ was being
+stored as a 32-bit signed integer in the literal table, instead of as
+a 64-bit signed integer.  This change fixes {issue-base}/258[Issue #287
+(The word literal `0wx80000000` is incorrectly converted to
+`0wx7FFFFFFF80000000`)].
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2023/10/13]::
 +
 Add contraction rule for when two calls to `SETHDLR` appear in
@@ -121,7 +132,7 @@ owner:cs.uchicago.edu/~jhr[John Reppy]
 //--------------------------------------------------------------------
 [2023/07/27]::
 +
-Fix for {issue-base}/258[issue #258 (Thompson NFA regex engine
+Fix for {issue-base}/258[Issue #258 (Thompson NFA regex engine
 doesn’t advance stream position when matching)].
 +
 owner:cs.uchicago.edu/~jhr[John Reppy]
