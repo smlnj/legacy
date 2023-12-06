@@ -134,8 +134,9 @@ SayDebug ("Flip generation %d: (%d GCs)\n", i+1, numGCs);
 SayDebug ("  %s: min = %u, prev = %u, thisMin = %u, req = %u, new = %u, max = %u\n",
 ArenaName[j+1], minSz, prevOldSz[j], thisMinSz, ap->reqSizeB, newSz, ap->maxSizeB);
 #endif
-	    if (newSz > ap->maxSizeB)
+	    if (newSz > ap->maxSizeB) {
 		newSz = (minSz > ap->maxSizeB) ? minSz : ap->maxSizeB;
+            }
 
 	    if (newSz > 0) {
 		ap->tospSizeB = RND_MEMOBJ_SZB(newSz);

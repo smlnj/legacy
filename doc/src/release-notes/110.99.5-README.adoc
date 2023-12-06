@@ -4,8 +4,9 @@
 :date: @DATE@
 :dist-dir: https://smlnj.org/dist/working/{version}/
 :history: {dist-dir}HISTORY.html
-:issue-base: https://github.com/smlnj/legacy/issues/
-:pull-base: https://github.com/smlnj/pull/issues/
+:issue-base: https://github.com/smlnj/legacy/issues
+:smlnj-issue-base: https://github.com/smlnj/smlnj/issues
+:pull-base: https://github.com/smlnj/legacy/pull
 :stem: latexmath
 :source-highlighter: pygments
 :stylesheet: release-notes.css
@@ -97,12 +98,23 @@ https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 | Issue
 | Description
 | Gforge Bug
+| [.bugid]#286#
+| {issue-base}/286[Get "fgrep is obsolescent" when run **sml** on Fedora]
+| **n.a.**
+| [.bugid]#287#
+| {issue-base}/287[The word literal `0wx80000000` is incorrectly converted to `0wx7FFFFFFF80000000`]
+| **n.a.**
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]
 |=======
 
-// ***** include a list of unnumbered bugs here *****
+We also fixed the following bugs that did not have issues
+associated with them (or were bug fixes back-ported from the
+development repository):
+--
+* {smlnj-issue-base}/276[`UTF8.getu` should validate that it's input is UTF-8]
+--
 
 == Supported systems
 

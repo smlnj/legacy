@@ -7,7 +7,7 @@
 #
 
 if [ x${SMLNJ_HOME} = x ] ; then
-   BIN_DIR="@BINDIR@"
+  BIN_DIR="@BINDIR@"
 else
   if [ x${CM_PATHCONFIG} = x ] ; then
     CM_PATHCONFIG=${SMLNJ_HOME}/lib/pathconfig
