@@ -677,25 +677,27 @@ and ppTycBind ppstrm (tyc,env) =
 			 val visdcons = visibleDcons(tyc,dcons)
 			 val incomplete = length visdcons < length dcons
 		     in
-			 openHVBox 0;
-			 pps "datatype";
-			 ppFormals ppstrm arity;
-			 pps " ";
-			 ppSym ppstrm (IP.last (path, SS.errorId));
+                       openHVBox 0;
+                         PP.openHBox ppstrm;
+			   pps "datatype";
+			   ppFormals ppstrm arity;
+			   pps " ";
+			   ppSym ppstrm (IP.last (path, SS.errorId));
+                         closeBox();
 			 case visdcons
 			   of nil => pps " = ..."
-			    | first :: rest =>
-			       (break{nsp=1,offset=2};
-				openHVBox 0;
-				 pps "= "; ppDcon first;
-				 app (fn d => (break{nsp=1,offset=0};
-                                               pps "| "; ppDcon d))
-				     rest;
-				 if incomplete
-				     then (break{nsp=1,offset=0}; pps "... ")
-				 else ();
-				closeBox());
-			closeBox()
+			    | first :: rest => (
+                                openHVBox 2;
+			          break{nsp=1,offset=0};
+				  pps "= "; ppDcon first;
+				  app (fn d => (break{nsp=1,offset=0}; pps "| "; ppDcon d))
+                                    rest;
+				  if incomplete
+				    then (break{nsp=1,offset=0}; pps "... ")
+				    else ();
+				closeBox())
+                         (* end case *);
+                      closeBox()
 		    end
 		   | _ =>
 		     (openHVBox 0;

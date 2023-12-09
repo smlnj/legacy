@@ -42,6 +42,8 @@ FILES::
 
 === Compiler
 
+* Some minor improvements in the REPL's pretty printing.
+
 === CM
 
 === MLRISC

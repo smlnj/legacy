@@ -99,8 +99,8 @@ fun ppDec ({static,dynamic,...}: Environment.environment)
         fun ppVar (VALvar{path, access, typ=(t0 as ref ty), prim, ...}) =
               if isLazyBogus path then ()
 	      else (
-	        openHVBox ppstrm (PP.Rel 0);
-	          openHOVBox ppstrm (PP.Rel 2);
+	        openHVBox ppstrm (PP.Abs 0);
+	          openHOVBox ppstrm (PP.Abs 2);
 	            PP.openHBox ppstrm;
 	              pps "val"; sp (); pps (SymPath.toString path); sp(); pps "=";
 		    PP.closeBox ppstrm;
@@ -151,8 +151,8 @@ fun ppDec ({static,dynamic,...}: Environment.environment)
 	   let val {path,tyfun=TYFUN{arity,body},...} =
 		   getOpt (trueTycon (#path dt), dt)
 	   in
-	       openHVBox ppstrm (PP.Rel 0);
-	       openHOVBox ppstrm (PP.Rel 2);
+	       openHVBox ppstrm (PP.Abs 0);
+	       openHOVBox ppstrm (PP.Abs 2);
 	       PP.string ppstrm "type";
 	       ppFormals ppstrm arity;
 	       break ppstrm {nsp=1,offset=0};
@@ -169,8 +169,8 @@ fun ppDec ({static,dynamic,...}: Environment.environment)
 	and ppAbsTyc (GENtyc { path, arity, eq, ... }) =
 	    (case !eq of
 		 ABS =>
-		 (openHVBox ppstrm (PP.Rel 0);
-		  openHOVBox ppstrm (PP.Rel 2);
+		 (openHVBox ppstrm (PP.Abs 0);
+		  openHOVBox ppstrm (PP.Abs 2);
 		  PP.string ppstrm "type";
 		  ppFormals ppstrm arity;
 		  break ppstrm {nsp=1,offset=0};
@@ -179,8 +179,8 @@ fun ppDec ({static,dynamic,...}: Environment.environment)
 		  PP.newline ppstrm;
 		  closeBox ppstrm)
 	       | _ =>
-		 (openHVBox ppstrm (PP.Rel 0);
-	          openHOVBox ppstrm (PP.Rel 2);
+		 (openHVBox ppstrm (PP.Abs 0);
+	          openHOVBox ppstrm (PP.Abs 2);
 	          PP.string ppstrm "type";
 	          ppFormals ppstrm arity;
 	          break ppstrm {nsp=1,offset=0};
@@ -212,25 +212,28 @@ fun ppDec ({static,dynamic,...}: Environment.environment)
 		    end
 		val {tycname,dcons,...} = Vector.sub(members,index)
 	    in
-		openHVBox ppstrm (PP.Rel 0);
-		openHVBox ppstrm (PP.Rel 0);
-		PP.string ppstrm "datatype";
-		ppFormals ppstrm arity;
-		PP.string ppstrm " ";
-		ppSym ppstrm (IP.last (path, SS.errorTycId));
-		break ppstrm {nsp=1,offset=2};
-		openHVBox ppstrm (PP.Rel 0);
-		ppDcons dcons;
-		closeBox ppstrm;
-		closeBox ppstrm;
-		PP.newline ppstrm;
+		openHVBox ppstrm (PP.Abs 0);
+                  openHVBox ppstrm (PP.Abs 0);
+                    openHBox ppstrm;
+                      PP.string ppstrm "datatype";
+
+                      ppFormals ppstrm arity;
+                      PP.space ppstrm 1;
+                      ppSym ppstrm (IP.last (path, SS.errorTycId));
+                    closeBox ppstrm;
+                    openHVBox ppstrm (PP.Abs 2);
+                      break ppstrm {nsp=1,offset=0};
+                      ppDcons dcons;
+                    closeBox ppstrm;
+                  closeBox ppstrm;
+                  PP.newline ppstrm;
 		closeBox ppstrm
 	    end
 	  | ppDataTyc _ = bug "unexpected case in ppDataTyc"
 
 	and ppEb(EBgen{exn=DATACON{name,...},etype,...}) =
-	      (openHVBox ppstrm (PP.Rel 0);
-	       openHOVBox ppstrm (PP.Rel 2);
+	      (openHVBox ppstrm (PP.Abs 0);
+	       openHOVBox ppstrm (PP.Abs 2);
 	       PP.string ppstrm "exception ";
 	       ppSym ppstrm name;
 	       case etype
@@ -244,8 +247,8 @@ fun ppDec ({static,dynamic,...}: Environment.environment)
 	       closeBox ppstrm)
 
 	  | ppEb (EBdef{exn=DATACON{name,...}, edef=DATACON{name=dname,...}}) =
-	      (openHVBox ppstrm (PP.Rel 0);
-	       openHOVBox ppstrm (PP.Rel 2);
+	      (openHVBox ppstrm (PP.Abs 0);
+	       openHOVBox ppstrm (PP.Abs 2);
 	       PP.string ppstrm "exception ";
 	       ppSym ppstrm name;
 	       PP.string ppstrm " =";
@@ -270,7 +273,7 @@ fun ppDec ({static,dynamic,...}: Environment.environment)
 	      PP.closeBox ppstrm)
 
 	and ppFctb (FCTB{name, fct, ...}) =
-	    (openHVBox ppstrm (PP.Rel 0);
+	    (openHVBox ppstrm (PP.Abs 0);
 	      pps "functor ";
 	      ppSym ppstrm name;
 	      case fct of
@@ -285,8 +288,8 @@ fun ppDec ({static,dynamic,...}: Environment.environment)
                             of M.SIG { name, ... } => getOpt (name, anonSym)
                              | _ => anonSym
 
-             in (openHVBox ppstrm (PP.Rel 0);
-		  openHVBox ppstrm (PP.Rel 0);
+             in (openHVBox ppstrm (PP.Abs 0);
+		  openHVBox ppstrm (PP.Abs 0);
    	           pps "signature "; ppSym ppstrm name; pps " =";
 	           break ppstrm {nsp=1,offset=2};
 	           PPModules.ppSignature ppstrm (sign,static,!signatures);
@@ -300,7 +303,7 @@ fun ppDec ({static,dynamic,...}: Environment.environment)
                             of M.FSIG{kind=SOME s, ...} => s
                              | _ => anonFsym
 
-	     in (openHVBox ppstrm (PP.Rel 0);
+	     in (openHVBox ppstrm (PP.Abs 0);
 	         pps "funsig "; ppSym ppstrm name;
 	         PPModules.ppFunsig ppstrm (fsig,static,!signatures);
 	         PP.newline ppstrm;
@@ -308,8 +311,8 @@ fun ppDec ({static,dynamic,...}: Environment.environment)
             end
 
 	and ppFixity{fixity,ops} =
-	    (openHVBox ppstrm (PP.Rel 0);
-	     openHVBox ppstrm (PP.Rel 0);
+	    (openHVBox ppstrm (PP.Abs 0);
+	     openHVBox ppstrm (PP.Abs 0);
 	     PP.string ppstrm (Fixity.fixityToString fixity);
 	     PU.ppSequence ppstrm {sep=C break {nsp=1,offset=0},
 			                  pr=PU.ppSym,
@@ -321,13 +324,13 @@ fun ppDec ({static,dynamic,...}: Environment.environment)
 
 	and ppOpen(pathStrs) =
 	    if !printOpens
-	    then (openHVBox ppstrm (PP.Rel 0);
+	    then (openHVBox ppstrm (PP.Abs 0);
 		   app (fn (path,str) =>
 			 PPModules.ppOpen ppstrm (path,str,static,!signatures))
 		       pathStrs;
 		  closeBox ppstrm)
-	    else (openHVBox ppstrm (PP.Rel 0);
-		  openHVBox ppstrm (PP.Rel 0);
+	    else (openHVBox ppstrm (PP.Abs 0);
+		  openHVBox ppstrm (PP.Abs 0);
 		  PP.string ppstrm "open ";
 		  ppSequence ppstrm {sep=C break {nsp=1,offset=0},
 			     pr=(fn ppstrm => fn (path,_)
@@ -368,7 +371,7 @@ fun ppDec ({static,dynamic,...}: Environment.environment)
 	       | OPENdec pathStrs => ppOpen pathStrs
 	       | MARKdec(dec,_) => ppDec0 dec
 
-     in openHVBox ppstrm (PP.Rel 0);
+     in openHVBox ppstrm (PP.Abs 0);
 	ppDec0 dec;
 	closeBox ppstrm;
 	flushStream ppstrm
