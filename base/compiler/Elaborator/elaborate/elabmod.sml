@@ -27,39 +27,41 @@ end (* signature ELABMOD *)
 structure ElabMod : ELABMOD =
 struct
 
-local structure S  = Symbol
-      structure IP = InvPath
-      structure SP = SymPath
-      structure EP = EntPath
-      structure EPC = EntPathContext
-      structure EE = EntityEnv
-      structure T  = Types
-      structure TU = TypesUtil
-      structure V  = VarCon
-      structure M  = Modules
-      structure MU = ModuleUtil
-      structure MI = ModuleId
-      structure L = Lookup
-      structure EU = ElabUtil
-      structure ET = ElabType
-      structure EC = ElabCore
-      structure ES = ElabSig
-      structure B  = Bindings
-      structure LU = Lookup
-      structure SM = SigMatch
-      structure INS = Instantiate
-      structure SE = StaticEnv
-      structure EM = ErrorMsg
-      structure PP = PrettyPrint
-      structure A  = Absyn
-      structure DA = Access
-      structure DI = DebIndex
-      structure PPU = PPUtil
-      structure ED = ElabDebug
-      structure ST = RedBlackSetFn(type ord_key = S.symbol
-                                   val compare = S.compare)
-      open Ast Modules
-      open SpecialSymbols (* special symbols *)
+local
+  structure S  = Symbol
+  structure IP = InvPath
+  structure SP = SymPath
+  structure SS = SpecialSymbols
+  structure EP = EntPath
+  structure EPC = EntPathContext
+  structure EE = EntityEnv
+  structure T  = Types
+  structure TU = TypesUtil
+  structure V  = VarCon
+  structure M  = Modules
+  structure MU = ModuleUtil
+  structure MI = ModuleId
+  structure L = Lookup
+  structure EU = ElabUtil
+  structure ET = ElabType
+  structure EC = ElabCore
+  structure ES = ElabSig
+  structure B  = Bindings
+  structure LU = Lookup
+  structure SM = SigMatch
+  structure INS = Instantiate
+  structure SE = StaticEnv
+  structure EM = ErrorMsg
+  structure PP = PrettyPrint
+  structure A  = Absyn
+  structure DA = Access
+  structure DI = DebIndex
+  structure PPU = PPUtil
+  structure ED = ElabDebug
+  structure ST = RedBlackSetFn(type ord_key = S.symbol
+			       val compare = S.compare)
+  open Ast Modules
+  open SpecialSymbols (* special symbols *)
 in
 
 (* debugging *)
@@ -236,7 +238,7 @@ fun bindReplTyc(EU.INFCT _, epctxt, mkStamp, dtyc) =
  *)
 fun bindNewTycs(EU.INFCT _, epctxt, mkStamp, dtycs, wtycs, rpath, err) =
       let fun stripPath path =
-	    let val namePath = IP.IPATH[IP.last path]
+	    let val namePath = IP.IPATH[IP.last (path, SS.errorTycId)]
 	        val prefix = IP.lastPrefix path
 	        val _ = if IP.equal(rpath,prefix) then ()
 		        else err EM.WARN
@@ -516,7 +518,7 @@ fun extractSig (env, epContext, context,
 		| procdatatycs(T.GENtyc{kind=T.DATATYPE dt, path, ...}::rest) =
 		    let val {index,family as {members,...},...} = dt
 			val {tycname,dcons,...} = Vector.sub(members,index)
-			val pathname = InvPath.last path
+			val pathname = IP.last (path, SS.errorTycId)
 		    in (map (fn ({name,...}) => name) dcons)@
 		       (pathname::procdatatycs rest)
 		    end
@@ -743,7 +745,7 @@ fun elab (BaseStr decl, env, entEnv, region) =
           val entv = mkStamp()   (* ev for the uncoerced argument *)
           val (argDec, argStr, argExp, argDee) =
 	      elabStr(arg, NONE, env, entEnv, context, tdepth, epContext,
-		      SOME entv, IP.IPATH[], region, compInfo)
+		      SOME entv, IP.IPATH[appstriargId], region, compInfo)
 
           val _ = debugmsg "--elab[AppStr-one]: elab arg done"
           val _ = showStr("--elab[AppStr-one]: arg str: ",argStr,env)
@@ -1095,7 +1097,7 @@ case fctexp
              functor is applied. *)
           val (bodyDecAbsyn, bodyStr, bodyExp, bodyDee) =
               elabStr(body, NONE, env', entEnv', context', tdepth, epContext', entsv,
-                      IP.IPATH [], region, compInfo)
+                      IP.IPATH [basefctId], region, compInfo)
           val _ = debugmsg "--elabFct[BaseFct]: body elaborated"
           val _ = showStr("--elabFct[BaseFct]: bodyStr: ",bodyStr,env)
 
@@ -1263,7 +1265,7 @@ fun loop([], decls, entDecls, env, entEnv) =
                                          | _ => false))
                        then str
                        else (error region' EM.COMPLAIN
-                             ("structure " ^ S.name(IP.last rpath) ^
+                             ("structure " ^ S.name(IP.last (rpath, SS.errorId)) ^
                               " defined by partially applied functor")
                              EM.nullErrorBody;
                              ERRORstr)
@@ -1490,8 +1492,8 @@ and elabDecl0
                            andalso not(!(#anyErrors compInfo))
 			then (INS.instParam
 			        {sign=s,entEnv=EE.empty,tdepth=DI.top,
-				 rpath=InvPath.empty,region=region',
-				 compInfo=compInfo};
+				 rpath=IP.extend (IP.empty, SS.errorId),
+				 region=region', compInfo=compInfo};
 			      ())
 			else ()
                   in loop(rest, s::sigs, SE.bind(name, B.SIGbind s, env))
@@ -1668,7 +1670,7 @@ and elabDecl0
 			   end
 			 | _ => (M.EMPTYdec,EE.empty)
 		   val tyc' = T.GENtyc{stamp=stamp, arity=arity,
-				       eq=eq, path=InvPath.extend(InvPath.empty,name),
+				       eq=eq, path=IP.extend (IP.empty, name),
 				       stub=stub, kind=dt}
 		   val resDec = A.DATATYPEdec{datatycs=[tyc' (* tyc *)],
 					      withtycs=[]}
@@ -1754,6 +1756,5 @@ fun elabDecl {ast, statenv, entEnv, context, level, tdepth,
      in {absyn=resDec, statenv=senv}
     end
 
-end (* local *)
-
+end (* top local *)
 end (* structure ElabMod *)

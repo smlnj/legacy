@@ -29,10 +29,12 @@ structure PPAbsyn: PPABSYN =
 struct
 
 local
+  structure S = Symbol
+  structure SS = SpecialSymbols
+  structure IP = InvPath		     
   structure EM = ErrorMsg
   structure M = Modules
   structure B = Bindings
-  structure S = Symbol
   structure PP = PrettyPrint
   structure PU = PPUtil
   structure AU = AbsynUtil
@@ -91,7 +93,7 @@ fun lookFIX (env,sym) =
     Lookup.lookFix (env,S.fixSymbol(S.name sym))
 
 
-fun ppRpath ppstrm rpath = PP.string ppstrm (InvPath.toString rpath)
+fun ppRpath ppstrm rpath = PP.string ppstrm (IP.toString rpath)
 
 fun ppStr ppstrm str =
     (case str
@@ -549,7 +551,7 @@ and ppDec (context as (env,source_opt)) ppstrm =
 		     | 1 => (pps "'a ")
 		     | n => (PU.ppTuple ppstrm PP.string (typeFormals n);
                              pps " ");
-		   PU.ppSym ppstrm (InvPath.last path);
+		   PU.ppSym ppstrm (IP.last (path, SS.errorTycId));
 		   pps " = "; ppType env ppstrm body)
 		| f _ _ = bug "ppDec'(TYPEdec)"
 	  in
@@ -566,7 +568,8 @@ and ppDec (context as (env,source_opt)) ppstrm =
 			  | 1 => (pps "'a ")
 			  | n => (PU.ppTuple ppstrm PP.string (typeFormals n);
 				  pps " ");
-			PU.ppSym ppstrm (InvPath.last path); pps " = ..."(*;
+			PU.ppSym ppstrm (IP.last (path, SS.errorTycId));
+			pps " = ..." (* ;
 		        PU.ppSequence ppstrm
 			{sep=(fn ppstrm => (PP.string ppstrm " |";
 					    PP.break ppstrm {nsp=1,offset=0})),
@@ -582,7 +585,7 @@ and ppDec (context as (env,source_opt)) ppstrm =
 		     | 1 => (pps "'a ")
 		     | n => (PU.ppTuple ppstrm PP.string (typeFormals n);
                              pps " ");
-		   PU.ppSym ppstrm (InvPath.last path);
+		   PU.ppSym ppstrm (IP.last (path, SS.errorTycId));
 		   pps " = "; ppType env ppstrm body)
 		| ppWITH _ _ = bug "ppDec'(DATATYPEdec) 2"
 	  in

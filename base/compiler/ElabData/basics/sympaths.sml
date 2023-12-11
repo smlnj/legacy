@@ -58,8 +58,6 @@ struct
 
   datatype path = IPATH of S.symbol list
 
-  exception InvPath
-
   val empty = IPATH nil
 
   fun null(IPATH p) = List.null p
@@ -68,10 +66,12 @@ struct
 
   fun append(IPATH front: path, IPATH back: path) = IPATH(back @ front)
 
-  fun last(IPATH []: path) = raise InvPath
-    | last(IPATH(s::_)) = s
+  (* path * S.symbol -> S.symbol *)
+  fun last(IPATH nil: path, s: S.symbol) = s
+    | last(IPATH (s::_), _) = s
 
-  fun lastPrefix(IPATH []: path) = raise InvPath
+  (* path -> path *)
+  fun lastPrefix(p as (IPATH nil: path)) = p
     | lastPrefix(IPATH(_::p)) = IPATH p
 
   fun equal(IPATH p1:path, IPATH p2:path) = ListPair.all Symbol.eq (p1, p2)

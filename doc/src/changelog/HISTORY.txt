@@ -107,6 +107,20 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
+[2023/12/09]::
++
+There was an inconsistency in the way that datatypes were printed
+in the REPL depending on if they were a top-level definition or
+defined in a structure.  It was also the case that the printing of
+top-level declarations (`TopLevel/print/ppdec.sml`) was using relative
+indentation, while the printing of declarations in modules
+(`ElabData/modules/ppmod.sml`) was using absolute indentation.
+I changed the code in `TopLevel/print/ppdec.sml` to use absolute
+indentation.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2023/11/21]::
 +
 Fix bug in `new-literals.sml`, where the integer value 2^31^ was being
