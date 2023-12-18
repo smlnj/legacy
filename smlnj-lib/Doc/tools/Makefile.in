@@ -1,6 +1,6 @@
 # Makefile.in
 #
-# COPYRIGHT (c) 2020 The Fellowship of SML/NJ (http://www.smlnj.org)
+# COPYRIGHT (c) 2023 The Fellowship of SML/NJ (http://www.smlnj.org)
 # All rights reserved.
 #
 # Makefile for SML/NJ Library documentation tools
@@ -24,6 +24,6 @@ include @MK_DIR@/clean-rules.gmk
 
 CLEAN_FILES =
 
-CLEAN_SUBDIRS = $(DOC_SUBDIRS)
+CLEAN_SUBDIRS = $(SUBDIRS)
 
 CLEANDIST_FILES = $(TOOL_BIN_DIR)/* $(TOOL_BIN_DIR)/.heap
