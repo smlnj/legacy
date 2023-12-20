@@ -1,0 +1,18 @@
+name: "Cross Reference to Development-repository Bug"
+description: "Create an issue cross-reference to an issue in the development repository"
+title: "Copy bug title"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        # Instructions
+
+        Please use this form to create issues that have already been reported
+        in the development version (*e.g.*, 2021.1) issue tracker.  Replace
+        `ISSUE` with the issue number in the form below.
+  - type: textarea
+    id: url
+    attributes:
+      label: Issue URL
+      description: [ISSUE](https://github.com/smlnj/smlnj/issues/ISSUE
