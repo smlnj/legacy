@@ -16,6 +16,7 @@ body:
       label: Issue URL
       description: >
         Replace `ISSUE` with the development-repository issue number below.
-      placeholder: [ISSUE](https://github.com/smlnj/smlnj/issues/ISSUE
+      placeholder: >
+        [ISSUE](https://github.com/smlnj/smlnj/issues/ISSUE
     validations:
       required: true
