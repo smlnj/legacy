@@ -15,4 +15,5 @@ body:
     id: url
     attributes:
       label: Issue URL
-      description: [ISSUE](https://github.com/smlnj/smlnj/issues/ISSUE
+      description: >
+        [ISSUE](https://github.com/smlnj/smlnj/issues/ISSUE
