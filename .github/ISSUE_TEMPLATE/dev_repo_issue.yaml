@@ -10,13 +10,13 @@ body:
 
         Please use this form to create issues that have already been reported
         in the development version (*e.g.*, 2021.1) issue tracker.
-  - type: textarea
+  - type: input
     id: url
     attributes:
       label: Issue URL
       description: >
         Replace `ISSUE` with the development-repository issue number below.
-      placeholder: >
+      value: >
         [ISSUE](https://github.com/smlnj/smlnj/issues/ISSUE
     validations:
       required: true
