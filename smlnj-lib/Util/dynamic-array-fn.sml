@@ -54,9 +54,9 @@ functor DynamicArrayFn (A : MONO_ARRAY) : MONO_DYNAMIC_ARRAY =
           fun copy i = A.sub(arrval, i+lo)
           in
             if hi <= bnd
-              then BLOCK(ref(A.tabulate(hi-lo, copy)), dflt, ref(hi-lo))
+              then BLOCK(ref(A.tabulate(hi-lo+1, copy)), dflt, ref(hi-lo))
             else if lo <= bnd
-              then BLOCK(ref(A.tabulate(bnd-lo, copy)), dflt, ref(bnd-lo))
+              then BLOCK(ref(A.tabulate(bnd-lo+1, copy)), dflt, ref(bnd-lo))
             else
               array(0,dflt)
           end
@@ -91,7 +91,7 @@ functor DynamicArrayFn (A : MONO_ARRAY) : MONO_DYNAMIC_ARRAY =
           val array_sz = A.length arr_val
           fun fillDflt (i,stop) =
                 if i = stop then ()
-                else (A.update(arr_val,i,dflt);fillDflt(i-1,stop))
+                else (A.update(arr_val,i,dflt); fillDflt(i-1,stop))
           in
             if newbnd < 0 then (bndref := ~1;arr := A.array(0,dflt))
             else if newbnd >= bnd then ()
@@ -100,7 +100,7 @@ functor DynamicArrayFn (A : MONO_ARRAY) : MONO_DYNAMIC_ARRAY =
               in
                 (bndref := !bnd'; arr := !arr')
               end
-            else fillDflt(bnd,newbnd)
+            else (bndref := newbnd; fillDflt(bnd,newbnd))
           end
 
   end (* DynamicArrayFn *)
