@@ -7,6 +7,7 @@
 :issue-base: https://github.com/smlnj/legacy/issues
 :smlnj-issue-base: https://github.com/smlnj/smlnj/issues
 :pull-base: https://github.com/smlnj/legacy/pull
+:smlnj-pull-base: https://github.com/smlnj/smlnj/pull
 :stem: latexmath
 :source-highlighter: pygments
 :stylesheet: release-notes.css
@@ -106,6 +107,8 @@ https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 | [.bugid]#287#
 | {issue-base}/287[The word literal `0wx80000000` is incorrectly converted to `0wx7FFFFFFF80000000`]
 | **n.a.**
+| [.bugid]#288#
+| {issue-base}/288[`DynamicArray.subArray` creates array with length bound+1]
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]
