@@ -109,6 +109,9 @@ https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 | **n.a.**
 | [.bugid]#288#
 | {issue-base}/288[`DynamicArray.subArray` creates array with length bound+1]
+| **n.a.**
+| [.bugid]#290#
+| {issue-base}/290[`Random.realRand` returns far smaller value than unity]
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]

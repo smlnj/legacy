@@ -5,6 +5,10 @@ correspond to SML/NJ releases.
 SML/NJ 110.99.5
 -------------------
 
+[2024-01-01]
+	Fixed a bug in `Random.randReal` on 32-bit systems.  This change fixes
+	issue #290 (`Random.realRand` returns far smaller value than unity).
+
 [2023-12-22]
 	Fixed the error checking and documentation for the `subArray` function
 	in the `DynamicArray` structure and `DynamicArrayFn` functor.
