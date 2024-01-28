@@ -1,12 +1,12 @@
+@echo OFF
+
 REM sml.bat
 REM
-REM Copyright 2020 The Fellowship of SML/NJ (http://www.smlnj.org)
+REM Copyright 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
 REM All rights reserved.
 REM
 REM The standard driver for SML/NJ under the new runtime system
 REM
-
-@echo OFF
 
 title Standard ML of New Jersey
 setlocal
