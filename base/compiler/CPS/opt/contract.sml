@@ -423,9 +423,17 @@ fun sameLvar(lvar, VAR lv) = lv = lvar
 (* precondition for fusing fixed-size conversions *)
 fun cvtPreCondition (n:int, n2, x, v2) =
       n = n2 andalso usedOnce x andalso sameLvar(x, ren v2)
-(* precondition for fusing IntInf conversions *)
+(* precondition for fusing conversions from IntInf.int *)
 fun cvtInfPrecondition (x, v2) =
       usedOnce x andalso sameLvar(x, ren v2)
+(* precondition for fusing conversions to IntInf.int.  We do not allow
+ * the fusion when the intermediate size is 64-bits and we are targetting
+ * a 32-bit machine.  Otherwise, the test is the same as that for fixed-size
+ * conversions.
+ *)
+fun cvtToInfPrecondition (64, 64, x, v) =
+      Target.is64 andalso usedOnce x andalso sameLvar(x, ren v)
+  | cvtToInfPrecondition (n, n2, x, v) = cvtPreCondition (n:int, n2, x, v)
 (* precondition for fusing a TEST_INF conversion to produce a TEST.  If the source is
  * 64-bits and we are on a 32-bit target, then we cannot do the fusion, since we
  * do not have a handle on the Core function that actually does the 64-bit
@@ -824,11 +832,11 @@ and g hdlr = let
 			    then mkCOPY(m, p, x2, t2, e2)
 			    else PURE(P.TRUNC{from=m, to=p}, [ren v], x2, t2, g' e2)
 		      | PURE(P.COPY_INF n2, [v2, f], x2, t2, e2) =>
-			  if cvtPreCondition (n, n2, x, v2)
+			  if cvtToInfPrecondition (n, n2, x, v2)
 			    then PURE(P.COPY_INF m, [ren v, ren f], x2, t2, g' e2)
 			    else skip ()
 		      | PURE(P.EXTEND_INF n2, [v2, f], x2, t2, e2) =>
-			  if not (cvtPreCondition (n, n2, x, v2))
+			  if not (cvtToInfPrecondition (n, n2, x, v2))
 			    then skip ()
 			  else if (m = n)
 			    then PURE(P.EXTEND_INF m, [ren v, ren f], x2, t2, g' e2)
@@ -873,7 +881,7 @@ and g hdlr = let
 			    then mkEXTEND(m, p, x2, t2, e2)
 			    else PURE(P.TRUNC{from=m, to=p}, [ren v], x2, t2, g' e2)
 		      | PURE(P.EXTEND_INF n2, [v2, f], x2, t2, e2) =>
-			  if cvtPreCondition (n, n2, x, v2)
+			  if cvtToInfPrecondition (n, n2, x, v2)
 			    then PURE(P.EXTEND_INF m, [ren v, ren f], x2, t2, g' e2)
 			    else skip ()
 		      | _ => skip ()

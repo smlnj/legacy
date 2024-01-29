@@ -107,6 +107,16 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
+[2024/01/29]::
++
+Modified the CPS contraction phase to address {issue-base}/292[Issue #292
+(`Word8.toLargeInt` is broken in 32-bit version)].  The change is to
+disable fusing of conversions to `IntInf.int` that use 64-bit numbers
+as the intermediate type on 32-bit platforms.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2023/12/09]::
 +
 There was an inconsistency in the way that datatypes were printed

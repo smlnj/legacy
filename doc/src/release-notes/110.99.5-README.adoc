@@ -113,8 +113,11 @@ https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 | [.bugid]#290#
 | {issue-base}/290[`Random.realRand` returns far smaller value than unity]
 | **n.a.**
+| [.bugid]#292#
+| {issue-base}/292[`Word8.toLargeInt` is broken in 32-bit version]
+| **n.a.**
 | [.bugid]#294#
-| {issue-base}/294[`Starting SML/NJ on Windows produces unsightly REM lines]
+| {issue-base}/294[Starting SML/NJ on Windows produces unsightly REM lines]
 | **n.a.**
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
