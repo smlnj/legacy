@@ -86,7 +86,7 @@ structure TransPrim : sig
 	negate : L.lexp,	(* negation primitive function *)
 	less : L.lexp,		(* less-than primitive function *)
 	greater : L.lexp,	(* greater-than primitive function *)
-	equal : L.lexp,		(* equality primitivefunction *)
+	equal : L.lexp,		(* equality primitive function *)
 	zero : L.lexp,		(* the value 0 for the given type *)
 	negOne : L.lexp		(* the value -1 for the given type *)
       }
@@ -465,6 +465,10 @@ structure TransPrim : sig
 			      "unexpected type ", LT.lt_print primoplt, " of ", opname
 			    ])
 		      (* end case *))
+(* FIXME: on a 32-bit platform, the conversions from 64-bits to IntInf take a pair
+ * of words as the argument type, so the use of `lt_fixed_int` as the domain here
+ * does not look correct.
+ *)
 		val extra_arg_lt = LT.ltc_parrow(lt_fixed_int, res_lt)
 		val new_arg_lt = LT.ltc_tuple [orig_arg_lt, extra_arg_lt]
 		val new_lt = LT.ltc_parrow (new_arg_lt, res_lt)
