@@ -107,6 +107,16 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
+[2024/01/30]::
++
+Modified the implementation of `OS.Path` to allow for systems (like
+Windows) that support more than one valid arc separator character.
+This change addresses {issue-base}/280[Issue #280 (Support forward-slash
+("/") as a separator in the Windows implementation of `OS.Path`)].
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2024/01/29]::
 +
 Modified the CPS contraction phase to address {issue-base}/292[Issue #292

@@ -33,7 +33,7 @@ functor OS_PathFn (OSPathBase : sig
 	(* join a volume and path; raise Path on invalid volumes *)
     val arcSep : string
 	(* the arc separator (e.g., "/" on UNIX) *)
-    val isArchSepChar : char -> bool
+    val isArcSepChar : char -> bool
         (* a predicate to test if a character is an arc separator; by using a predicate
          * for this purpose, we allow for multiple separator characters (e.g., both
          * forward and backward slashs are valid on Windows.
@@ -65,7 +65,7 @@ functor OS_PathFn (OSPathBase : sig
 
     fun fromString "" = {isAbs = false, vol = "", arcs = []}
       | fromString p = let
-	  val fields = SS.fields P.isArchSepChar
+	  val fields = SS.fields P.isArcSepChar
 	  val (isAbs, vol, rest) = P.splitVolPath p
 	  in
 	    { isAbs = isAbs,

@@ -101,6 +101,9 @@ https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 | Issue
 | Description
 | Gforge Bug
+| [.bugid]#280#
+| {issue-base}/280[Support forward-slash ("/") as a separator in the Windows implementation of `OS.Path`]
+| **n.a.**
 | [.bugid]#286#
 | {issue-base}/286[Get "fgrep is obsolescent" when run **sml** on Fedora]
 | **n.a.**

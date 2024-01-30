@@ -49,7 +49,7 @@ structure OS_Path = OS_PathFn (
 
     val arcSep = "/"
 
-    fun isArchSepChar #"/" = true | isArchSepChar _ = false
+    fun isArcSepChar #"/" = true | isArcSepChar _ = false
 
     fun sameVol (v1, v2: string) = v1 = v2
 
