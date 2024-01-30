@@ -16,7 +16,10 @@ structure Win32_General : WIN32_GENERAL =
 
     val isValidHandle = Handle.isValid
 
-    val arcSepChar = #"\\"
+    val arcSep = "\\"
+    fun isArchSepChar #"/" = true
+      | isArchSepChar #"\\" = true
+      | isArchSepChar _ = false
 
     val cfun = CInterface.c_function
 
