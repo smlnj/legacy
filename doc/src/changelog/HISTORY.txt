@@ -109,6 +109,23 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //--------------------------------------------------------------------
 [2024/02/05]::
 +
+Added `HOST_WORD_SIZE` and `HOST_BIG_ENDIAN` primops.  These will expand
+into constant functions (e.g., `fn () => 64` for `HOST_WORD_SIZE` on a
+64-bit system) that will be visible to the optimizer.  We can then use
+code like:
++
+[[source,sml]
+------------
+if InlineT.host_big_endian() then ... else ...
+------------
++
+where the `if` can be evaluated at compile time.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
+[2024/02/05]::
++
 The implementations of `PackWord64Little.update` and `PackWord64Big.update`
 were swapped on 64-bit platforms (resulting in byte-order reversal).  These
 have been fixed.  Note that the 32-bit versions are correct.

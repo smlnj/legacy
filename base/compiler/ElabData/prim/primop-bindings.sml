@@ -482,6 +482,11 @@ structure PrimopBindings : sig
 	    (wName ^ "_to_cptr", ar(addrTy, BT.pointerTy), P.WORD_TO_PTR)
 	  end
 
+  (* primops for host properties *)
+    val prims = prims :-:
+          ("host_word_size", ar(BT.unitTy, BT.intTy), P.HOST_WORD_SIZE) :-:
+          ("host_big_endian", ar(BT.unitTy, BT.boolTy), P.HOST_BIG_ENDIAN)
+
   (* primops for C FFI *)
     val prims = let
 	(* representation of pointers to raw values *)
