@@ -135,6 +135,9 @@ associated with them (or were bug fixes back-ported from the
 development repository):
 --
 * {smlnj-issue-base}/276[`UTF8.getu` should validate that it's input is UTF-8]
+
+* The implementations of `PackWord64Little.update` and `PackWord64Big.update`
+  were swapped on 64-bit platforms.
 --
 
 == Supported systems
