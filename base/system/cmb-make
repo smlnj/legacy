@@ -11,7 +11,8 @@
 # the path to the SML compiler to use for the build.
 #
 
-set -x
+HERE=`pwd`
+
 SML=sml
 ARGS=""
 # Process command-line arguments
@@ -35,6 +36,15 @@ done
 if [ x"SIZE_OPT" = x ] ; then
   SIZE=`$SML @SMLwordsize`
   SIZE_OPT="-$SIZE"
+fi
+
+if [ x"$SML" != xsml ] ; then
+  SMLDIR=`dirname $SML`
+  case $SMLDIR in
+  ..*) SMLDIR="$HERE/$SMLDIR" ;;
+  *) ;;
+  esac
+  export PATH="$SMLDIR":"$PATH"
 fi
 
 exec $SML $SIZE_OPT $ARGS $@ -DNO_PLUGINS '$smlnj/cmb.cm' <<XXXX
