@@ -13,13 +13,29 @@
 
 HERE=`pwd`
 
+usage() {
+  echo "usage: cmb-make [ options ] [ <sml-cmd> ]"
+  echo "  options:"
+  echo "    -h            -- print this message"
+  echo "    -verbose      -- set CM's verbose mode to true"
+  echo "    -C<ctl>=<v>   -- control argument passed to compile command"
+  echo "    -D<sym>=<v>   -- CM-define argument passed to compile command"
+  echo "    -32 | -64     -- specify target word size"
+  exit 1
+}
+
+export CM_VERBOSE
+CM_VERBOSE=false
+
 SML=sml
 ARGS=""
 # Process command-line arguments
 #
 while [ "$#" != "0" ] ; do
-    arg=$1; shift
-    case $arg in
+  arg=$1; shift
+  case $arg in
+    -h) usage ;;
+    -verbose) CM_VERBOSE=true ;;
     -32) SIZE_OPT=$arg ;;
     -64) SIZE_OPT=$arg ;;
     -C*) ARGS="$ARGS $arg" ;;
@@ -27,7 +43,7 @@ while [ "$#" != "0" ] ; do
     *)  SML=$arg
 	break
 	;;
-    esac
+  esac
 done
 
 # if the size was not specified on the command line, then we use
@@ -38,13 +54,28 @@ if [ x"SIZE_OPT" = x ] ; then
   SIZE_OPT="-$SIZE"
 fi
 
-if [ x"$SML" != xsml ] ; then
-  SMLDIR=`dirname $SML`
-  case $SMLDIR in
-  ..*) SMLDIR="$HERE/$SMLDIR" ;;
-  *) ;;
-  esac
-  export PATH="$SMLDIR":"$PATH"
+# if the "sml" command is specified by a path, then we add the directory
+# containing the "sml" command to the end of the user's PATH.  This allows
+# CM to find the ml-yacc and ml-ulex programs when they are not in the path.
+# NOTE: the "-DNO_PLUGINS" option used below should obviate the need for these
+# commands, but the way that the CM parser handles #ifdef is broken.
+#
+SMLBIN=`dirname $SML`
+case $SMLBIN in
+  .) ;;
+  /*) ;;
+  *) if [ -d $SMLBIN ] ; then
+      SMLBIN=$(cd $SMLBIN; pwd)
+    else
+      echo "cmb-make: directory '$SMLBIN' does not exist"
+      exit 1
+    fi ;;
+esac
+if [ $SMLBIN != "." ] ; then
+  if [ x"$CM_VERBOSE" = xtrue ] ; then
+    echo "cmb-make: adding '$SMLBIN' to PATH"
+  fi
+  PATH=$PATH:$SMLBIN
 fi
 
 exec $SML $SIZE_OPT $ARGS $@ -DNO_PLUGINS '$smlnj/cmb.cm' <<XXXX

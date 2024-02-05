@@ -47,6 +47,11 @@ FILES::
 
 === CM
 
+* The *system/cmb-make* script now runs with the `CM_VERBOSE` environment variable
+  set to `false` by default (use the `-verbose` option for the old behavior).  It
+  also now sets the `PATH` environment variable to include the directory where the
+  *sml* command lives when it is given as an argument to *cmb-make*.
+
 === MLRISC
 
 === Runtime System
