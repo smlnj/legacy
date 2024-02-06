@@ -106,6 +106,15 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //====================================================================
 == Recent updates
 
+[2024/02/06]::
++
+Refactoring the Basis implementation directory structure to move code related to 
+real numbers into its own directory.  Modules that support sequences of reals
+are not included in this refactoring.  This is the first step to a reimplementation
+of the support for printing reals.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
 //--------------------------------------------------------------------
 [2024/02/05]::
 +

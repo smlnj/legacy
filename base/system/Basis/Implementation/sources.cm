@@ -70,13 +70,13 @@ Group
 	signature ARRAY_SLICE_2004
 	signature LIST_2004
 	signature LIST_PAIR_2004
-        signature MATH_2004
+	signature MATH_2004
 	signature MONO_ARRAY_2004
 	signature MONO_ARRAY_SLICE_2004
 	signature MONO_VECTOR_2004
 	signature MONO_VECTOR_SLICE_2004
 	signature OPTION_2004
-        signature REAL_2004
+	signature REAL_2004
 	signature STRING_2004
 	signature TEXT_2004
 	signature VECTOR_2004
@@ -105,8 +105,8 @@ Group
 	signature VECTOR_SLICE_2018
 
       (* basis signatures with extensions from proposal 2022-001 added *)
-        signature MATH_2022
-        signature REAL_2022
+	signature MATH_2022
+	signature REAL_2022
 
       (* backward compatibility with the SML'90 version of the basis *)
 	signature SML90
@@ -376,12 +376,9 @@ is
 	byte.sig
 	command-line.sig
 	date.sig
-	ieee-real.sig
-	real.sig
 	time.sig
 	timer.sig
 	option.sig
-	math.sig
 	sml90.sig
 
 	substring.sml
@@ -393,14 +390,11 @@ is
 	string.sml
 	char.sml
 	list.sml
-	real64-values.sml
 	scan-util.sml
 	num-scan32.sml
 	num-format32.sml
 	num-scan64.sml
 	num-format64.sml
-	real-format.sml
-	real-scan.sml
 	bool.sml
 	date.sml
 
@@ -411,10 +405,10 @@ is
 	mono-array2.sig
 	mono-buffer.sig
 
-	real64-vector.sml
-	real64-vector-slice.sml
-	real64-array.sml
 	real64-array-slice.sml
+	real64-array.sml
+	real64-vector-slice.sml
+	real64-vector.sml
 
 	char-array.sml
 	char-array-slice.sml
@@ -424,19 +418,11 @@ is
 	array.sml
 	array-slice.sml
 	array2.sml
-	ieee-real.sml
 	int32.sml
 	int-inf-sig.sml
 	int-inf.sml
 	w32-popcount.sml
 	word32.sml
-	real64.sml
-	math64-common.sml
-#if defined(ARCH_PPC)
-	math64-none.sml
-#else
-	math64-sqrt.sml
-#endif
 	word8.sml
 	word8-vector.sml
 	word8-vector-slice.sml
@@ -463,6 +449,21 @@ is
 	pack-word-b32.sml
 	pack-word-l32.sml
 
+	Real/ieee-real.sig
+	Real/ieee-real.sml
+	Real/math.sig
+	Real/math64-common.sml
+#if defined(ARCH_PPC)
+	Real/math64-none.sml
+#else
+	Real/math64-sqrt.sml
+#endif
+	Real/real-format.sml
+	Real/real-scan.sml
+	Real/real.sig
+	Real/real64.sml
+	Real/real64-values.sml
+
 #if defined(SIZE_32)
 	Target32Bit/bind-structs.sml
 	Target32Bit/int.sml
@@ -471,7 +472,7 @@ is
 	Target32Bit/pack-word-b64.sml
 	Target32Bit/pack-word-l64.sml
 	Target32Bit/pointer.sml
-        Target32Bit/real64-to-intinf.sml
+	Target32Bit/real64-to-intinf.sml
 	Target32Bit/word.sml
 	Target32Bit/word64.sml
 #else
@@ -482,7 +483,7 @@ is
 	Target64Bit/pack-word-b64.sml
 	Target64Bit/pack-word-l64.sml
 	Target64Bit/pointer.sml
-        Target64Bit/real64-to-intinf.sml
+	Target64Bit/real64-to-intinf.sml
 	Target64Bit/word.sml
 	Target64Bit/word64.sml
 	Target64Bit/w64-popcount.sml
