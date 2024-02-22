@@ -14,6 +14,8 @@ signature UNSAFE =
     structure Pointer : UNSAFE_POINTER
     structure Poll : POLL
 
+    structure Real64 : UNSAFE_REAL64
+
     structure Vector : UNSAFE_VECTOR
     structure Array  : UNSAFE_ARRAY
 

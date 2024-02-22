@@ -14,6 +14,17 @@ structure Unsafe :> UNSAFE =
     structure Pointer = UnsafePointer
     structure Poll = Poll
 
+    structure Real64 =
+      struct
+        val toBits = InlineT.Real64.toBits
+        fun fromBits w = let
+              val arr = Core.Assembly.A.create_b 8
+              in
+                PackWord64Little.update (arr, 0, w);
+                PackReal64Little.subArr (arr, 0)
+              end
+      end
+
     structure Vector =
       struct
 	val sub = InlineT.PolyVector.sub
@@ -95,7 +106,7 @@ structure Unsafe :> UNSAFE =
 	val baseBits = WordImp.toIntX CoreIntInf.baseBits
       end
 
-  (* convert real to bits (experimental) *)
+  (* convert default real to bits *)
     val realToBits = InlineT.Real64.toBits
   (* assembly-code function for scaling reals *)
     val scalb = Core.Assembly.A.scalb

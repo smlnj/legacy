@@ -126,6 +126,7 @@ Group
 
 	signature UNSAFE_OBJECT
 	signature POLL
+        signature UNSAFE_REAL64
 	signature UNSAFE_ARRAY
 	signature UNSAFE_VECTOR
 	signature UNSAFE_MONO_ARRAY
@@ -329,6 +330,7 @@ is
 	Unsafe/poll.sig
 	Unsafe/poll.sml
 	Unsafe/object.sig
+	Unsafe/unsafe-real64.sig
 	Unsafe/unsafe-array.sig
 	Unsafe/unsafe-vector.sig
 	Unsafe/unsafe-mono-array.sig

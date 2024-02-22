@@ -106,9 +106,19 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //====================================================================
 == Recent updates
 
+[2024/02/22]::
++
+Added `Unsafe.Real64` structure to hold conversions between `Real64.real`
+and `Word64.word` values.  The `fromBits` function can be further improved,
+but it needs the new `host_big_endian` primop to select the best code path
+based on endianess.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2024/02/06]::
 +
-Refactoring the Basis implementation directory structure to move code related to 
+Refactoring the Basis implementation directory structure to move code related to
 real numbers into its own directory.  Modules that support sequences of reals
 are not included in this refactoring.  This is the first step to a reimplementation
 of the support for printing reals.
@@ -118,8 +128,8 @@ owner:cs.uchicago.edu/~jhr[John Reppy]
 //--------------------------------------------------------------------
 [2024/02/05]::
 +
-Added `HOST_WORD_SIZE` and `HOST_BIG_ENDIAN` primops.  These will expand
-into constant functions (e.g., `fn () => 64` for `HOST_WORD_SIZE` on a
+Added `host_word_size` and `host_big_endian` primops.  These will expand
+into constant functions (e.g., `fn () => 64` for `host_word_size` on a
 64-bit system) that will be visible to the optimizer.  We can then use
 code like:
 +
