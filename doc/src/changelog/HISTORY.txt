@@ -106,6 +106,15 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //====================================================================
 == Recent updates
 
+//--------------------------------------------------------------------
+[2024/02/24]::
++
+Fixed {issue-base}/298[Issue #298 (Incorrect printing of source code
+in error message)].
++
+owner:cs.uchicago.edu/~dbm[Dave MacQueen]
+
+//--------------------------------------------------------------------
 [2024/02/22]::
 +
 Added `Unsafe.Real64` structure to hold conversions between `Real64.real`
