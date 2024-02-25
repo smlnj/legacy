@@ -25,8 +25,10 @@ signature MACH_SPEC =
     val unboxedFloats : bool
     val newClosure : bool
     val numRegs : int		(* the number of registers used by ML *)
-    val numFloatRegs : int	(* the number of registers used by ML *)
-    val numArgRegs : int	(* the number of registers used to pass args. *)
+    val numFloatRegs : int	(* the number of FP registers used by ML *)
+    val numArgRegs : int	(* the number of registers used to pass args (not
+                                 * including callee-save registers).
+                                 *)
     val numFloatArgRegs : int	(* the number of FP registers used for args. *)
     val numCalleeSaves : int
     val numFloatCalleeSaves : int
