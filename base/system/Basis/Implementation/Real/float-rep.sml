@@ -197,7 +197,10 @@ structure FloatRep : sig
                    of NONE => NONE
                     | SOME(0, _) => SOME(Zero sign)
                     | SOME(nDigits, digits) => SOME(cons{
-                          sign = sign, nDigits = nDigits, digits = digits, exp = exp - nDigits
+                          sign = sign,
+                          nDigits = nDigits,
+                          digits = digits,
+                          exp = exp - nDigits
                         })
                   (* end case *)
                 end

@@ -160,7 +160,7 @@ structure FRepToString : sig
      *)
     fun toSci prec (sign, nDigits, digits, exp) = let
           (* adjust exponent for "dddd." => "d.ddd" conversion *)
-          val nFracDigits = InlineT.Int.max(0, nDigits - 1)
+          val nFracDigits = Int.max(0, nDigits - 1)
           val exp = exp + nFracDigits
           in
             case (prec, digits)

@@ -20,6 +20,7 @@ structure FRepToReal64 : sig
 
     structure W = InlineT.Word
     structure W64 = InlineT.Word64
+    structure Int = IntImp
 
     datatype float_rep = datatype FloatRep.float_rep
 
@@ -34,7 +35,7 @@ structure FRepToReal64 : sig
 (* the following should be part of the WORD signature *)
     (* count the leading zeros in a Word64.word value *)
     fun nlz (w : Word64.word) : word = let
-          fun step (x : Word64.word, n : word, k : word) = let
+          fun step (x, n, k) = let
                 val y = W64.rshiftl(x, k)
                 in
                   if (y <> 0w0) then (n - k, y) else (n, x)
@@ -317,7 +318,7 @@ structure FRepToReal64 : sig
                 ])
 **-DEBUG*)
           (* compute the final IEEE exponent *)
-          val ieee_e2 = InlineT.Int.max(0, e2 + kExpBias + floorLog2 m2)
+          val ieee_e2 = Int.max(0, e2 + kExpBias + floorLog2 m2)
           (* We need to figure out how much we need to shift m2. The tricky part is
            * that we need to take the final IEEE exponent into account, so we need
            * to reverse the bias and also special-case the value 0.
