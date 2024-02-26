@@ -1,4 +1,4 @@
-(* rep-to-real64.sml
+(* frep-to-real64.sml
  *
  * COPYRIGHT (c) 2024 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
@@ -12,48 +12,30 @@
  *      https://github.com/ulfjack/ryu
  *)
 
-structure RepToReal64 : sig
+structure FRepToReal64 : sig
 
-    val fromRep : FloatRep.float_rep -> real
+    val cvt : FloatRep.float_rep -> real
 
   end = struct
 
-    structure W = Word
-    structure W64 = Word64
+    structure W = InlineT.Word
+    structure W64 = InlineT.Word64
 
     datatype float_rep = datatype FloatRep.float_rep
 
 (* the following should be in the Unsafe structure *)
     (* bitcast a Word64.word to a Real64.real *)
-    fun fromBits b = let
-          val arr = Word8Array.array(8, 0w0)
-(* work around for bug in PackWord64Little.update *)
-          fun update (arr, i, w) = let
-                val w64ToW8 = Word8.fromLarge o W64.toLarge
-                val k = Word.toIntX(Word.<<(Word.fromInt i, 0w3))
-                in
-                  Word8Array.update (arr, k,   w64ToW8 w); (* LSB first *)
-                  Word8Array.update (arr, k+1, w64ToW8(W64.>>(w,  0w8)));
-                  Word8Array.update (arr, k+2, w64ToW8(W64.>>(w, 0w16)));
-                  Word8Array.update (arr, k+3, w64ToW8(W64.>>(w, 0w24)));
-                  Word8Array.update (arr, k+4, w64ToW8(W64.>>(w, 0w32)));
-                  Word8Array.update (arr, k+5, w64ToW8(W64.>>(w, 0w40)));
-                  Word8Array.update (arr, k+6, w64ToW8(W64.>>(w, 0w48)));
-                  Word8Array.update (arr, k+7, w64ToW8(W64.>>(w, 0w56))) (* MSB last *)
-                end
+    fun fromBits (b : Word64.word) : real = let
+          val r : real ref = InlineT.cast(ref b)
           in
-(*
-            PackWord64Little.update (arr, 0, b);
-*)
-            update (arr, 0, b);
-            PackReal64Little.subArr (arr, 0)
+            !r
           end
 
 (* the following should be part of the WORD signature *)
     (* count the leading zeros in a Word64.word value *)
-    fun nlz (w : W64.word) : W.word = let
-          fun step (x : W64.word, n : W.word, k : W.word) = let
-                val y = W64.>>(x, k)
+    fun nlz (w : Word64.word) : word = let
+          fun step (x : Word64.word, n : word, k : word) = let
+                val y = W64.rshiftl(x, k)
                 in
                   if (y <> 0w0) then (n - k, y) else (n, x)
                 end
@@ -63,7 +45,7 @@ structure RepToReal64 : sig
           val (n, x) = step (x, n, 0w4)
           val (n, x) = step (x, n, 0w2)
           in
-            if (W64.>>(x, 0w1) <> 0w0)
+            if (W64.rshiftl(x, 0w1) <> 0w0)
               then n - 0w2
               else n - W.fromLarge x
           end
@@ -134,21 +116,21 @@ structure RepToReal64 : sig
           end
 
     (* assume w <> 0w0 *)
-    fun floorLog2 (w : W64.word) = W.toIntX(0w63 - nlz w)
+    fun floorLog2 (w : Word64.word) = W.toIntX(0w63 - nlz w)
 
     (* returns log_2(5^e) for 0 < e <= 3528 and 1 for e = 0. *)
-    fun log2Pow5 e = W.toIntX(W.>>(W.fromInt e * 0w1217359, 0w19))
+    fun log2Pow5 e = W.toIntX(W.rshiftl(W.fromInt e * 0w1217359, 0w19))
 
-    fun pow5Bits e = W.toIntX(W.>>(W.fromInt e * 0w1217359, 0w19) + 0w1)
+    fun pow5Bits e = W.toIntX(W.rshiftl(W.fromInt e * 0w1217359, 0w19) + 0w1)
 
     (* returns ceil(log_2(5^e)) for 0 < e <= 3528 and 1 for e = 0. *)
     fun ceilLog2Pow5 e = log2Pow5 e + 1
 
-    fun pow5Factor (value : W64.word) = let
+    fun pow5Factor (value : Word64.word) = let
           (* 5 * m_inv_5 = 1 (mod 2^64) *)
-          val m_inv_5 : W64.word = 0w14757395258967641293
+          val m_inv_5 : Word64.word = 0w14757395258967641293
           (* #{ n | n = 0 (mod 2^64) } = 2^64 / 5 *)
-          val n_div_5 : W64.word = 0w3689348814741910323
+          val n_div_5 : Word64.word = 0w3689348814741910323
           fun lp (value, count) = let
                 val value = value * m_inv_5
                 in
@@ -161,15 +143,15 @@ structure RepToReal64 : sig
           end
 
     (* returns true if value is divisible by 5^p *)
-    fun multipleOfPowerOf5 (value : W64.word, p : word) = (pow5Factor value >= p)
+    fun multipleOfPowerOf5 (value : Word64.word, p : word) = (pow5Factor value >= p)
 
     (* returns true if value is divisible by 2^p *)
-    fun multipleOfPowerOf2 (value, p) = (W64.andb(value, W64.<<(0w1, p)-0w1) = 0w0)
+    fun multipleOfPowerOf2 (value, p) = (W64.andb(value, W64.lshift(0w1, p)-0w1) = 0w0)
 
     (* 64x64 --> 128 bit unsigned multiplication *)
     fun umul128 (a, b) = let
           fun lo32 x = W64.andb(x, 0wxffffffff)
-          fun hi32 x = W64.>>(x, 0w32)
+          fun hi32 x = W64.rshiftl(x, 0w32)
           val aLo = lo32 a
           val aHi = hi32 a
           val bLo = lo32 b
@@ -187,7 +169,7 @@ structure RepToReal64 : sig
           val mid2Lo = lo32 mid2
           val mid2Hi = hi32 mid2
           val pHi = b11 + mid1Hi + mid2Hi
-          val pLo = W64.orb(W64.<<(mid2Lo, 0w32),  b00Lo)
+          val pLo = W64.orb(W64.lshift(mid2Lo, 0w32),  b00Lo)
           in
             (pHi, pLo)
           end
@@ -196,9 +178,9 @@ structure RepToReal64 : sig
      * bits.  We assume that 0 < dist < 64.
      *)
     fun shiftRight128 (lo, hi, dist) =
-          W64.orb (W64.<<(hi, 0w64 - dist), W64.>>(lo, dist))
+          W64.orb (W64.lshift(hi, 0w64 - dist), W64.rshiftl(lo, dist))
 
-    fun mulShift64 (m : W64.word, mul : (W64.word * W64.word), j : word) = let
+    fun mulShift64 (m : Word64.word, mul : (Word64.word * Word64.word), j : word) = let
           val (hi1, _) = umul128 (m, #1 mul)
           val (hi2, lo2) = umul128 (m, #2 mul)
           val sum = hi1 + lo2
@@ -217,7 +199,7 @@ structure RepToReal64 : sig
             if (offset = 0)
               then mul
               else let
-                val m = Word.toLarge(Vector.sub(pow5Tbl, offset))
+                val m = W.toLarge(Vector.sub(pow5Tbl, offset))
                 val (hi1, lo1) = umul128 (m, #1 mul)
                 val (hi2, lo2) = umul128 (m, #2 mul)
                 val sum = hi1 + lo2
@@ -227,9 +209,9 @@ structure RepToReal64 : sig
                 in (
                   shiftRight128(lo1, sum, delta) +
                     W64.andb(
-                      W64.>>(
+                      W64.rshiftl(
                         Vector.sub(pow5OffsetTbl, W.toIntX(i' div 0w16)),
-                        W.<<(i' mod 0w16, 0w1)),
+                        W.lshift(i' mod 0w16, 0w1)),
                       0w3),
                   shiftRight128(sum, hi2, delta)
                 ) end
@@ -255,9 +237,9 @@ structure RepToReal64 : sig
                 in (
                   shiftRight128(lo1, sum, delta) + 0w1 +
                     W64.andb(
-                      W64.>>(
+                      W64.rshiftl(
                         Vector.sub(pow5InvOffsetTbl, W.toIntX(i' div 0w16)),
-                        W.<<(i' mod 0w16, 0w1)),
+                        W.lshift(i' mod 0w16, 0w1)),
                       0w3),
                   shiftRight128(sum, hi2, delta)
                 ) end
@@ -265,7 +247,7 @@ structure RepToReal64 : sig
 
     fun fromDecimalRep (f : FloatRep.decimal_rep) = let
           fun sumDigits ([], accum) = accum
-            | sumDigits (d::ds, accum) = sumDigits (ds, Word64.fromInt d + 0w10*accum)
+            | sumDigits (d::ds, accum) = sumDigits (ds, W64.fromInt d + 0w10*accum)
           val m10 = sumDigits (#digits f, 0w0)
           val e10 = #exp f
           (* Convert to binary float m2 * 2^e2, while retaining information
@@ -335,7 +317,7 @@ structure RepToReal64 : sig
                 ])
 **-DEBUG*)
           (* compute the final IEEE exponent *)
-          val ieee_e2 = Int.max(0, e2 + kExpBias + floorLog2 m2)
+          val ieee_e2 = InlineT.Int.max(0, e2 + kExpBias + floorLog2 m2)
           (* We need to figure out how much we need to shift m2. The tricky part is
            * that we need to take the final IEEE exponent into account, so we need
            * to reverse the bias and also special-case the value 0.
@@ -361,19 +343,19 @@ structure RepToReal64 : sig
            * exponent ieee_e2 now.
            *)
           val trailingZeros = trailingZeros
-                andalso (W64.andb(m2, W64.<<(0w1, shift - 0w1) - 0w1) = 0w0)
-          val lastRemovedBit = W64.andb(W64.>>(m2, shift-0w1), 0w1)
+                andalso (W64.andb(m2, W64.lshift(0w1, shift - 0w1) - 0w1) = 0w0)
+          val lastRemovedBit = W64.andb(W64.rshiftl(m2, shift-0w1), 0w1)
           val roundUp = (lastRemovedBit <> 0w0)
                 andalso (not trailingZeros
-                  orelse (W64.andb(W64.>>(m2, shift), 0w1) <> 0w0));
-          val ieee_m2 = W64.>>(m2, shift) + (if roundUp then 0w1 else 0w0);
+                  orelse (W64.andb(W64.rshiftl(m2, shift), 0w1) <> 0w0));
+          val ieee_m2 = W64.rshiftl(m2, shift) + (if roundUp then 0w1 else 0w0);
 (*+DEBUG**
           val _ = (
                 print(concat["roundUp = ", Bool.toString roundUp, "\n"]);
                 print(concat["ieee_e2 = ", Int.toString ieee_e2, "\n"]))
 **-DEBUG*)
           (* assert(ieee_m2 <= (1 << (kMantissaBits + 1))) *)
-          val ieee_m2 = W64.andb(ieee_m2, W64.<<(0w1, W.fromInt kMantissaBits) - 0w1)
+          val ieee_m2 = W64.andb(ieee_m2, W64.lshift(0w1, W.fromInt kMantissaBits) - 0w1)
           val ieee_e2 = if (ieee_m2 = 0w0) andalso roundUp
                 (* Due to how the IEEE represents +/-Infinity, we don't need to
                  * check for overflow here.
@@ -381,9 +363,9 @@ structure RepToReal64 : sig
                 then ieee_e2+1
                 else ieee_e2
           (* build the bit representation *)
-          val bits = if #sign f then W64.<<(0w1, W.fromInt kExpBits) else 0w0
+          val bits = if #sign f then W64.lshift(0w1, W.fromInt kExpBits) else 0w0
           val bits = W64.orb(bits, W64.fromInt ieee_e2)
-          val bits = W64.orb(W64.<<(bits, W.fromInt kMantissaBits), ieee_m2)
+          val bits = W64.orb(W64.lshift(bits, W.fromInt kMantissaBits), ieee_m2)
           in
             fromBits bits
           end
@@ -395,13 +377,13 @@ structure RepToReal64 : sig
     val posZero = fromBits 0wx0000000000000000
     val negZero = fromBits 0wx8000000000000000
 
-    fun fromRep (Inf false) = posInf
-      | fromRep (Inf true) = negInf
-      | fromRep (NaN false) = posNaN
-      | fromRep (NaN true) = negNaN
-      | fromRep (Zero false) = posZero
-      | fromRep (Zero true) = negZero
-      | fromRep (Normal f) = fromDecimalRep f
-      | fromRep (Subnormal f) = fromDecimalRep f
+    fun cvt (Inf false) = posInf
+      | cvt (Inf true) = negInf
+      | cvt (NaN false) = posNaN
+      | cvt (NaN true) = negNaN
+      | cvt (Zero false) = posZero
+      | cvt (Zero true) = negZero
+      | cvt (Normal f) = fromDecimalRep f
+      | cvt (Subnormal f) = fromDecimalRep f
 
   end

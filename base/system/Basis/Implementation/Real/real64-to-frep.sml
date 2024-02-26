@@ -1,4 +1,4 @@
-(* real64-to-rep.sml
+(* real64-to-frep.sml
  *
  * COPYRIGHT (c) 2024 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
@@ -18,17 +18,20 @@
  * The original port of the C code was done by Skye Soss.
  *)
 
-structure Real64ToRep : sig
+structure Real64ToFRep : sig
 
-    val toRep : real -> FloatRep.float_rep
+    val cvt : real -> FloatRep.float_rep
 
   end = struct
 
-    structure W64 = Word64 (* will be InlineT.Word64 *)
+    structure W = InlineT.Word
+    structure W64 = InlineT.Word64
+    structure Int = IntImp
+    structure IntInf = IntInfImp
 
     datatype float_class = datatype IEEEReal.float_class
 
-    val toBits = Unsafe.realToBits (* will be InlineT.Real64.toBits *)
+    val toBits = InlineT.Real64.toBits
 
     (* some useful constants *)
     val nExpBits = 0w11                 (* # of exponent bits in double-precision real *)
@@ -42,10 +45,10 @@ structure Real64ToRep : sig
      * where "frac" is an integer and "exp" is the adjusted exponent.  The following
      * constants are used to compute the adjusted exponent:
      *)
-    val normalExpAdjust = bias + Word.toInt nFracBits
-    val subnormalExp = 1 - bias - Word.toInt nFracBits
+    val normalExpAdjust = bias + W.toInt nFracBits
+    val subnormalExp = 1 - bias - W.toInt nFracBits
     (* value of implicit "1" bit for normalized numbers *)
-    val implicitBit = W64.<<(0w1, 0w52)
+    val implicitBit = W64.lshift(0w1, 0w52)
 
     (* Given 0≤a≤b≤c, returns (d, e) such that:
      * - a ≤ d ≤ c
@@ -108,15 +111,15 @@ structure Real64ToRep : sig
             lp (n, 0, [])
           end
 
-    val signBitMask = Word64.<<(0w1, 0w63)
-    val fracMask = Word64.<<(0w1, nFracBits) - 0w1
-    val expMask = Word64.<<(0w1, nExpBits) - 0w1
+    val signBitMask = W64.lshift(0w1, 0w63)
+    val fracMask = W64.lshift(0w1, nFracBits) - 0w1
+    val expMask = W64.lshift(0w1, nExpBits) - 0w1
 
-    fun toRep r = let
+    fun cvt r = let
           (* decompose the 64-bit float into sign, exponent, and fractional parts *)
           val bits = toBits r
           val sign = W64.andb(bits, signBitMask) <> 0w0
-          val expBits = W64.andb(W64.>>(bits, nFracBits), expMask)
+          val expBits = W64.andb(W64.rshiftl(bits, nFracBits), expMask)
           val fracBits = W64.andb(bits, fracMask)
           (* given the float f = (-1)^s * frac * 2^exp, convert to decimal
            * representation.
@@ -124,7 +127,7 @@ structure Real64ToRep : sig
           fun toDecimal (sign, frac, exp) = let
                 (* Determine the interval of information-preserving outputs *)
                 val e2 = exp - 2
-                val v = W64.<<(frac, 0w2)
+                val v = W64.lshift(frac, 0w2)
                 val u = if (fracBits = 0w0 andalso expBits > 0w1)
                       then v - 0w1
                       else v - 0w2
@@ -134,7 +137,7 @@ structure Real64ToRep : sig
                  *)
                 val (e10, a, b, c) = if e2 >= 0
                       then let
-                        val x = Word.fromInt e2
+                        val x = W.fromInt e2
                         fun shift y = IntInf.<<(W64.toLargeInt y, x)
                         in
                           (0, shift u, shift v, shift w)
@@ -165,7 +168,7 @@ structure Real64ToRep : sig
                   then FloatRep.Inf sign
                   else FloatRep.NaN sign
               | _ => let (* normal *)
-                  val exp = Word.toInt(Word.fromLarge expBits) - normalExpAdjust
+                  val exp = W.toInt(W.fromLarge expBits) - normalExpAdjust
                   in
                     FloatRep.Normal(toDecimal (sign, fracBits + implicitBit, exp))
                   end

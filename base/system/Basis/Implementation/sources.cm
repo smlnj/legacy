@@ -451,8 +451,13 @@ is
 	pack-word-b32.sml
 	pack-word-l32.sml
 
+        (* reals and math modules *)
+        Real/float-rep.sml (* NEW *)
+        Real/frep-to-real64.sml (* NEW *)
+        Real/frep-to-string.sml (* NEW *)
 	Real/ieee-real.sig
 	Real/ieee-real.sml
+	Real/ieee-real-types.sml
 	Real/math.sig
 	Real/math64-common.sml
 #if defined(ARCH_PPC)
@@ -460,11 +465,11 @@ is
 #else
 	Real/math64-sqrt.sml
 #endif
-	Real/real-format.sml
-	Real/real-scan.sml
 	Real/real.sig
 	Real/real64.sml
+        Real/real64-to-frep.sml (* NEW *)
 	Real/real64-values.sml
+        Real/string-to-frep.sml (* NEW *)
 
 #if defined(SIZE_32)
 	Target32Bit/bind-structs.sml

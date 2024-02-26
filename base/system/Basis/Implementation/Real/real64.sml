@@ -233,12 +233,29 @@ structure Real64Imp : REAL =
     val min : real * real -> real = InlineT.Real64.min
     val max : real * real -> real = InlineT.Real64.max
 
-    fun toDecimal _ = raise Fail "Real.toDecimal unimplemented"
-    fun fromDecimal _ = raise Fail "Real.fromDecimal unimplemented"
+    fun toDecimal r = FloatRep.toDecimalApprox(Real64ToFRep.cvt r)
+    fun fromDecimal d = (case FloatRep.fromDecimalApprox d
+           of SOME frep => SOME(FRepToReal64.cvt(FloatRep.normalize64 frep))
+            | NONE => NONE
+          (* end case *))
 
-    val fmt = RealFormat.fmtReal
-    val toString = fmt (StringCvt.GEN NONE)
-    val scan = RealScan.scanReal
+    fun fmt mode = let
+          val fmt' = FRepToString.fmt mode
+          in
+            fn r => fmt' (Real64ToFRep.cvt r)
+          end
+
+    val toString = FRepToString.toString o Real64ToFRep.cvt
+
+    fun scan getc = let
+          val scan' = StringToFRep.scan getc
+          in
+            fn cs => (case scan' cs
+                 of SOME(frep, cs) => SOME(FRepToReal64.cvt frep, cs)
+                  | NONE => NONE
+                (* end case *))
+          end
+
     val fromString = StringCvt.scanString scan
 
     val ~ = InlineT.Real64.~

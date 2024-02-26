@@ -40,13 +40,13 @@ structure FloatRep : sig
      * the argument is well formed, since it will be for all use cases in the
      * Basis implementation.
      *)
-    val toDecimalApprox : float_rep -> IEEEReal.decimal_approx
+    val toDecimalApprox : float_rep -> IEEERealTypes.decimal_approx
 
     (* `fromDecimalApprox approx` converts `approx` to its equivalent
      * `float_rep` representation.  If the input is invalid (i.e., digits
-     * that are out of range) then the Domain exception is raised.
+     * that are out of range) then NONE is returned.
      *)
-    val fromDecimalApprox : IEEEReal.decimal_approx -> float_rep
+    val fromDecimalApprox : IEEERealTypes.decimal_approx -> float_rep option
 
   end = struct
 
@@ -164,27 +164,50 @@ structure FloatRep : sig
                 { class = cls, sign = sign, digits = digits, exp = exp + nDigits }
           in
             case arg
-             of Inf sgn => { class = IEEEReal.INF, sign = sgn, digits = [], exp = 0 }
-              | NaN sgn => { class = IEEEReal.NAN, sign = sgn, digits = [], exp = 0 }
-              | Zero sgn => { class = IEEEReal.ZERO, sign = sgn, digits = [], exp = 0 }
-              | Normal dr => toDA (IEEEReal.NORMAL, dr)
-              | Subnormal dr => toDA (IEEEReal.SUBNORMAL, dr)
+             of Inf sgn => { class = IEEERealTypes.INF, sign = sgn, digits = [], exp = 0 }
+              | NaN sgn => { class = IEEERealTypes.NAN, sign = sgn, digits = [], exp = 0 }
+              | Zero sgn => { class = IEEERealTypes.ZERO, sign = sgn, digits = [], exp = 0 }
+              | Normal dr => toDA (IEEERealTypes.NORMAL, dr)
+              | Subnormal dr => toDA (IEEERealTypes.SUBNORMAL, dr)
             (* end case *)
           end
 
     fun fromDecimalApprox {class, sign, digits, exp} = let
-          fun fromDA () = let
-                val nDigits = List.length digits
+          fun fromDA cons = let
+                (* remove leading zeros from a list *)
+                fun rmZ (0::ds, nlz) = (ds, nlz+1)
+                  | rmZ (ds, nlz) = (ds, nlz)
+                (* first we remove leading zeros *)
+                val (digits, nlz) = rmZ (digits, 0)
+                (* adjust exponent for removed leading zeros *)
+                val exp = exp - nlz
+                (* check for invalid digits while counting the digits and removing
+                 * trailing zeros.
+                 *)
+                fun chkDigits ([], n, ds) = let
+                      val (ds', nz) = rmZ (ds, 0)
+                      in
+                        SOME(n - nz, List.rev ds')
+                      end
+                  | chkDigits (d::dr, n, ds) = if (0 <= d) andalso (d <= 9)
+                      then chkDigits (dr, n+1, d::ds)
+                      else NONE
                 in
-                  {sign = sign, nDigits = nDigits, digits = digits, exp = exp - nDigits}
+                  case chkDigits (digits, 0, [])
+                   of NONE => NONE
+                    | SOME(0, _) => SOME(Zero sign)
+                    | SOME(nDigits, digits) => SOME(cons{
+                          sign = sign, nDigits = nDigits, digits = digits, exp = exp - nDigits
+                        })
+                  (* end case *)
                 end
           in
             case class
-             of IEEEReal.INF => Inf sign
-              | IEEEReal.NAN => NaN sign
-              | IEEEReal.ZERO => Zero sign
-              | IEEEReal.NORMAL => Normal(fromDA())
-              | IEEEReal.SUBNORMAL => Subnormal(fromDA())
+             of IEEERealTypes.INF => SOME(Inf sign)
+              | IEEERealTypes.NAN => SOME(NaN sign)
+              | IEEERealTypes.ZERO => SOME(Zero sign)
+              | IEEERealTypes.NORMAL => fromDA Normal
+              | IEEERealTypes.SUBNORMAL => fromDA Subnormal
             (* end case *)
           end
 

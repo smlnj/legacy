@@ -1,10 +1,10 @@
-(* string-to-float-rep.sml
+(* string-to-frep.sml
  *
  * COPYRIGHT (c) 2024 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
 
-structure StringToFloatRep : sig
+structure StringToFRep : sig
 
     (* scan a real number from a character stream.  Leading and trailing zeros
      * are removed from the representation, but identification of sub-normals
@@ -16,7 +16,7 @@ structure StringToFloatRep : sig
 
   end = struct
 
-    structure W = Word (* InlineT.Word *)
+    structure W = InlineT.Word
     structure U = ScanUtil
 
     datatype float_rep = datatype FloatRep.float_rep

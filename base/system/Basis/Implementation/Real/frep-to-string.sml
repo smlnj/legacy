@@ -1,4 +1,4 @@
-(* float-rep-to-string.sml
+(* frep-to-string.sml
  *
  * COPYRIGHT (c) 2024 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
@@ -21,7 +21,7 @@
  *      (-1)^s * 0.d_1 ... d_n * 10^e
  *)
 
-structure FloatRepToString : sig
+structure FRepToString : sig
 
     (* for implementing Real.fmt *)
     val fmt : StringCvt.realfmt -> FloatRep.float_rep -> string
@@ -33,6 +33,9 @@ structure FloatRepToString : sig
     val toExactString : FloatRep.float_rep -> string
 
   end = struct
+
+    structure String = StringImp
+    structure Int = IntImp
 
 (* should be
     (* fast add/subtract avoiding the overflow test *)
@@ -157,7 +160,7 @@ structure FloatRepToString : sig
      *)
     fun toSci prec (sign, nDigits, digits, exp) = let
           (* adjust exponent for "dddd." => "d.ddd" conversion *)
-          val nFracDigits = Int.max(0, nDigits - 1)
+          val nFracDigits = InlineT.Int.max(0, nDigits - 1)
           val exp = exp + nFracDigits
           in
             case (prec, digits)
