@@ -107,6 +107,20 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
+[2024/02/26]::
++
+Did a complete rewrite of the mechanisms used to implement conversions
+between strings and reals.  As part of this rewrite, I implemented the
+support for the `StringCvt.EXACT` formatting mode and implemented the
+missing `Real.toDecimal`/`fromDecimal` functions.  These changes also
+fix {issue-base}/194[Issue #194 (Incorrect formatting of real number)].
++
+The new implementation is based on the Ryũ library and related PLDI
+2018 paper by Ulf Adams.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2024/02/24]::
 +
 Fixed {issue-base}/298[Issue #298 (Incorrect printing of source code

@@ -99,13 +99,16 @@ and resume the build.
 
 Here is a list of the issues that are fixed (or closed) with this release.
 We include the original bug numbers for bugs that were reported using the
-https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
+gforge bug tracker.
 
 [.buglist,cols="^1,<10,^2",strips="none",options="header"]
 |=======
 | Issue
 | Description
 | Gforge Bug
+| [.bugid]#194#
+| {issue-base}/194[Incorrect formatting of real number]
+| 221
 | [.bugid]#280#
 | {issue-base}/280[Support forward-slash ("/") as a separator in the Windows implementation of `OS.Path`]
 | **n.a.**
