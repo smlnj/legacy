@@ -133,6 +133,9 @@ gforge bug tracker.
 | [.bugid]#295#
 | {issue-base}/295[CM cannot find tools when using cmb-make to compile the compiler]
 | **n.a.**
+| [.bugid]#294#
+| {issue-base}/294[Additional operations for the `MONO_HASH_TABLE` interface]
+| **n.a.**
 | [.bugid]#298#
 | {issue-base}/298[Incorrect printing of source code in error message]
 | **n.a.**

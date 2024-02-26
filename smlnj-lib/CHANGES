@@ -5,6 +5,12 @@ correspond to SML/NJ releases.
 SML/NJ 110.99.5
 -------------------
 
+[2024-02-26]
+        Added `insertWith`, `insertWithi`, and `findAndRemove` operations to the
+        `HASH_TABLE` and `MONO_HASH_TABLE` interfaces (and corresponding
+        implementations).  This addition was requested in Issue #297 (Additional
+        operations for the `MONO_HASH_TABLE` interface).
+
 [2024-01-01]
 	Fixed a bug in `Random.randReal` on 32-bit systems.  This change fixes
 	issue #290 (`Random.realRand` returns far smaller value than unity).
