@@ -11,13 +11,20 @@
 #	admin/prepare-release.sh [-d <date>] <version>
 #
 
+THIS=$0
+HERE=`pwd`
+
 function usage {
   echo "usage: admin/prepare-release.sh [-d <date>] <version>"
   exit 1
 }
 
-THIS=$0
-HERE=`pwd`
+function error_local_changes {
+  echo "$THIS: !!!There are local changes in your repository that need to be pushed."
+  echo "git status"
+  git status
+  exit 1
+}
 
 if [ ! -x ./admin/prepare-release.sh ] ; then
   echo "$THIS: !!! must run this script from root of SML/NJ tree"
@@ -85,11 +92,22 @@ function build_from_fixpt {
   ./config/install.sh $SZ_OPT >> $LOG 2>&1 || exit 1
 }
 
+# step 0: check for local changes that have not been added/committed
+#
+if [ git diff --quiet ] ; then
+  error_local_changes
+fi
+if [ git diff --cached --quiet ] ; then
+  error_local_changes
+fi
+
 # step 1: refresh output
 #
 echo "refresh sources ..."
 echo "***** git pull" > $LOG
 git pull >> $LOG 2>&1 || exit 1
+echo "***** git push" > $LOG
+git push >> $LOG 2>&1 || exit 1
 
 # steps 2-6
 build_from_fixpt
@@ -118,5 +136,3 @@ echo "***** cd base/system" >> $LOG
 cd base/system
 echo "***** ./allcross" >> $LOG
 ./allcross $SZ_OPT >> $LOG 2>&1 || exit 1
-
-echo "done; the next step is to update the HISTORY.txt file"
