@@ -15,13 +15,23 @@ structure Real64Imp : REAL =
     infix 4 == !=
     type real = real
 
-    fun *+(a:real,b,c) = a*b+c
-    fun *-(a:real,b,c) = a*b-c
+(* TODO: these should be defined in InlineT *)
+    fun *+ (a:real,b,c) = a*b+c
+    fun *- (a:real,b,c) = a*b-c
+
+(* TODO: this function should be defined in InlineT *)
+    (* bitcast a Word64.word to a Real64.real *)
+    fun fromBits (b : Word64.word) : real = let
+          val r : real ref = InlineT.cast(ref b)
+          in
+            !r
+          end
+    val toBits = InlineT.Real64.toBits
 
     val op == = InlineT.Real64.==
     val op != = InlineT.Real64.!=
 
-    fun unordered(x:real,y) = Bool.not(x>y orelse x <= y)
+    fun unordered (x:real,y) = Bool.not(x>y orelse x <= y)
     fun ?= (x, y) = (x == y) orelse unordered(x, y)
 
   (* maximum finite 64-bit real value *)
@@ -35,8 +45,17 @@ structure Real64Imp : REAL =
   (* negative infinity *)
     val negInf = Real64Values.negInf
 
+    (* some useful constants *)
+    val nExpBits = 0w11                 (* # of exponent bits in double-precision real *)
+    val nFracBits = 0w52                (* # of stored fractional (aka mantissa) bits *)
+    val bias = 1023                     (* exponent bias for normalized numbers *)
+    val signBitMask = Word64.<<(0w1, 0w63)
+    val fracMask = Word64.<<(0w1, nFracBits) - 0w1
+    val expMask = Word64.<<(0w1, nExpBits) - 0w1
+    val expAndFracMask = W64.notb signBitMask
+
     val radix = 2
-    val precision = 53			(* hidden bit gets counted, too *)
+    val precision = W.toIntX nFracBits + 1      (* hidden bit gets counted, too *)
 
   (* these functions are implemented in base/system/smlnj/init/pervasive.sml *)
     val floor = floor
@@ -107,23 +126,23 @@ structure Real64Imp : REAL =
 
     fun isNormal x = let
 	  val biasExp = W.andb(
-		W.fromLarge(W64.rshiftl(InlineT.Real64.toBits x, 0w52)),
+		W.fromLarge(W64.rshiftl(toBits x, 0w52)),
 		0wx7ff)
 	  in
 	    (0w0 < biasExp) andalso (biasExp < 0w2047)
 	  end
 
     fun class x = let (* does not distinguish between quiet and signalling NaN *)
-	  val bits = InlineT.Real64.toBits x
+	  val bits = toBits x
 	  in
-	    if (W64.andb(0wx7fffffffffffffff, bits) = 0w0)
+	    if (W64.andb(expAndFracMask, bits) = 0w0)
 	      then IEEEReal.ZERO
 	    else let
-	      val signAndExp = W.fromLarge(W64.rshiftl(bits, 0w52))
+	      val signAndExp = W.fromLarge(W64.rshiftl(bits, nFracBits))
 	      in
-		case W.andb(signAndExp, 0wx7ff)
+		case W.andb(signAndExp, expMask)
 		 of 0w0 => IEEEReal.SUBNORMAL
-		  | 0w2047 => if (W64.andb(0wxfffffffffffff, bits) = 0w0)
+		  | 0w2047 => if (W64.andb(fracMask, bits) = 0w0)
 		      then IEEEReal.INF
 		      else IEEEReal.NAN
 		  | _ => IEEEReal.NORMAL
@@ -132,11 +151,11 @@ structure Real64Imp : REAL =
 	  end
 
     fun toManExp x = let
-	  val bits = InlineT.Real64.toBits x
+	  val bits = toBits x
 	  in
-	    if (W64.andb(0wx7fffffffffffffff, bits) = 0w0)
+	    if (W64.andb(expAndFracMask, bits) = 0w0)
 	      then {man = x, exp = 0} (* +/- zero *)
-	      else (case W.andb(W.fromLarge(W64.rshiftl(bits, 0w52)), 0wx7ff)
+	      else (case W.andb(W.fromLarge(W64.rshiftl(bits, nFracBits)), expMask)
 		 of 0w0 => let (* subnormal *)
 		      val {man, exp} = toManExp(1048576.0 * x)
 		      in
@@ -154,9 +173,9 @@ structure Real64Imp : REAL =
     fun fromManExp {man=m, exp=e:int} = let
         (* is `x` a zero, nan, or infinity? *)
           fun isSpecial x = let
-                val bits = InlineT.Real64.toBits x
+                val bits = toBits x
                 in
-                  (W64.andb(0wx7fffffffffffffff, bits) = 0w0)
+                  (W64.andb(expAndFracMask, bits) = 0w0)
                   orelse (W.andb(W.fromLarge(W64.rshiftl(bits, 0w52)), 0wx7ff) = 0w2047)
                 end
         (* iterative implementation *)
@@ -188,33 +207,43 @@ structure Real64Imp : REAL =
     val fromLargeInt = IntInfToReal64.cvt
     fun toLargeInt mode x = Real64ToIntInf.cvt (mode, x)
 
-  (* whole and split could be implemented more efficiently if we had
-   * control over the rounding mode; but for now we don't.
-   *)
-    fun whole x = if x>0.0
-	    then if x > 0.5
-	      then x-0.5+maxInt-maxInt
-	      else whole(x+1.0)-1.0
-	  else if x<0.0
-	    then if x < ~0.5
-	      then x+0.5-maxInt+maxInt
-	      else whole(x-1.0)+1.0
-	    else x
+  (* split a real number into whole and fractional parts *)
+    fun split r = let
+          val bits = toBits r
+          val sign = W64.andb(bits, signBitMask) <> 0w0
+          val expBits = W64.andb(W64.lshiftl(bits, nFracBits), expMask)
+          val fracBits = W64.andb(bits, fracMask)
+          val exp = W.toIntX(W.fromLarge expBits) - bias
+          fun zero () = if sign then ~0.0 else 0.0
+          in
+            if (exp < Word.toIntX nFracBits)
+              then if (exp < 0)
+                (* abs(r) < 1 *)
+                then {whole = zero(), frac = r}
+                else let
+                  (* mask for fractional bits *)
+                  val mask = W64.lshiftl(0wx000fffffffffffff, W.fromInt exp)
+                  in
+                    if (W64.andb(mask, bits) = 0w0)
+                      (* `r` is integral *)
+                      then {whole = r, frac = zero()}
+                      else let
+                        val whole = fromBits (W64.andb(bits, W64.notb mask))
+                        in
+                          {whole = whole, frac = r - whole}
+                        end
+                  end
+            else if (expBits < 0wx7ff)
+              (* no fractional part *)
+              then {whole = r, frac = zero( }
+            else if (fracBits = 0w0)
+              (* Infinity *)
+              then {whole = r, frac = zero{}}
+              (* NaN *)
+              else {whole = r, frac = r}
+          end
 
-    fun split x = let
-	  val w = whole x
-	  val f = x-w
-	  in
-	    if abs f == 1.0
-	      then {whole=w+f, frac=0.0}
-	      else {whole=w, frac=f}
-	  end
-
-    fun realMod x = let
-	  val f = x - whole x
-	  in
-	    if abs f == 1.0 then 0.0 else f
-	  end
+    fun realMod x = #frac (split x)
 
     fun rem(x,y) = y * #frac(split(x/y))
 
