@@ -245,7 +245,8 @@ structure FRepToString : sig
                * the number of digits to the left of the decimal.
                *)
               val lPos = rShift - nDigits
-              (* possible cases:
+              (* We know that 0 < nDigits, 0 < rShift, and lPos < rShift.  The
+               * possible cases are:
                *
                *   a) lPos < 0 < rShift <= prec -- ddd.ddd no rounding
                *   b) lPos < 0 <= prec < rShift -- ddd.ddd round to
@@ -253,10 +254,13 @@ structure FRepToString : sig
                *   c) 0 = lPos = prec < rShift  -- d round to 0 digits; d is carry
                *   d) 0 = lPos < prec < rShift  -- x.dddd round to `prec` digits;
                *                                   x is carry
-               *   e) 0 < lPos < prec < rShift  -- 0.00dd round to `prec - lPos` digits
-               *   f) 0 < prec = lPos < rShift  -- 0.000d round to 0 digits; d is carry
-               *   g) 0 = prec < lPos < rShift  -- 0
-               *   h) 0 < prec < lPos < rShift  -- 0.0000 `prec` zeros
+               *   e) 0 = lPos < prec = rShift  -- 0.dddd
+               *   f) 0 = lPos < rShift < prec  -- 0.dd00; `prec-rShift` trailing zeros
+               *   g) 0 < lPos < prec < rShift  -- 0.00dd round to `prec - lPos` digits
+               *   h) 0 < lPos < rShift <= prec -- 0.00dd with possible trailing zeros
+               *   i) 0 < prec = lPos < rShift  -- 0.000d round to 0 digits; d is carry
+               *   j) 0 = prec < lPos < rShift  -- 0
+               *   k) 0 < prec < lPos < rShift  -- 0.0000 `prec` zeros
                *)
               val frags = if (lPos < 0)
                       then if (rShift <= prec)
@@ -273,32 +277,48 @@ structure FRepToString : sig
                             insertDecimal(nSigDigits, digits, prec, prec)
                           end
                     else if (lPos = 0)
-                      then let
-                        val (co, ds) = round (digits, prec)
-                        in
-                          if (prec = 0)
-                            (* (c) `0 = lPos = prec < rShift` *)
-                            then if co then ["1"] else ["0"]
-                            (* (d) `0 = lPos < prec < rShift` *)
-                            else let
-                              val frags = prependDigits(ds, [])
-                              in
-                                if co then "1." :: frags else "0." :: frags
-                              end
-                        end
+                      then if (prec < rShift)
+                        then let
+                          val (co, ds) = round (digits, prec)
+                          in
+                            if (prec = 0)
+                              (* (c) `0 = lPos = prec < rShift` *)
+                              then if co then ["1"] else ["0"]
+                              (* (d) `0 = lPos < prec <= rShift` *)
+                              else let
+                                val frags = prependDigits(ds, [])
+                                in
+                                  if co then "1." :: frags else "0." :: frags
+                                end
+                          end
+                      else if (prec = rShift)
+                        (* (e) `0 = lPos < prec = rShift` *)
+                        then "0." :: prependDigits(digits, [])
+                        (* (f) `0 = lPos < rShift < prec` *)
+                        else "0." :: prependDigits(digits, [zeros(prec - rShift)])
+                    (* 0 < lPos *)
                     else if (lPos < prec)
-                      (* (e) `0 < lPos < prec < rShift` *)
-                      then let
-                        val nSigDigits = prec - lPos
-                        val (co, ds) = round (digits, nSigDigits)
-                        val (digits, lPos) = if co
-                              then (1 :: ds, lPos-1)
-                              else (ds, lPos)
-                        in
-                          "0." :: prependZeros(lPos, prependDigits(digits, []))
-                        end
+                      then if (prec < rShift)
+                        (* (g) `0 < lPos < prec < rShift` *)
+                        then let
+                          val nSigDigits = prec - lPos
+                          val (co, ds) = round (digits, nSigDigits)
+                          val (digits, lPos) = if co
+                                then (1 :: ds, lPos-1)
+                                else (ds, lPos)
+                          in
+                            "0." :: prependZeros(lPos, prependDigits(digits, []))
+                          end
+                        (* (h) `0 < lPos < rShift <= prec` *)
+                        else let
+                          val frags = if (rShift < prec)
+                                then [zeros(prec - rShift)]
+                                else []
+                          in
+                            "0." :: prependZeros(lPos, prependDigits(digits, frags))
+                          end
                     else if (lPos = prec)
-                      (* (f) `0 < prec = lPos < rShift` *)
+                      (* (i) `0 < prec = lPos < rShift` *)
                       then let
                         val (co, _) = round (digits, 0)
                         in
@@ -306,10 +326,11 @@ structure FRepToString : sig
                             then "0." :: prependZeros(prec-1, ["1"])
                             else ["0.", zeros prec]
                         end
+                    (* prec < lPos < rShift *)
                     else if (prec = 0)
-                      (* (g) `0 = prec < lPos < rShift` *)
+                      (* (j) `0 = prec < lPos < rShift` *)
                       then ["0"]
-                      (* (h) `0 < prec < lPos < rShift` *)
+                      (* (k) `0 < prec < lPos < rShift` *)
                       else ["0.", zeros prec]
               in
                 String.concat (addSign (sign, frags))
@@ -391,7 +412,7 @@ structure FRepToString : sig
                         String.concat frags
                       end
                     else let (* scientific notation *)
-                      val exp = exp + (nSigDigits - 1) (* adjust exponent *)
+                      val exp = exp + (nDigits - 1) (* adjust exponent *)
                       val frags = ["E", Int.toString exp]
                       val frags = (case digits
                              of [d] => getDigit d :: frags
