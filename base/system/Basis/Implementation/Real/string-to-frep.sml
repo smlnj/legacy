@@ -99,7 +99,7 @@ structure StringToFRep : sig
                         val d = U.code c
                         in
                           if (d <= 0w9)
-                            then scan (cs, [W.toIntX d])
+                            then scan (cs', [W.toIntX d])
                             else noExponent ()
                         end
                     | NONE => noExponent ()
