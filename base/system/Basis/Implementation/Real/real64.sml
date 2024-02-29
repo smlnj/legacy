@@ -49,9 +49,9 @@ structure Real64Imp : REAL =
     val nExpBits = 0w11                 (* # of exponent bits in double-precision real *)
     val nFracBits = 0w52                (* # of stored fractional (aka mantissa) bits *)
     val bias = 1023                     (* exponent bias for normalized numbers *)
-    val signBitMask = Word64.<<(0w1, 0w63)
-    val fracMask = Word64.<<(0w1, nFracBits) - 0w1
-    val expMask = Word64.<<(0w1, nExpBits) - 0w1
+    val signBitMask = W64.lshift(0w1, 0w63)
+    val fracMask = W64.lshift(0w1, nFracBits) - 0w1
+    val expMask = W64.lshift(0w1, nExpBits) - 0w1
     val expAndFracMask = W64.notb signBitMask
 
     val radix = 2
@@ -140,7 +140,7 @@ structure Real64Imp : REAL =
 	    else let
 	      val signAndExp = W.fromLarge(W64.rshiftl(bits, nFracBits))
 	      in
-		case W.andb(signAndExp, expMask)
+		case W.andb(signAndExp, W.fromLarge expMask)
 		 of 0w0 => IEEEReal.SUBNORMAL
 		  | 0w2047 => if (W64.andb(fracMask, bits) = 0w0)
 		      then IEEEReal.INF
@@ -155,7 +155,7 @@ structure Real64Imp : REAL =
 	  in
 	    if (W64.andb(expAndFracMask, bits) = 0w0)
 	      then {man = x, exp = 0} (* +/- zero *)
-	      else (case W.andb(W.fromLarge(W64.rshiftl(bits, nFracBits)), expMask)
+	      else (case W.andb(W.fromLarge(W64.rshiftl(bits, nFracBits)), W.fromLarge expMask)
 		 of 0w0 => let (* subnormal *)
 		      val {man, exp} = toManExp(1048576.0 * x)
 		      in
@@ -211,18 +211,18 @@ structure Real64Imp : REAL =
     fun split r = let
           val bits = toBits r
           val sign = W64.andb(bits, signBitMask) <> 0w0
-          val expBits = W64.andb(W64.lshiftl(bits, nFracBits), expMask)
+          val expBits = W64.andb(W64.rshiftl(bits, nFracBits), expMask)
           val fracBits = W64.andb(bits, fracMask)
           val exp = W.toIntX(W.fromLarge expBits) - bias
           fun zero () = if sign then ~0.0 else 0.0
           in
-            if (exp < Word.toIntX nFracBits)
+            if (exp < W.toIntX nFracBits)
               then if (exp < 0)
                 (* abs(r) < 1 *)
                 then {whole = zero(), frac = r}
                 else let
                   (* mask for fractional bits *)
-                  val mask = W64.lshiftl(0wx000fffffffffffff, W.fromInt exp)
+                  val mask = W64.rshiftl(0wx000fffffffffffff, W.fromInt exp)
                   in
                     if (W64.andb(mask, bits) = 0w0)
                       (* `r` is integral *)
@@ -235,7 +235,7 @@ structure Real64Imp : REAL =
                   end
             else if (expBits < 0wx7ff)
               (* no fractional part *)
-              then {whole = r, frac = zero( }
+              then {whole = r, frac = zero()}
             else if (fracBits = 0w0)
               (* Infinity *)
               then {whole = r, frac = zero{}}
