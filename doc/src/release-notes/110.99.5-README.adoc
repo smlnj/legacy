@@ -98,6 +98,9 @@ gforge bug tracker.
 | [.bugid]#280#
 | {issue-base}/280[Support forward-slash ("/") as a separator in the Windows implementation of `OS.Path`]
 | **n.a.**
+| [.bugid]#283#
+| {issue-base}/283[`TextIO.inputAll` segfaults when reading 980M file]
+| **n.a.**
 | [.bugid]#286#
 | {issue-base}/286[Get "fgrep is obsolescent" when run **sml** on Fedora]
 | **n.a.**

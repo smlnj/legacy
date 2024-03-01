@@ -53,8 +53,8 @@ ml_val_t ML_CString (ml_state_t *msp, const char *v)
     if (len == 0)
 	return ML_string0;
     else {
-	int		n = BYTES_TO_WORDS(len+1);  /* count "\0" too */
-	ml_val_t	res;
+	Word_t n = BYTES_TO_WORDS(len+1);  /* count "\0" too */
+	ml_val_t res;
 
 	res = ML_AllocRaw (msp, n);
       /* zero the last word to allow fast (word) string comparisons, and to
@@ -98,9 +98,9 @@ ml_val_t ML_CStringList (ml_state_t *msp, char **strs)
  * Allocate an uninitialized ML string of length > 0.  This string is
  * guaranteed to be padded to word size with 0 bytes, and to be 0 terminated.
  */
-ml_val_t ML_AllocString (ml_state_t *msp, int len)
+ml_val_t ML_AllocString (ml_state_t *msp, Word_t len)
 {
-    int		nwords = BYTES_TO_WORDS(len+1);
+    Word_t	nwords = BYTES_TO_WORDS(len+1);
     ml_val_t	res;
 
     ASSERT(len > 0);
@@ -122,7 +122,7 @@ ml_val_t ML_AllocString (ml_state_t *msp, int len)
  *
  * Allocate an uninitialized chunk of raw data.
  */
-ml_val_t ML_AllocRaw (ml_state_t *msp, int nwords)
+ml_val_t ML_AllocRaw (ml_state_t *msp, Word_t nwords)
 {
     ml_val_t	desc = MAKE_DESC(nwords, DTAG_raw);
     ml_val_t	res;
@@ -146,6 +146,7 @@ ml_val_t ML_AllocRaw (ml_state_t *msp, int nwords)
 	    *(ap->nextw++) = desc;
 	    res = PTR_CtoML(ap->nextw);
 	    ap->nextw += nwords;
+            ASSERT(ap->nextw < ap->tospTop);
 	END_CRITICAL_SECT(MP_GCGenLock)
 	COUNT_ALLOC(msp, szb);
     }
@@ -163,7 +164,7 @@ ml_val_t ML_AllocRaw (ml_state_t *msp, int nwords)
  * Shrink a freshly allocated raw-data vector.  This is used by the input routines
  * that must allocate space for input that may be excessive.
  */
-void ML_ShrinkRaw (ml_state_t *msp, ml_val_t v, int nWords)
+void ML_ShrinkRaw (ml_state_t *msp, ml_val_t v, Word_t nWords)
 {
     int		oldNWords = OBJ_LEN(v);
 
@@ -190,7 +191,7 @@ void ML_ShrinkRaw (ml_state_t *msp, ml_val_t v, int nWords)
  *
  * Allocate an uninitialized chunk of 64-bit aligned raw data.
  */
-ml_val_t ML_AllocRaw64 (ml_state_t *msp, int nelems)
+ml_val_t ML_AllocRaw64 (ml_state_t *msp, Word_t nelems)
 {
     int		nwords = DOUBLES_TO_WORDS(nelems);
     ml_val_t	desc = MAKE_DESC(nwords, DTAG_raw64);
@@ -246,7 +247,7 @@ ml_val_t ML_AllocRaw64 (ml_state_t *msp, int nelems)
  *
  * Allocate an uninitialized ML code object.  Assume that len > 1.
  */
-ml_val_t ML_AllocCode (ml_state_t *msp, int len)
+ml_val_t ML_AllocCode (ml_state_t *msp, Word_t len)
 {
     heap_t	    *heap = msp->ml_heap;
     int		    allocGen = (heap->numGens < CODE_ALLOC_GEN)
@@ -272,10 +273,10 @@ ml_val_t ML_AllocCode (ml_state_t *msp, int len)
  *
  * Allocate an uninitialized ML bytearray.  Assume that len > 0.
  */
-ml_val_t ML_AllocBytearray (ml_state_t *msp, int len)
+ml_val_t ML_AllocBytearray (ml_state_t *msp, Word_t len)
 {
-    int		nwords = BYTES_TO_WORDS(len);
-    ml_val_t	res;
+    Word_t nwords = BYTES_TO_WORDS(len);
+    ml_val_t res;
 
     res = ML_AllocRaw (msp, nwords);
 
@@ -294,7 +295,7 @@ ml_val_t ML_AllocBytearray (ml_state_t *msp, int len)
  *
  * Allocate an uninitialized ML realarray.  Assume that len > 0.
  */
-ml_val_t ML_AllocRealdarray (ml_state_t *msp, int len)
+ml_val_t ML_AllocRealdarray (ml_state_t *msp, Word_t len)
 {
     ml_val_t	res;
 
@@ -311,7 +312,7 @@ ml_val_t ML_AllocRealdarray (ml_state_t *msp, int len)
  * Allocate a mutable data array using initVal as an initial value.  Assume
  * that len > 0.
  */
-ml_val_t ML_AllocArrayData (ml_state_t *msp, int len, ml_val_t initVal)
+ml_val_t ML_AllocArrayData (ml_state_t *msp, Word_t len, ml_val_t initVal)
 {
     ml_val_t	res, *p;
     ml_val_t	desc = MAKE_DESC(len, DTAG_arr_data);
@@ -371,7 +372,7 @@ ml_val_t ML_AllocArrayData (ml_state_t *msp, int len, ml_val_t initVal)
  * Allocate an ML array using initVal as an initial value.  Assume
  * that len > 0.
  */
-ml_val_t ML_AllocArray (ml_state_t *msp, int len, ml_val_t initVal)
+ml_val_t ML_AllocArray (ml_state_t *msp, Word_t len, ml_val_t initVal)
 {
     ml_val_t	res;
 
@@ -388,7 +389,7 @@ ml_val_t ML_AllocArray (ml_state_t *msp, int len, ml_val_t initVal)
  * Allocate an ML vector, using the list initVal as an initializer.
  * Assume that len > 0.
  */
-ml_val_t ML_AllocVector (ml_state_t *msp, int len, ml_val_t initVal)
+ml_val_t ML_AllocVector (ml_state_t *msp, Word_t len, ml_val_t initVal)
 {
     ml_val_t	desc = MAKE_DESC(len, DTAG_vec_data);
     ml_val_t	res, *p;
@@ -509,7 +510,7 @@ ml_val_t ML_SysConstList (ml_state_t *msp, sysconst_tbl_t *tbl)
  *
  * Allocate a 64-bit aligned raw data object (to store abstract C data).
  */
-ml_val_t ML_AllocCData (ml_state_t *msp, int nbytes)
+ml_val_t ML_AllocCData (ml_state_t *msp, Word_t nbytes)
 {
     ml_val_t	obj;
 
@@ -524,7 +525,7 @@ ml_val_t ML_AllocCData (ml_state_t *msp, int nbytes)
  *
  * Allocate a 64-bit aligned raw data object and initialize it to the given C data.
  */
-ml_val_t ML_CData (ml_state_t *msp, void *data, int nbytes)
+ml_val_t ML_CData (ml_state_t *msp, void *data, Word_t nbytes)
 {
     ml_val_t	obj;
 
