@@ -68,6 +68,9 @@ FILES::
 
 * Added missing implementation of `Real64.nextAfter` function.
 
+* Added `Unsafe.Real64` structure that implements casts between
+  double-precision reals and 64-bit words.
+
 === SML/NJ Library
 
 * Added modules for the representation of booleans, integers, and words

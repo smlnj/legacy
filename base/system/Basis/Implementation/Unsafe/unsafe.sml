@@ -17,11 +17,10 @@ structure Unsafe :> UNSAFE =
     structure Real64 =
       struct
         val toBits = InlineT.Real64.toBits
-        fun fromBits w = let
-              val arr = Core.Assembly.A.create_b 8
+        fun fromBits (b : Word64.word) : real = let
+              val r : real ref = InlineT.cast(ref b)
               in
-                PackWord64Little.update (arr, 0, w);
-                PackReal64Little.subArr (arr, 0)
+                !r
               end
       end
 

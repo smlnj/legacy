@@ -109,6 +109,14 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //--------------------------------------------------------------------
 [2024/03/01]::
 +
+Improved the `Unsafe.Real64.fromBits` implementation to use a cast
+and a reference (instead of pack/unpack from a byte array).
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
+[2024/03/01]::
++
 We now use `Word_t` to represent lengths in the various allocation
 routines in `gc/ml-objects.c`.  This change fixes {issue-base}/283[
 Issue #283 (`TextIO.inputAll` segfaults when reading 980M file)].
