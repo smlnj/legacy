@@ -107,6 +107,13 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
+[2024/03/01]::
++
+Added implementation of `Real64.nextAfter`.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2024/02/26]::
 +
 Did a complete rewrite of the mechanisms used to implement conversions
