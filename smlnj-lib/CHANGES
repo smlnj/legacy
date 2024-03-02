@@ -22,7 +22,8 @@ SML/NJ 110.99.5
 [2023-12-20]
         Fixes to the `subArray` and `truncate` functions in the dynamic array
         implementation (both structure `DynamicArray` and functor `DynamicArrayFn`).
-        These changes were ported from the development version.
+        These changes address development pull request #280 (`DynamicArray.subArray`
+        creates array with length bound+1).
 
 [2023-12-18]
         Add `EditDistance` module to utility library.
@@ -39,7 +40,7 @@ SML/NJ 110.99.5
         encodings.  Added the `Invalid` exception for when an invalid encoding
         is encountered and replaced uses of the `Domain` exception with `Invalid`.
         Also added the `size'` function for getting the number of UTF-8
-        characters in a substring.  These changes address GitHub issue 276
+        characters in a substring.  These changes address development issue 276
         (`UTF8.getu` should validate that it's input is UTF-8).
 
 [2023-09-19]

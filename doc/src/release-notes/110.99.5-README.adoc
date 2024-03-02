@@ -1,7 +1,5 @@
-// A template for creating release notes for a version
-//
-:version: @VERSION@
-:date: @DATE@
+:version: 110.99.5
+:date: March 4, 2024
 :dist-dir: https://smlnj.org/dist/working/{version}/
 :history: {dist-dir}HISTORY.html
 :issue-base: https://github.com/smlnj/legacy/issues
@@ -35,11 +33,12 @@ FILES::
 
 == Summary
 
-// **** summary description of release
+This patch release fixes a large number of bugs in the "legacy" version
+of *SML/NJ*; implements some missing features from the
+https://smlfamily.github.io/Basis/[*Standard ML Basis Library*], and
+includes improvements to the *SML/NJ Library*.
 
 == Details
-
-// **** details: include those sections that are relevant
 
 === Compiler
 
@@ -51,10 +50,6 @@ FILES::
   set to `false` by default (use the `-verbose` option for the old behavior).  It
   also now sets the `PATH` environment variable to include the directory where the
   *sml* command lives when it is given as an argument to *cmb-make*.
-
-=== MLRISC
-
-=== Runtime System
 
 === Basis Library
 
@@ -73,16 +68,38 @@ FILES::
 
 === SML/NJ Library
 
+In addition to the bug fixes noted below, the following improvements
+made to the **SML/NJ Library**:
+
+* Added `insertWith`, `insertWithi`, and `findAndRemove` operations to the
+  `HASH_TABLE` and `MONO_HASH_TABLE` interfaces (and corresponding
+  implementations).
+
+* Fixed a bug in `Random.randReal` on 32-bit systems.
+
+* Fixed the error checking and documentation for the `subArray` function
+  in the `DynamicArray` structure and `DynamicArrayFn` functor.
+
+* Fixes to the `subArray` and `truncate` functions in the dynamic array
+  implementation (both structure `DynamicArray` and functor `DynamicArrayFn`).
+
+* Add `EditDistance` module to utility library.
+
+[2023-12-10]
+	Modified the `JSON.json` datatype to include the `INTLIT of string`
+	constructor.  This constructor will be used as a fall-back for when
+	integer constants in a JSON file have a large number of digits.
+	Currently, the parser does not use this mechanism, but the `FastJSONParser`
+	implementation that is under development does so.
+
+* Reworked the `UTF8` structure to impose stricter validation of the
+  encodings.  Added the `Invalid` exception for when an invalid encoding
+  is encountered and replaced uses of the `Domain` exception with `Invalid`.
+  Also added the `size'` function for getting the number of UTF-8
+  characters in a substring.
+
 * Added modules for the representation of booleans, integers, and words
-  as hash-consed values to the HashCons library.
-
-=== Successor ML
-
-=== ML-LPT
-
-=== Documentation
-
-=== Installation
+  as hash-consed values to the *HashCons* library.
 
 == Bugs
 
@@ -144,6 +161,8 @@ associated with them (or were bug fixes back-ported from the
 development repository):
 --
 * {smlnj-issue-base}/276[`UTF8.getu` should validate that it's input is UTF-8]
+
+* {smlnj-pull-base}/280[`DynamicArray.subArray` creates array with length bound+1]
 
 * The implementations of `PackWord64Little.update` and `PackWord64Big.update`
   were swapped on 64-bit platforms.
