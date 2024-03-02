@@ -151,9 +151,6 @@ gforge bug tracker.
 | [.bugid]#298#
 | {issue-base}/298[Incorrect printing of source code in error message]
 | **n.a.**
-//| [.bugid]#@ID#
-//| {issue-base}/@ID[@DESCRIPTION]
-//| [old bug #@OLDID]
 |=======
 
 We also fixed the following bugs that did not have issues
