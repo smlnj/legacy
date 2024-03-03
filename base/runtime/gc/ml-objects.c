@@ -193,7 +193,7 @@ void ML_ShrinkRaw (ml_state_t *msp, ml_val_t v, Word_t nWords)
  */
 ml_val_t ML_AllocRaw64 (ml_state_t *msp, Word_t nelems)
 {
-    int		nwords = DOUBLES_TO_WORDS(nelems);
+    Word_t      nwords = DOUBLES_TO_WORDS(nelems);
     ml_val_t	desc = MAKE_DESC(nwords, DTAG_raw64);
     ml_val_t	res;
     Word_t	szb;
