@@ -193,21 +193,21 @@ let
    *)
   fun matchTypes (spec, actual, name) : (T.tyvar list * T.tyvar list) option =
       case TU.matchInstTypes(false, tdepth, spec, actual)
-       of x as SOME(btvs,ptvs) => x
-        | NONE =>
-          (err EM.COMPLAIN
-              "value type in structure does not match signature spec"
-              (fn ppstrm =>
-                   (PPType.resetPPType();
-                    PP.newline ppstrm;
-                    app (PP.string ppstrm) ["  name: ", S.name name];
-                    PP.newline ppstrm;
-                    PP.string ppstrm "spec:   ";
-                    PPType.ppType statenv ppstrm spec;
-                    PP.newline ppstrm;
-                    PP.string ppstrm "actual: ";
-                    PPType.ppType statenv ppstrm actual));
-           NONE)
+	of x as SOME(btvs,ptvs) => x
+	 | NONE =>
+	     (err EM.TERMINAL
+		 "value type in structure does not match signature spec"
+		 (fn ppstrm =>
+		      (PPType.resetPPType();
+		       PP.newline ppstrm;
+		       app (PP.string ppstrm) ["  name: ", S.name name];
+		       PP.newline ppstrm;
+		       PP.string ppstrm "spec:   ";
+		       PPType.ppType statenv ppstrm spec;
+		       PP.newline ppstrm;
+		       PP.string ppstrm "actual: ";
+		       PPType.ppType statenv ppstrm actual));
+	      NONE)
 
   fun complain s = err EM.COMPLAIN s EM.nullErrorBody
   fun complain' x = (complain x; raise BadBinding)
@@ -631,7 +631,8 @@ let
                  -- assume this is no longer relevant, since inlInfo is gone (DBM) *)
               in case kindOp
                    of SOME kind =>
-                        complain("unmatched " ^ kind ^ " specification: " ^ S.name sym)
+                        err EM.TERMINAL ("unmatched " ^ kind ^ " specification: " ^ S.name sym)
+			    EM.nullErrorBody
                     | NONE => ();
                  matchElems(elems, entEnv', entDecs, decs, bindings, false)
              end
