@@ -235,7 +235,7 @@ LABEL(set_request)
 	MOV	(request_w,creturn)
 
 	/* Pop the stack frame */
-#if defined(OPSYS_DARWIN)
+#if defined(ALIGN_STACK_16)
 	LEA	(REGOFF(ML_FRAME_SIZE+12,ESP),ESP)
 #else
 	MOV	(esp_save, ESP)
@@ -270,10 +270,10 @@ ALIGNED_ENTRY(restoreregs)
 	PUSH	(ESI)
 	PUSH	(EDI)
 	/* save stack pointer */
-#if defined(OPSYS_DARWIN)
-      /* MacOS X frames must be 16-byte aligned.  We have 20 bytes on
-       * the stack for the return PC and callee-saves, so we need a
-       * 12-byte pad.
+#if defined(ALIGN_STACK_16)
+      /* Some operating systems (e.g., macOS and Linux) require that stack
+       * frames be 16-byte aligned.  We have 20 bytes on the stack for the
+       * return PC and callee-saves, so we need a 12-byte pad.
        */
 	SUB(IM(ML_FRAME_SIZE+12), ESP)
 #else
