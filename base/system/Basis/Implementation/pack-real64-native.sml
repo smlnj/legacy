@@ -101,14 +101,14 @@ structure PackReal64Native : PACK_REAL =
 		  val ra = Assembly.A.create_r 1
 		  val ba' : BA.array = InlineT.cast ra
 		  in
-		    BA.update (ba', 0, BA.sub(ba, i++0));
-		    BA.update (ba', 1, BA.sub(ba, i++1));
-		    BA.update (ba', 2, BA.sub(ba, i++2));
-		    BA.update (ba', 3, BA.sub(ba, i++3));
-		    BA.update (ba', 4, BA.sub(ba, i++4));
-		    BA.update (ba', 5, BA.sub(ba, i++5));
-		    BA.update (ba', 6, BA.sub(ba, i++6));
-		    BA.update (ba', 7, BA.sub(ba, i++7))
+		    BA.update (ba, 0, BA.sub(ba', i++0));
+		    BA.update (ba, 1, BA.sub(ba', i++1));
+		    BA.update (ba, 2, BA.sub(ba', i++2));
+		    BA.update (ba, 3, BA.sub(ba', i++3));
+		    BA.update (ba, 4, BA.sub(ba', i++4));
+		    BA.update (ba, 5, BA.sub(ba', i++5));
+		    BA.update (ba, 6, BA.sub(ba', i++6));
+		    BA.update (ba, 7, BA.sub(ba', i++7))
 		  end
 	  end
 
