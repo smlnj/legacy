@@ -442,8 +442,8 @@ is
 	sml90.sml
 
 	pack-real.sig
-	pack-real64-native.sml
-	pack-real64-swap.sml
+	pack-real64-big.sml
+	pack-real64-little.sml
 
 	pack-word.sig
 	pack-word-b16.sml
@@ -497,11 +497,6 @@ is
 #endif
 
 	bind-structs.sml
-#if defined(BIG_ENDIAN)
-	bind-pack-big.sml
-#else
-	bind-pack-little.sml
-#endif
 
       (* basis proposal 2015-002 *)
 	either.sig

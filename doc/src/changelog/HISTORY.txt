@@ -109,10 +109,30 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //--------------------------------------------------------------------
 [2024/03/05]::
 +
+Reimplement the `PackReal64Big` and `PackReal64Big` structures to use
+the bit-casts between 64-bit reals and 64-bit words.  This change
+fixes {issue-base}/194[Issue #300 (``PackReal64``{``Big``,``Little``}``.update``
+is not implemented)].
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
+[2024/03/05]::
++
 Added `ALIGN_STACK_16` preprocessor flag to **x86** assembly code
 (`mach-dep/X86.prim.asm`) in runtime system.  This flag controls
 whether the SML stack frame is a multiple of 16 bytes (which allows
 foreign function calls to ensure 16-byte stack alignment).
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
+[2024/03/03]::
++
+Expose the machine property functions as `Unsafe.isBigEndian` and
+`Unsafe.wordSize`.  These functions are inlined by the compiler, which
+allows one to expect tests of the form `if Unsafe.isBigEndian()` to
+be evaluated at compile time.
 +
 owner:cs.uchicago.edu/~jhr[John Reppy]
 

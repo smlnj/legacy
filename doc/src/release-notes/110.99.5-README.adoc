@@ -121,6 +121,9 @@ gforge bug tracker.
 | [.bugid]#283#
 | {issue-base}/283[`TextIO.inputAll` segfaults when reading 980M file]
 | **n.a.**
+| [.bugid]#285#
+| {issue-base}/285[Unmatched specification in opaque signature ascription causes uncaught exception]
+| **n.a.**
 | [.bugid]#286#
 | {issue-base}/286[Get "fgrep is obsolescent" when run **sml** on Fedora]
 | **n.a.**
@@ -129,6 +132,9 @@ gforge bug tracker.
 | **n.a.**
 | [.bugid]#288#
 | {issue-base}/288[`DynamicArray.subArray` creates array with length bound+1]
+| **n.a.**
+| [.bugid]#289#
+| {issue-base}/289[Uncaught `Bind` exception in compiler with opaque signature matching]
 | **n.a.**
 | [.bugid]#290#
 | {issue-base}/290[`Random.realRand` returns far smaller value than unity]
@@ -150,6 +156,9 @@ gforge bug tracker.
 | **n.a.**
 | [.bugid]#298#
 | {issue-base}/298[Incorrect printing of source code in error message]
+| **n.a.**
+| [.bugid]#300#
+| {issue-base}/300[``PackReal64``{``Big``,``Little``}``.update`` is not implemented]
 | **n.a.**
 |=======
 
