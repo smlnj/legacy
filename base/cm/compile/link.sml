@@ -114,16 +114,25 @@ in
 	    val { exports, grouppath, ... } = grec
 
 	    fun exn_err (msg, error, descr, exn) = let
-		fun ppb pps =
-		    (PP.newline pps;
-		     PP.string pps (General.exnMessage exn);
-		     app (fn s => PP.string pps (s ^ "\n"))
-			 (SMLofNJ.exnHistory exn);
-		     PP.newline pps)
-	    in
-		error (concat [msg, " ", descr]) ppb;
-		raise Link exn
-	    end
+		fun ppb pps = let
+                      val history = SMLofNJ.exnHistory exn
+                      in
+                        PP.newline pps;
+		        PP.string pps (General.exnMessage exn);
+                        PP.newline pps;
+                        case history
+                         of loc::locs => (
+                              PP.string pps (concat["  raised at ", loc, "\n"]);
+                              app (fn s => PP.string pps ("            " ^ s ^ "\n"))
+                                locs)
+                          | [] => ()
+                        (* end case *);
+                        PP.newline pps
+                      end;
+	        in
+		  error (concat [msg, " ", descr, " "]) ppb;
+		  raise Link exn
+                end
 
 	    fun link_stable (i, de) = let
 		val stable = BinInfo.stablename i
