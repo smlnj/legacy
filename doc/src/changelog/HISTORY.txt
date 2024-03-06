@@ -107,6 +107,15 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
+[2024/03/06]::
++
+Changed `Unsafe.Real64.toBits` to `Unsafe.Real64.castToWord` and
+`Unsafe.Real64.fromBits` to `Unsafe.Real64.castFromWord`.  These new
+names match MLton's names for these operations.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2024/03/05]::
 +
 Reimplement the `PackReal64Big` and `PackReal64Big` structures to use

@@ -63,7 +63,7 @@ signature UNSAFE =
     val wordSize : unit -> int
 
     (* convert default real to bits *)
-(* NOTE: this function is depracated; use Real64.toBits instead *)
+(* NOTE: this function is depracated; use Real64.castToWord instead *)
     val realToBits : real -> Word64.word
 
     (* assembly-code function for scaling reals *)

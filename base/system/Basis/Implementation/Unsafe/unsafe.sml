@@ -16,8 +16,8 @@ structure Unsafe :> UNSAFE =
 
     structure Real64 =
       struct
-        val toBits = InlineT.Real64.toBits
-        fun fromBits (b : Word64.word) : real = let
+        val castToWord = InlineT.Real64.toBits
+        fun castFromWord (b : Word64.word) : real = let
               val r : real ref = InlineT.cast(ref b)
               in
                 !r
