@@ -170,6 +170,16 @@ Added implementation of `Real64.nextAfter`.
 owner:cs.uchicago.edu/~jhr[John Reppy]
 
 //--------------------------------------------------------------------
+[2024/02/29]::
++
+Rewrote the `Real64.split` function to use the bit-representation of
+reals in its implementation.  This new version fixes {issue-base}/269[
+Issue #269 (`Real.realMod` and `Real.split` produce incorrect result
+for values close to zero)].
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2024/02/26]::
 +
 Did a complete rewrite of the mechanisms used to implement conversions

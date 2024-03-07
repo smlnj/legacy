@@ -115,6 +115,9 @@ gforge bug tracker.
 | [.bugid]#194#
 | {issue-base}/194[Incorrect formatting of real number]
 | 221
+| [.bugid]#269#
+| {issue-base}/269[`Real.realMod` and `Real.split` produce incorrect result for values close to zero]
+| **n.a.**
 | [.bugid]#280#
 | {issue-base}/280[Support forward-slash ("/") as a separator in the Windows implementation of `OS.Path`]
 | **n.a.**
