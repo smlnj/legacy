@@ -124,24 +124,12 @@ structure JSONUtil : sig
       | asBool v = raise NotBool v
 
     fun asInt (J.INT n) = Int.fromLarge n
-      | asInt (v as J.INTLIT n) = (case Int.fromString n
-           of SOME n => n
-            | NONE => raise NotInt v (* should be impossible *)
-          (* end case *))
       | asInt v = raise NotInt v
 
     fun asIntInf (J.INT n) = n
-      | asIntInf (v as J.INTLIT n) = (case IntInf.fromString n
-           of SOME n => n
-            | NONE => raise NotInt v (* should be impossible *)
-          (* end case *))
       | asIntInf v = raise NotInt v
 
     fun asNumber (J.INT n) = Real.fromLargeInt n
-      | asNumber (v as J.INTLIT n) = (case IntInf.fromString n
-           of SOME n => Real.fromLargeInt n
-            | NONE => raise NotNumber v (* should be impossible *)
-          (* end case *))
       | asNumber (J.FLOAT f) = f
       | asNumber v = raise NotNumber v
 
@@ -193,7 +181,6 @@ structure JSONUtil : sig
 	    | v2s (J.BOOL true) = "'true'"
 	    | v2s (J.FLOAT _) = "number"
 	    | v2s (J.INT _) = "number"
-	    | v2s (J.INTLIT _) = "number"
 	    | v2s J.NULL = "'null'"
 	    | v2s (J.OBJECT _) = "object"
 	    | v2s (J.STRING _) = "string"
