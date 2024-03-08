@@ -128,6 +128,8 @@ base/compiler/Parse/parse/ml.grm.sml
 base/compiler/Parse/parse/sml.grm.desc
 base/compiler/Parse/parse/sml.grm.sig
 base/compiler/Parse/parse/sml.grm.sml
+base/runtime/c-libs/posix-filesys/ml_pathconf.h
+base/runtime/c-libs/posix-procenv/ml_sysconf.h
 base/runtime/objs/gen-offsets
 base/runtime/objs/gen-sizes
 base/runtime/objs/gen-unix-signals
@@ -139,7 +141,7 @@ base/runtime/objs/run.*
 base/runtime/objs/runx.*
 base/runtime/objs/system-signals.h
 base/runtime/objs/unix-sigtbl.c
-base/runtime/objs/v-*
+base/runtime/**/v-*
 base/system/sml.boot*
 base/system/sml.*-*
 doc/mk/doc-rules.gmk
@@ -172,8 +174,19 @@ doc/src/release-notes/110.99-README.html
 doc/src/release-notes/110.99.1-README.html
 doc/src/release-notes/110.99.2-README.html
 doc/src/release-notes/110.99.3-README.html
+doc/src/release-notes/110.99.4-README.html
+doc/src/release-notes/110.99.5-README.html
 doc/src/release-notes/2021.1-README.html
 doc/src/smlnj-guide/Makefile
+smlnj-lib/Doc/bin
+smlnj-lib/Doc/doc
+smlnj-lib/Doc/Makefile
+smlnj-lib/Doc/src/index.html
+smlnj-lib/Doc/src/index.json
+smlnj-lib/Doc/src/Makefile
+smlnj-lib/Doc/src/*/*.html
+smlnj-lib/Doc/tools/bin/
+smlnj-lib/Doc/tools/Makefile
 smlnj-lib/Doc/tools/gen-pages/Makefile
 smlnj-lib/Doc/tools/gen-pages/config.sml
 smlnj-lib/Doc/tools/gen-pages/gen-pages.*
