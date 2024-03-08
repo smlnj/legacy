@@ -85,13 +85,6 @@ made to the **SML/NJ Library**:
 
 * Add `EditDistance` module to utility library.
 
-[2023-12-10]
-	Modified the `JSON.json` datatype to include the `INTLIT of string`
-	constructor.  This constructor will be used as a fall-back for when
-	integer constants in a JSON file have a large number of digits.
-	Currently, the parser does not use this mechanism, but the `FastJSONParser`
-	implementation that is under development does so.
-
 * Reworked the `UTF8` structure to impose stricter validation of the
   encodings.  Added the `Invalid` exception for when an invalid encoding
   is encountered and replaced uses of the `Domain` exception with `Invalid`.
