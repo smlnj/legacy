@@ -71,6 +71,10 @@ includes improvements to the *SML/NJ Library*.
 In addition to the bug fixes noted below, the following improvements
 made to the **SML/NJ Library**:
 
+* Added the `JSONDecode` structure to the *JSON* library.  This module implements
+  a set of combinators (inspired by the *Elm* `JSON.Decode` module)
+  for decoding *JSON* values.
+
 * Added `insertWith`, `insertWithi`, and `findAndRemove` operations to the
   `HASH_TABLE` and `MONO_HASH_TABLE` interfaces (and corresponding
   implementations).

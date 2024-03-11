@@ -5,6 +5,9 @@ correspond to SML/NJ releases.
 SML/NJ 110.99.5
 -------------------
 
+[2024-03-11]
+	Added `JSONDecode` module.
+
 [2024-02-26]
         Added `insertWith`, `insertWithi`, and `findAndRemove` operations to the
         `HASH_TABLE` and `MONO_HASH_TABLE` interfaces (and corresponding

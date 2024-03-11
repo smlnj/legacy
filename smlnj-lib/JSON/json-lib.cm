@@ -10,6 +10,7 @@ Library
   structure JSON
   structure JSONParser
   structure JSONPrinter
+  structure JSONDecode
   structure JSONUtil
 
 (* SAX-style API (event based) *)
@@ -30,8 +31,10 @@ is
   json.lex : ml-ulex
 #endif
 
+  errors.sml
   json.sml
   json-buffer-printer.sml
+  json-decode.sml
   json-parser.sml
   json-printer.sml
   json-source.sml
