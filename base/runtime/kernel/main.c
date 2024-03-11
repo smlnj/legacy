@@ -23,7 +23,7 @@
 FILE		*DebugF = NULL;
 
 /* Runtime globals */
-bool_t		SilentLoad = TRUE;
+bool_t		SilentLoad = FALSE;
 bool_t          DumpObjectStrings = FALSE;
 bool_t		GCMessages = FALSE;
 bool_t		UnlimitedHeap = FALSE;
