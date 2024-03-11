@@ -192,7 +192,9 @@ val delay : (unit -> 'a decoder) -> 'a decoder
 
 `[.kw]#val# int : int decoder`::
   decodes a *JSON* integer value.  This decoder raises the
-  xref:exn:NotInt[`NotInt`] exception if the value is not a *JSON* integer.
+  xref:exn:NotInt[`NotInt`] exception if the value is not a *JSON* integer
+  and the {sml-basis-url}/general.html#SIG:GENERAL.Overflow:EXN[`Overflow`]
+  exception if the integer is too large to be represented as an `Int.int`.
 
 `[.kw]#val# intInf : IntInf.int decoder`::
   decodes a *JSON* integer value.  This decoder raises the
