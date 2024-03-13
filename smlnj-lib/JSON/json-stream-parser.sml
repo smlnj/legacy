@@ -2,9 +2,6 @@
  *
  * COPYRIGHT (c) 2020 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
- *
- * TODO: use the same "source" abstraction supported by the `JSONParser`
- * structure.
  *)
 
 structure JSONStreamParser :> sig
