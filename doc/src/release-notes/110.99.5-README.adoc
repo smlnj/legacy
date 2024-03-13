@@ -36,7 +36,7 @@ FILES::
 This patch release fixes a large number of bugs in the "legacy" version
 of *SML/NJ*; implements some missing features from the
 https://smlfamily.github.io/Basis/[*Standard ML Basis Library*], and
-includes improvements to the *SML/NJ Library*.
+includes some improvements to the *SML/NJ Library*.
 
 == Details
 
@@ -159,6 +159,9 @@ gforge bug tracker.
 | **n.a.**
 | [.bugid]#300#
 | {issue-base}/300[``PackReal64``{``Big``,``Little``}``.update`` is not implemented]
+| **n.a.**
+| [.bugid]#302#
+| {issue-base}/302[SML/NJ implementation of `Date.fromTimeLocal` differs from SML Basis Library Documentation]
 | **n.a.**
 |=======
 
