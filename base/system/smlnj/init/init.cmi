@@ -172,11 +172,11 @@ ifndef CMB_CROSS ifdef ARCH_X86 \
 ifdef CMB_CROSS ifdef ARCH_X86 \
 	bind rawmem = rawmem-dummy.sml (core, primitive, xcore)
 ifndef CMB_CROSS ifdef ARCH_SPARC \
-	bind rawmem = rawmem.sml (core, primitive, xcore)
+	bind rawmem = target32-rawmem.sml (core, primitive, xcore)
 ifdef CMB_CROSS ifdef ARCH_SPARC \
 	bind rawmem = rawmem-dummy.sml (core, primitive, xcore)
 ifndef CMB_CROSS ifdef ARCH_PPC \
-	bind rawmem = rawmem.sml (core, primitive, xcore)
+	bind rawmem = target32-rawmem.sml (core, primitive, xcore)
 ifdef CMB_CROSS ifdef ARCH_PPC \
 	bind rawmem = rawmem-dummy.sml (core, primitive, xcore)
 ifndef ARCH_X86 ifndef ARCH_SPARC ifndef ARCH_PPC \
