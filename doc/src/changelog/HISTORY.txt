@@ -120,7 +120,7 @@ owner:cs.uchicago.edu/~jhr[John Reppy]
 +
 Reimplement the `PackReal64Big` and `PackReal64Big` structures to use
 the bit-casts between 64-bit reals and 64-bit words.  This change
-fixes {issue-base}/194[Issue #300 (``PackReal64``{``Big``,``Little``}``.update``
+fixes {issue-base}/300[Issue #300 (``PackReal64``{``Big``,``Little``}``.update``
 is not implemented)].
 +
 owner:cs.uchicago.edu/~jhr[John Reppy]
@@ -141,7 +141,8 @@ owner:cs.uchicago.edu/~jhr[John Reppy]
 Expose the machine property functions as `Unsafe.isBigEndian` and
 `Unsafe.wordSize`.  These functions are inlined by the compiler, which
 allows one to expect tests of the form `if Unsafe.isBigEndian()` to
-be evaluated at compile time.
+be evaluated at compile time.  These primops are also available to
+user code via the `Unsafe` structure.
 +
 owner:cs.uchicago.edu/~jhr[John Reppy]
 
