@@ -5,6 +5,16 @@ correspond to SML/NJ releases.
 SML/NJ 110.99.5
 -------------------
 
+[2024-03-14]
+        Rewrote the JSON parsers to work directly on the input source (instead of
+        using a ML-ulex lexer.  This change fixes Issue #284 (ML-ULex's memoization
+        causes massive performance penalties for JSON parsing).  For the `data.json`
+        file mentioned in the issue, parsing is about eight times faster, while the
+        speedup is even greater for the `huge.json` file.
+
+[2024-03-11]
+	Added `JSONDecode` module.
+
 [2024-02-26]
         Added `insertWith`, `insertWithi`, and `findAndRemove` operations to the
         `HASH_TABLE` and `MONO_HASH_TABLE` interfaces (and corresponding
@@ -27,13 +37,6 @@ SML/NJ 110.99.5
 
 [2023-12-18]
         Add `EditDistance` module to utility library.
-
-[2023-12-10]
-	Modified the `JSON.json` datatype to include the `INTLIT of string`
-	constructor.  This constructor will be used as a fall-back for when
-	integer constants in a JSON file have a large number of digits.
-	Currently, the parser does not use this mechanism, but the `FastJSONParser`
-	implementation that is under development does so.
 
 [2023-11-04]
         Reworked the `UTF8` structure to impose stricter validation of the

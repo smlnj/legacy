@@ -16,8 +16,8 @@ structure Unsafe :> UNSAFE =
 
     structure Real64 =
       struct
-        val toBits = InlineT.Real64.toBits
-        fun fromBits (b : Word64.word) : real = let
+        val castToWord = InlineT.Real64.toBits
+        fun castFromWord (b : Word64.word) : real = let
               val r : real ref = InlineT.cast(ref b)
               in
                 !r
@@ -104,6 +104,10 @@ structure Unsafe :> UNSAFE =
 	val abstract = CoreIntInf.abstract
 	val baseBits = WordImp.toIntX CoreIntInf.baseBits
       end
+
+    (* machine properties *)
+    val isBigEndian : unit -> bool = InlineT.isBigEndian
+    val wordSize : unit -> int = InlineT.wordSize
 
   (* convert default real to bits *)
     val realToBits = InlineT.Real64.toBits

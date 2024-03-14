@@ -193,7 +193,7 @@ PVT BOOL __stdcall ctrl_c_handler(DWORD type)
    }
 }
 
-void InitFaultHandlers(ml_state_t * msp)
+void InitFaultHandlers()
 {
    /* Install the control-C handler */
    if (! SetConsoleCtrlHandler(ctrl_c_handler, TRUE))

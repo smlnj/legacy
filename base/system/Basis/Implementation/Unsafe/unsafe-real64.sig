@@ -7,7 +7,7 @@
 signature UNSAFE_REAL64 =
   sig
 
-    val toBits : Real64.real -> Word64.word
-    val fromBits : Word64.word -> Real64.real
+    val castToWord : Real64.real -> Word64.word
+    val castFromWord : Word64.word -> Real64.real
 
   end

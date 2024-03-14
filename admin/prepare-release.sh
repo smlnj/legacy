@@ -94,10 +94,12 @@ function build_from_fixpt {
 
 # step 0: check for local changes that have not been added/committed
 #
-if [ git diff --quiet ] ; then
+git diff --quiet
+if [ $? != 0 ] ; then
   error_local_changes
 fi
-if [ git diff --cached --quiet ] ; then
+git diff --cached --quiet
+if [ $? != 0 ] ; then
   error_local_changes
 fi
 

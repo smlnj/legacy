@@ -41,7 +41,7 @@ PVT SigReturn_t FaultHandler (int sig, SigInfo_t code, SigContext_t *scp);
 
 /* InitFaultHandlers:
  */
-void InitFaultHandlers (ml_state_t *msp)
+void InitFaultHandlers ()
 {
 
   /** Set up the Overflow fault(s) **/

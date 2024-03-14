@@ -1,7 +1,13 @@
-/* run-ml.c
- *
- * COPYRIGHT (c) 1993 by AT&T Bell Laboratories.
- */
+/// \file run-ml.c
+///
+/// \copyright 2021 The Fellowship of SML/NJ (http://www.smlnj.org)
+/// All rights reserved.
+///
+/// \brief The main dispatch function for running SML code and for
+///   servicing requests for runtime-system services
+///
+/// \author John Reppy
+///
 
 #include <stdio.h>
 #include <string.h>
@@ -136,8 +142,9 @@ SayDebug ("run-ml: poll event\n");
 #endif /* MP_SUPPORT */
 	    }
 #endif /* SOFT_POLL */
-	    else
+	    else {
 	        InvokeGC (msp, 0);
+            }
 	}
 	else {
 	    switch (request) {
@@ -159,8 +166,9 @@ SayDebug ("run-ml: poll event\n");
 			sprintf(buf2, "<file %.184s>", namestring);
 			loc = ML_CString(msp, buf2);
 		    }
-		    else
+		    else {
 			loc = ML_CString(msp, "<unknown file>");
+                    }
 		    LIST_cons(msp, traceStk, loc, LIST_nil);
 		    EXN_ALLOC(msp, exn, msp->ml_faultExn, ML_unit, traceStk);
 		    RaiseMLExn (msp, exn);

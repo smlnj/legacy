@@ -104,7 +104,50 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //////////////////////////////////////////////////////////////////////
 
 //====================================================================
-== Recent updates
+//== Recent updates
+
+//====================================================================
+== Version 110.99.5; 2024/03/14
+
+//--------------------------------------------------------------------
+[2024/03/06]::
++
+Changed `Unsafe.Real64.toBits` to `Unsafe.Real64.castToWord` and
+`Unsafe.Real64.fromBits` to `Unsafe.Real64.castFromWord`.  These new
+names match MLton's names for these operations.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
+[2024/03/05]::
++
+Reimplement the `PackReal64Big` and `PackReal64Big` structures to use
+the bit-casts between 64-bit reals and 64-bit words.  This change
+fixes {issue-base}/300[Issue #300 (``PackReal64``{``Big``,``Little``}``.update``
+is not implemented)].
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
+[2024/03/05]::
++
+Added `ALIGN_STACK_16` preprocessor flag to **x86** assembly code
+(`mach-dep/X86.prim.asm`) in runtime system.  This flag controls
+whether the SML stack frame is a multiple of 16 bytes (which allows
+foreign function calls to ensure 16-byte stack alignment).
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
+[2024/03/03]::
++
+Expose the machine property functions as `Unsafe.isBigEndian` and
+`Unsafe.wordSize`.  These functions are inlined by the compiler, which
+allows one to expect tests of the form `if Unsafe.isBigEndian()` to
+be evaluated at compile time.  These primops are also available to
+user code via the `Unsafe` structure.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
 
 //--------------------------------------------------------------------
 [2024/03/01]::
@@ -127,6 +170,16 @@ owner:cs.uchicago.edu/~jhr[John Reppy]
 [2024/03/01]::
 +
 Added implementation of `Real64.nextAfter`.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
+[2024/02/29]::
++
+Rewrote the `Real64.split` function to use the bit-representation of
+reals in its implementation.  This new version fixes {issue-base}/269[
+Issue #269 (`Real.realMod` and `Real.split` produce incorrect result
+for values close to zero)].
 +
 owner:cs.uchicago.edu/~jhr[John Reppy]
 
