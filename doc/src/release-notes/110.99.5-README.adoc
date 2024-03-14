@@ -1,5 +1,5 @@
 :version: 110.99.5
-:date: March 4, 2024
+:date: March 14, 2024
 :dist-dir: https://smlnj.org/dist/working/{version}/
 :history: {dist-dir}HISTORY.html
 :issue-base: https://github.com/smlnj/legacy/issues
@@ -120,6 +120,9 @@ gforge bug tracker.
 | **n.a.**
 | [.bugid]#283#
 | {issue-base}/283[`TextIO.inputAll` segfaults when reading 980M file]
+| **n.a.**
+| [.bugid]#284#
+| {issue-base}/284[ML-ULex's memozation causes massive performance penalties for JSON parsing]
 | **n.a.**
 | [.bugid]#285#
 | {issue-base}/285[Unmatched specification in opaque signature ascription causes uncaught exception]

@@ -23,13 +23,6 @@ is
 
   $/basis.cm
   $/smlnj-lib.cm
-  $/ml-lpt-lib.cm
-
-#if defined(NO_PLUGINS)
-  json.lex.sml
-#else
-  json.lex : ml-ulex
-#endif
 
   errors.sml
   json.sml
@@ -42,5 +35,4 @@ is
   json-stream-output.fun
   json-stream-parser.sml
   json-stream-printer.sml
-  json-tokens.sml
   json-util.sml
