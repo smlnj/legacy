@@ -7,7 +7,7 @@ SML/NJ 110.99.5
 
 [2024-03-14]
         Rewrote the JSON parsers to work directly on the input source (instead of
-        using a ML-ulex lexer.  This change fixes Issue #284 (ML-ULex's memozation
+        using a ML-ulex lexer.  This change fixes Issue #284 (ML-ULex's memoization
         causes massive performance penalties for JSON parsing).  For the `data.json`
         file mentioned in the issue, parsing is about eight times faster, while the
         speedup is even greater for the `huge.json` file.
