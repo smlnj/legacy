@@ -12,8 +12,8 @@ functor HashSetFn (Key : HASH_KEY) : MONO_HASH_SET =
   struct
 
     structure Key = Key
-  (* NOTE: someday we will change the HASH_KEY signature to follow the naming conventions of
-   * the SML basis, so we use those names internally to ease future porting.
+  (* NOTE: someday we will change the HASH_KEY signature to follow the naming
+   * conventions of the SML basis, so we use those names internally to ease future porting.
    *)
     type item = Key.hash_key
     val hash = Key.hashVal
