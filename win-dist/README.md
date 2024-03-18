@@ -66,10 +66,10 @@ In the `smlnj` directory, run the installation script.
 ### Step 3 -- Building the MSI
 
 Once the system has been successfully bootstrapped, we can
-build the installer package (MSI).
+build the installer package (MSI).  In the `win-dist` directory,
+run the command
 
 ``` bat
-  chdir %SMLNJ_HOME%
   build-msi.bat
 ```
 

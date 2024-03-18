@@ -13,7 +13,7 @@ chdir %SMLNJ_HOME%
 REM start by building the runtime, compiler, and other tools and libraries
 REM
 
-%COMSPEC% /K config\install.bat
+call config\install.bat
 
 REM now we can build the installer using the WiX Toolset
 REM
