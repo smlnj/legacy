@@ -42,9 +42,9 @@ libraries such as, e.g., GTK can now be handled gracefully without
 reaching the limits of the ML compiler's abilities.
 
 [The example of GTK -- for which ml-nlffigen creates several thousands (!)
-of separate ML source files -- puts an unusal burden on CM, though.
+of separate ML source files -- puts an unusual burden on CM, though.
 However, aside from running a bit longer than usual, CM handles loads
-of this magnitute just fine.  Stabilizing the resulting library solves
+of this magnitude just fine.  Stabilizing the resulting library solves
 the problem entirely as far as later clients are concerned.]
 
 
@@ -99,7 +99,7 @@ Sketch of translation- (and naming-) scheme:
                 (as an alternative to C.Get.enum/C.Set.enum which
                  operate on sint)
 
-           If the command-line optino "-ec" ("-enum-constructors") was set
+           If the command-line option "-ec" ("-enum-constructors") was set
            and the values of all enum constants are different from each
            other, then mlrep will be a datatype (thus making it possible
            to pattern-match).
@@ -276,7 +276,7 @@ Command-line options for ml-nlffigen:
 
    -gensym <g>  Names "gensym-ed" by ml-nlffigen (for anonymous struct/union/
    -g <g>       enums) will get an additional suffix _<g>.  (This should
-                be used if output from several indepdendent runs of 
+                be used if output from several independent runs of 
                 ml-nlffigen are to coexist in the same ML program.)
 
    --           Terminate processing of options, remaining arguments are
@@ -311,7 +311,7 @@ Suppose we have a C interface defined in foo.h.
 
    will generate a subdirectory "FFI" full of ML files corresponding to
    the definitions in foo.h.  Access to the generated ML code is gained
-   by refering to the CM library FFI/foo.cm; the .cm-file (foo.cm) is
+   by referring to the CM library FFI/foo.cm; the .cm-file (foo.cm) is
    also produced by ml-nlffigen.
 
 2. The ML code uses the library handle specified in the command line

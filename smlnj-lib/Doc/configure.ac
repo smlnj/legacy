@@ -88,12 +88,11 @@ AC_ARG_WITH([version],
 if test x"$SMLNJ_RELEASE_VERSION" = xnone ; then
   if test -r $SMLNJ_ROOT/config/version ; then
     SMLNJ_RELEASE_VERSION=`cat $SMLNJ_ROOT/config/version`
-    AC_MSG_NOTICE(["SML/NJ release version: $SMLNJ_RELEASE_VERSION"])
   else
     SMLNJ_RELEASE_VERSION="working"
-    AC_MSG_NOTICE(["SML/NJ working version"])
   fi
 fi
+AC_MSG_NOTICE(["SML/NJ release version: $SMLNJ_RELEASE_VERSION"])
 AC_SUBST(SMLNJ_RELEASE_VERSION)
 
 AC_ARG_WITH([date],
