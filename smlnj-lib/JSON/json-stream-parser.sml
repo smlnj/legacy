@@ -105,16 +105,6 @@ structure JSONStreamParser :> sig
             | NONE => (#"\000", src)
           (* end case *))
 
-    (* skip white space *)
-    fun skipWS (src as (strm, nLines)) = (case TextIO.StreamIO.input1 strm
-           of SOME(#" ", strm') => skipWS (strm', nLines)
-            | SOME(#"\t", strm') => skipWS (strm', nLines)
-            | SOME(#"\r", strm') => skipWS (strm', nLines)
-            | SOME(#"\n", strm') => skipWS (strm', nLines+1)
-            | SOME(c, strm') => (c, (strm', nLines))
-            | NONE => (#"\000", src)
-          (* end case *))
-
     fun parse (cb : 'a callbacks) (source : JSONSource.source, ctx) = let
           fun error' (ctx, src, ec) = let
                 val msg = JSONSource.errorMsg (src, ec)
@@ -129,8 +119,54 @@ structure JSONStreamParser :> sig
                     then src'
                     else error' (ctx, src, InvalidLiteral)
                 end
+          (* skip white space *)
+          fun skipWS (ctx, src) = let
+                fun skipWS' (src as (strm, nLines)) = (case TextIO.StreamIO.input1 strm
+                       of SOME(#" ", strm') => skipWS' (strm', nLines)
+                        | SOME(#"\t", strm') => skipWS' (strm', nLines)
+                        | SOME(#"\r", strm') => skipWS' (strm', nLines)
+                        | SOME(#"\n", strm') => skipWS' (strm', nLines+1)
+(*
+                        | SOME(#"/", strm') => if comments
+                            then skipComment (strm', nLines)
+                            else error' (src, CommentsNotAllowed)
+*)
+                          (* currently, comments are always allowed *)
+                        | SOME(#"/", strm') => skipComment (strm', nLines)
+                        | SOME(c, strm') => (c, (strm', nLines))
+                        | NONE => (#"\000", src)
+                      (* end case *))
+                (* skip over a C-style comment; the initial '/' has been consumed *)
+                and skipComment (src as (strm, nLines)) = let
+                      fun skip (strm, nLines) = (case TextIO.StreamIO.input1 strm
+                             of SOME(#"*", strm') => let
+                                  (* look for "/" (possibly preceded by stars) *)
+                                  fun lp (strm, nLines) = (
+                                        case TextIO.StreamIO.input1 strm
+                                          of SOME(#"/", strm') => skipWS' (strm', nLines)
+                                           | SOME(#"*", strm') => lp (strm', nLines)
+                                           | SOME(#"\n", strm') => skip (strm', nLines+1)
+                                           | SOME(_, strm') => skip (strm', nLines)
+                                           | NONE => error' (ctx, src, UnclosedComment)
+                                        (* end case *))
+                                  in
+                                    lp (strm', nLines)
+                                  end
+                              | SOME(#"\n", strm') => skip (strm', nLines+1)
+                              | SOME(_, strm') => skip (strm', nLines)
+                              | NONE => error' (ctx, src, UnclosedComment)
+                            (* end case *))
+                      in
+                        case TextIO.StreamIO.input1 strm
+                         of SOME(#"*", strm') => skip (strm', nLines)
+                          | _ => error' (ctx, src, InvalidCharacter)
+                        (* end case *)
+                      end
+                in
+                  skipWS' src
+                end
           (* parse a JSON value *)
-          fun parseValue (ctx, src : JSONSource.state) = (case skipWS src
+          fun parseValue (ctx, src : JSONSource.state) = (case skipWS (ctx, src)
                  of (#"[", src) => parseArray (ctx, src)
                   | (#"{", src) => parseObject (ctx, src)
                   | (#"-", src) => (case next src
@@ -179,13 +215,6 @@ structure JSONStreamParser :> sig
                       in
                         (#boolean cb (ctx, true), src)
                       end
-(*
-                  | (#"/", src) => if comments
-                      then parseValue (ctx, skipComment src)
-                      else error' (ctx, src, CommentsNotAllowed)
-*)
-                    (* currently, comments are always allowed *)
-                  | (#"/", src) => parseValue (ctx, skipComment src)
                   | _ => error' (ctx, src, InvalidCharacter)
                 (* end case *))
           (* parse a JSON array assuming that the '[' has been consumed *)
@@ -194,7 +223,7 @@ structure JSONStreamParser :> sig
                 fun lp (ctx, src) = let
                         val (ctx, src) = parseValue (ctx, src)
                         in
-                          case skipWS src
+                          case skipWS (ctx, src)
                            of (#",", src) => lp (ctx, src)
                             | (#"]", src) => (#endArray cb ctx, src)
                             | _ => error' (ctx, src, InvalidArray)
@@ -202,7 +231,7 @@ structure JSONStreamParser :> sig
                         end
                 val ctx = #startArray cb ctx
                 in
-                  case skipWS src
+                  case skipWS (ctx, src)
                    of (#"]", src) => (#endArray cb ctx, src)
                     | _ => lp (ctx, src)
                   (* end case *)
@@ -210,16 +239,16 @@ structure JSONStreamParser :> sig
           (* parse a JSON object assuming that the '{' has been consumed *)
           and parseObject (ctx, src) = let
                 (* loop to scan one or more key-value pairs *)
-                fun lp (ctx, src) = (case skipWS src
+                fun lp (ctx, src) = (case skipWS (ctx, src)
                        of (#"\"", src) => let
                             val (key, src) = scanString src
                             val ctx = #objectKey cb (ctx, key)
                             in
-                              case skipWS src
+                              case skipWS (ctx, src)
                                of (#":", src) => let
                                     val (ctx, src) = parseValue (ctx, src)
                                     in
-                                      case skipWS src
+                                      case skipWS (ctx, src)
                                        of (#",", src) => lp (ctx, src)
                                         | (#"}", src) => (#endObject cb ctx, src)
                                         | _ => error' (ctx, src, InvalidObject)
@@ -232,7 +261,7 @@ structure JSONStreamParser :> sig
                       (* end case *))
 		val ctx = #startObject cb ctx
                 in
-                  case skipWS src
+                  case skipWS (ctx, src)
                    of (#"}", src) => (#endObject cb ctx, src)
                     | _ => lp (ctx, src)
                   (* end case *)
@@ -569,29 +598,6 @@ structure JSONStreamParser :> sig
                         | _ => (#integer cb (ctx, 0), startSrc)
                       (* end case *))
                     else scanWhole (startSrc, 1, [first])
-                end
-          (* skip over a C-style comment; the initial '/' has been consumed *)
-          and skipComment (src : JSONSource.state) = let
-                fun skip src = (case next src
-                       of (#"*", src) => let
-                            (* look for "/" (possibly preceded by stars) *)
-                            fun lp src = (case next src
-                                  of (#"/", src) => src
-                                   | (#"*", src) => lp src
-                                   | (#"\000", src) => error' (ctx, src, UnclosedComment)
-                                   | (_, src) => skip src
-                                (* end case *))
-                            in
-                              lp src
-                            end
-                        | (#"\000", src) => error' (ctx, src, UnclosedComment)
-                        | (_, src) => skip src
-                      (* end case *))
-                in
-                  case next src
-                   of (#"*", src) => skip src
-                    | _ => error' (ctx, src, InvalidCharacter)
-                  (* end case *)
                 end
           val src = (case !source
                  of SOME src => src
