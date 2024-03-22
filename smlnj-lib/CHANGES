@@ -2,6 +2,14 @@ This is a list of changes to the SML/NJ Library; the version numbers
 correspond to SML/NJ releases.
 
 --------------------------------------------------------------------------------
+SML/NJ 110.99.6
+-------------------
+
+[2024-03-22]
+	Fixed handling of comments in JSON files so that they can occur anywhere
+	that whitespace is allowed.
+
+--------------------------------------------------------------------------------
 SML/NJ 110.99.5
 -------------------
 

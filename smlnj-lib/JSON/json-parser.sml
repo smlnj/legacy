@@ -71,16 +71,6 @@ structure JSONParser :> sig
             | NONE => (#"\000", src)
           (* end case *))
 
-    (* skip white space *)
-    fun skipWS (src as (strm, nLines)) = (case TextIO.StreamIO.input1 strm
-           of SOME(#" ", strm') => skipWS (strm', nLines)
-            | SOME(#"\t", strm') => skipWS (strm', nLines)
-            | SOME(#"\r", strm') => skipWS (strm', nLines)
-            | SOME(#"\n", strm') => skipWS (strm', nLines+1)
-            | SOME(c, strm') => (c, (strm', nLines))
-            | NONE => (#"\000", src)
-          (* end case *))
-
     fun parse source = let
           fun error' (src, ec) = let
                 val msg = JSONSource.errorMsg (src, ec)
@@ -93,6 +83,47 @@ structure JSONParser :> sig
                   if (c = c')
                     then src'
                     else error' (src, InvalidLiteral)
+                end
+          (* skip white space *)
+          fun skipWS (src as (strm, nLines)) = (case TextIO.StreamIO.input1 strm
+                 of SOME(#" ", strm') => skipWS (strm', nLines)
+                  | SOME(#"\t", strm') => skipWS (strm', nLines)
+                  | SOME(#"\r", strm') => skipWS (strm', nLines)
+                  | SOME(#"\n", strm') => skipWS (strm', nLines+1)
+(*
+                  | SOME(#"/", strm') => if comments
+                      then skipComment (strm', nLines)
+                      else error' (src, CommentsNotAllowed)
+*)
+                    (* currently, comments are always allowed *)
+                  | SOME(#"/", strm') => skipComment (strm', nLines)
+                  | SOME(c, strm') => (c, (strm', nLines))
+                  | NONE => (#"\000", src)
+                (* end case *))
+          (* skip over a C-style comment; the initial '/' has been consumed *)
+          and skipComment (src as (strm, nLines)) = let
+                fun skip (strm, nLines) = (case TextIO.StreamIO.input1 strm
+                       of SOME(#"*", strm') => let
+                            (* look for "/" (possibly preceded by stars) *)
+                            fun lp (strm, nLines) = (case TextIO.StreamIO.input1 strm
+                                  of SOME(#"/", strm') => skipWS (strm', nLines)
+                                   | SOME(#"*", strm') => lp (strm', nLines)
+                                   | SOME(#"\n", strm') => skip (strm', nLines+1)
+                                   | SOME(_, strm') => skip (strm', nLines)
+                                   | NONE => error' (src, UnclosedComment)
+                                (* end case *))
+                            in
+                              lp (strm', nLines)
+                            end
+                        | SOME(#"\n", strm') => skip (strm', nLines+1)
+                        | SOME(_, strm') => skip (strm', nLines)
+                        | NONE => error' (src, UnclosedComment)
+                      (* end case *))
+                in
+                  case TextIO.StreamIO.input1 strm
+                   of SOME(#"*", strm') => skip (strm', nLines)
+                    | _ => error' (src, InvalidCharacter)
+                  (* end case *)
                 end
           (* parse a JSON value *)
           fun parseValue src = (case skipWS src
@@ -144,13 +175,6 @@ structure JSONParser :> sig
                       in
                         (JSON.BOOL true, src)
                       end
-(*
-                  | (#"/", src) => if comments
-                      then parseValue (skipComment src)
-                      else error' (src, CommentsNotAllowed)
-*)
-                    (* currently, comments are always allowed *)
-                  | (#"/", src) => parseValue (skipComment src)
                   | _ => error' (src, InvalidCharacter)
                 (* end case *))
           (* parse a JSON array assuming that the '[' has been consumed *)
@@ -540,29 +564,6 @@ structure JSONParser :> sig
                       (* end case *))
                     else scanWhole (src, [firstDigit])
                 end (* scanNumber *)
-          (* skip over a C-style comment; the initial '/' has been consumed *)
-          and skipComment src = let
-                fun skip src = (case next src
-                       of (#"*", src) => let
-                            (* look for "/" (possibly preceded by stars) *)
-                            fun lp src = (case next src
-                                  of (#"/", src) => src
-                                   | (#"*", src) => lp src
-                                   | (#"\000", src) => error' (src, UnclosedComment)
-                                   | (_, src) => skip src
-                                (* end case *))
-                            in
-                              lp src
-                            end
-                        | (#"\000", src) => error' (src, UnclosedComment)
-                        | (_, src) => skip src
-                      (* end case *))
-                in
-                  case next src
-                   of (#"*", src) => skip src
-                    | _ => error' (src, InvalidCharacter)
-                  (* end case *)
-                end
           val src = (case !source
                  of SOME src => src
                   | NONE => raise Fail "closed JSON source"
