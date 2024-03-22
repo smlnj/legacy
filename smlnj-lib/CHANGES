@@ -6,8 +6,9 @@ SML/NJ 110.99.6
 -------------------
 
 [2024-03-22]
-	Fixed handling of comments in JSON files so that they can occur anywhere
-	that whitespace is allowed.
+	Fixed some bugs in the new JSON parser.  The first byte of a UTF-8
+	sequence was being dropped and comments were only allowed immediately
+	in front of values.
 
 --------------------------------------------------------------------------------
 SML/NJ 110.99.5

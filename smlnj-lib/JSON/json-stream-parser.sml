@@ -461,6 +461,9 @@ structure JSONStreamParser :> sig
                                 then stateB (src, inc n, c::chrs)
                                 else error' (ctx, src, InvalidUTF8)
                             end
+                      (* add the first character to the list of processed characters *)
+                      val cs = chr0 :: cs
+                      val n = inc n
                       in
                         if (byte0 <= 0wx7f)
                           (* this case only occurs for non-printing ASCII characters *)
