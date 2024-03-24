@@ -51,6 +51,10 @@ FILES::
 
 === SML/NJ Library
 
+* Fixed some bugs in the new JSON parser.  The first byte of a UTF-8
+  sequence was being dropped and comments were only allowed immediately
+  in front of values.
+
 === Successor ML
 
 === ML-LPT
