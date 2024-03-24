@@ -200,9 +200,7 @@ structure JSONDecode :> sig
     fun field key valueDecoder = D(fn jv => (case jv
            of OBJECT fields => (case List.find (fn (l, v) => (l = key)) fields
                  of SOME(_, v) => decode valueDecoder v
-                  | _ => raise FieldNotFound(
-                      jv,
-                      concat["no definition for field \"", key, "\""])
+                  | _ => raise FieldNotFound(jv, key)
                 (* end case *))
             | _ => raise NotObject jv
           (* end case *)))

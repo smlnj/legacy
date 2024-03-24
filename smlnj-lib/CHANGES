@@ -5,6 +5,10 @@ correspond to SML/NJ releases.
 SML/NJ 110.99.6
 -------------------
 
+[2024-03-24]
+	Fixed the reporting of field-not-found errors (the error message was
+	garbled).
+
 [2024-03-22]
 	Fixed some bugs in the new JSON parser.  The first byte of a UTF-8
 	sequence was being dropped and comments were only allowed immediately

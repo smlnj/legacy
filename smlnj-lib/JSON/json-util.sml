@@ -139,7 +139,7 @@ structure JSONUtil : sig
 
     fun lookupField (v as J.OBJECT fields) = let
 	  fun find lab = (case List.find (fn (l, v) => (l = lab)) fields
-		 of NONE => raise FieldNotFound(v, concat["no definition for field \"", lab, "\""])
+		 of NONE => raise FieldNotFound(v, lab)
 		  | SOME(_, v) => v
 		(* end case *))
 	  in
