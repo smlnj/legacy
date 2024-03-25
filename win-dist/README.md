@@ -41,9 +41,9 @@ script downloads the distribution files and upacks them into
 the correct places (similar to the `config/install.sh` script
 for building Unix installations).  It also patches the version
 number into the `smlnj.wsx` file that is used to build the MSI
-in Step 3.
+in Step 2.
 
-### Step 2 -- Bootstrapping
+### Step 2 -- Bootstrapping and Building the MSI
 
 The second step builds the runtime system, compiler, and tools,
 and then creates the MSI file.
@@ -56,24 +56,14 @@ We start by setting the `SMLNJ_HOME` variable to the path to the
   set SMLNJ_HOME=c:\path\to\smlnj
 ```
 
-In the `smlnj` directory, run the installation script.
-
-``` bat
-  chdir %SMLNJ_HOME%
-  config\install.bat
-```
-
-### Step 3 -- Building the MSI
-
-Once the system has been successfully bootstrapped, we can
-build the installer package (MSI).  In the `win-dist` directory,
-run the command
+In the `win-dist` directory, run the command
 
 ``` bat
   build-msi.bat
 ```
 
-It uses the [WiX Tools](https://wixtoolset.org) that can be found
+This will build the system in %SMLNJ_HOME% and then use the
+[WiX Tools](https://wixtoolset.org) that can be found
 in the `win-dist\WinSetup` directory for this last step.
 
 ## WSL Notes
