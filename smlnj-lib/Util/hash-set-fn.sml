@@ -190,7 +190,7 @@ functor HashSetFn (Key : HASH_KEY) : MONO_HASH_SET =
             then let
               val arr1 = !tbl1 and arr2 = !tbl2
               val sz1 = Array.length arr1 and sz2 = Array.length arr2
-              fun lp i = if (i <= sz1)
+              fun lp i = if (i < sz1)
                     then let
                     (* iterate over the items in bucket i *)
                       fun look1 NIL = lp(i+1)
