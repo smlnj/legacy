@@ -331,12 +331,12 @@ Actions are arbitrary SML code enclosed in parentheses.  The following names are
     For example, \texttt{skip} can be used to skip preceding whitespace.
   \itemtt{yysm}{AntlrSourcePos.sourcemap}
     the sourcemap for the lexer, to be used with the functions in the \texttt{AntlrSourcePos} module.
-  \itemtt{yypos}{ref int}
+  \itemtt{yypos}{int}
     the input character position of the left border of the matched RE, starting from 0.
-  \itemtt{yylineno}{ref int}
+  \itemtt{yylineno}{int}
     The current line number, starting from 1.
     Note that lines are counted using the Unix line-ending convention.
-  \itemtt{yycolno}{ref int}
+  \itemtt{yycolno}{int}
     The current column number, starting from 1.
 \end{description}%
 Futhermore, any name bound in the \kw{\%defs} section is in scope in the actions.

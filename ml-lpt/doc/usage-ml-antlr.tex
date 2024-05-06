@@ -291,7 +291,7 @@ For example, if the grammar specification contains the directive
 \end{lstlisting}%
 then the code
 \begin{lstlisting}[language=SML]
-    datatype token = MyTokens.t
+    datatype token = datatype MyTokens.t
 \end{lstlisting}%
 in the tokens structure.
 Even when the \kw{tokentype} directive is used, one must also declare the grammar's tokens
@@ -321,7 +321,10 @@ Within nonterminal definitions, tokens may be referenced either by their name or
 \mlantlr{} normally identifies non-terminal symbols by their appearance on the left-hand side
 of a production and relies on SML type inference to determine the type returned by parsing
 a string derived from the nonterminal.
-It is also possible to declare the type of a non-terminal using a \kw{nonterms} directive.
+It is also possible to declare the type of a non-terminal using the \kw{nonterms} directive, which has
+similar syntax to the \kw{tokens} directive.
+Specifying the types of non-terminals is useful for improving the locality of type error
+messages in the generated parser code.
 
 \section{Nonterminal definitions}\label{sec:antlr-nt}
 

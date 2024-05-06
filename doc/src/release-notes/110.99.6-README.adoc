@@ -74,6 +74,9 @@ https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 | Issue
 | Description
 | Gforge Bug
+| [.bugid]#310#
+| {issue-base}/310[`HashSetFn.isSubset` function accesses out of bound element]
+| n.a.
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]
