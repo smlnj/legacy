@@ -5,6 +5,9 @@ correspond to SML/NJ releases.
 SML/NJ 110.99.6
 -------------------
 
+[2024-05-24]
+	Fixed Issue #313 (Random.randRange when low = h).
+
 [2024-03-24]
 	Fixed the reporting of field-not-found errors (the error message was
 	garbled).
