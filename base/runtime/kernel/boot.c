@@ -81,7 +81,7 @@ void BootML (const char *bootlist, heap_params_t *heapParams)
     BinFileList = BuildFileList (msp, bootlist, &max_boot_path_len);
 
   /* this space is ultimately wasted */
-    if ((fname = MALLOC (max_boot_path_len)) == NULL) {
+    if ((fname = MALLOC (max_boot_path_len+1)) == NULL) {
         Die ("unable to allocate space for boot file names");
     }
 
@@ -89,7 +89,7 @@ void BootML (const char *bootlist, heap_params_t *heapParams)
     while (BinFileList != LIST_nil) {
       /* need to make a copy of the path name because LoadBinFile is
        * going to scribble into it */
-        strcpy(fname, STR_MLtoC(LIST_hd(BinFileList)));
+        strncpy(fname, STR_MLtoC(LIST_hd(BinFileList)), max_boot_path_len);
         BinFileList = LIST_tl(BinFileList);
         if (fname[0] == '#') {
             if (rts_init) {

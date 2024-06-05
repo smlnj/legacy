@@ -131,7 +131,7 @@ owner:cs.uchicago.edu/~jhr[John Reppy]
 //--------------------------------------------------------------------
 [2024/03/05]::
 +
-Added `ALIGN_STACK_16` preprocessor flag to **x86** assembly code
+Added `ALIGN_STACK_16` preprocessor flag to **x86** (32-bit) assembly code
 (`mach-dep/X86.prim.asm`) in runtime system.  This flag controls
 whether the SML stack frame is a multiple of 16 bytes (which allows
 foreign function calls to ensure 16-byte stack alignment).

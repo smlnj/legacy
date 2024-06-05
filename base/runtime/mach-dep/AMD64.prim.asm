@@ -603,17 +603,14 @@ ALIGNED_ENTRY(floor_a)
 	INC		(stdarg)
 	CONTINUE
 
-/* logb : real -> int
- * Extract the unbiased exponent pointed to by stdarg.
- * Note: Using fxtract, and fistl does not work for inf's and nan's.
- */
+/* DEPRECATED, but required for linking */
 ALIGNED_ENTRY(logb_a)
 	/* DEPRECATED */
 	CONTINUE
 
+#define SIGN_MASK	IM(0x8000000000000000)
 #define EXP_MASK	IM(0x7ff0000000000000)
 #define NOT_EXP_MASK	IM(0x800fffffffffffff)
-#define SIGN_MASK	IM(0x8000000000000000)
 #define INFINITY        EXP_MASK
 
 /* scalb : (real * int) -> real

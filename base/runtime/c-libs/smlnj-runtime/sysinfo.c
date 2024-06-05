@@ -48,9 +48,7 @@ ml_val_t _ml_RunT_sysinfo (ml_state_t *msp, ml_val_t arg)
 	res = ML_CString(msp, "<unknown>");
     else if (STREQ("HEAP_SUFFIX", name))
         res = ML_CString(msp, MACHINE_ID "-" OPSYS_ID);
-    else if (STREQ("ARCH_NAME", name)
-    || STREQ("HOST_ARCH", name)		/* DEPRECATED; remove in 110.97 */
-    || STREQ("TARGET_ARCH", name))	/* DEPRECATED; remove in 110.97 */
+    else if (STREQ("ARCH_NAME", name))
 #if   defined(ARCH_AMD64)
 	res = ML_CString(msp, "AMD64");
 #elif defined(ARCH_PPC)

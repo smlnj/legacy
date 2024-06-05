@@ -79,7 +79,7 @@ typedef int fe_rnd_mode_t;
 #  define fesetround(RM)	fpsetround(RM)
 
 #elif (defined(OPSYS_WIN32) || defined(OPSYS_CYGWIN))
-/** 
+/**
  ** Win32 can set (some) alternate math paramters, but then only by re-linking
  ** with different objects.  Best to do it by hand here as well.
  **/
