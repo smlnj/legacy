@@ -92,6 +92,7 @@ case `uname -s` in
 	  21*) REQUIRE_64BIT=yes ;; # macOS 12 Monterey
 	  22*) REQUIRE_64BIT=yes ;; # macOS 13 Ventura
 	  23*) REQUIRE_64BIT=yes ;; # macOS 14 Sonoma
+	  24*) REQUIRE_64BIT=yes ;; # macOS 15 Sequoia
           *) exit 1 ;;
         esac
         if [ x"$REQUIRE_64BIT" = xyes -a $SIZE = 32 ] ; then
