@@ -5,6 +5,10 @@ correspond to SML/NJ releases.
 SML/NJ 110.99.6
 -------------------
 
+[2024-07-03]
+        Fixed Issue #314 (Wrong description of brace syntax in RegExp Library
+        in SML of NJ Library) and added some additional RE tests.
+
 [2024-05-24]
 	Fixed Issue #313 (Random.randRange when low = h).
 
