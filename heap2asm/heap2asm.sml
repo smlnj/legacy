@@ -19,8 +19,7 @@ structure Main : sig
   (* number of bytes per line *)
     val bytesPerLine = 20
 
-(* FIXME: getHostSize is deprecated and should be replaced with getArchSize *)
-    val size64 = (SMLofNJ.SysInfo.getHostSize() = 64)
+    val size64 = (SMLofNJ.SysInfo.getArchSize() = 64)
 
   (* assembly directives *)
     val textSection = "\t.text\n"
