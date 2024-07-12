@@ -333,9 +333,9 @@ structure JSONStreamParser :> sig
                             val (d1, src) = getDigit src
                             val (d2, src) = getDigit src
                             val (d3, src) = getDigit src
-                            val n = W.<<(d0, 0w24)
-                                  + W.<<(d1, 0w16)
-                                  + W.<<(d2, 0w8)
+                            val n = W.<<(d0, 0w12)
+                                  + W.<<(d1, 0w8)
+                                  + W.<<(d2, 0w4)
                                   + d3
                             in
                               (n, src)
@@ -369,31 +369,33 @@ structure JSONStreamParser :> sig
                             else if (w <= 0wx7ff)
                               then scan (src,
                                 n+2,
-                                w2c(W.orb(0wxc0, W.>>(w, 0w6)))
-                                  :: w2c(W.orb(0wx80, W.andb(w, 0wx3f)))
+                                w2c(W.orb(0wx80, W.andb(w, 0wx3f)))
+                                  :: w2c(W.orb(0wxc0, W.>>(w, 0w6)))
                                   :: cs)
                             else if (w <= 0wxffff)
                               then scan (src,
                                 n+3,
-                                w2c(W.orb(0wxe0, W.>>(w, 0w12)))
+                                w2c(W.orb(0wx80, W.andb(w, 0wx3f)))
                                   :: w2c(W.orb(0wx80, W.andb(W.>>(w, 0w6), 0wx3f)))
-                                  :: w2c(W.orb(0wx80, W.andb(w, 0wx3f)))
+                                  :: w2c(W.orb(0wxe0, W.>>(w, 0w12)))
                                   :: cs)
                             else if (w <= 0wx10ffff)
                               then scan (src,
                                 n+4,
-                                w2c(W.orb(0wxf0, W.>>(w, 0w18)))
-                                  :: w2c(W.orb(0wx80, W.andb(W.>>(w, 0w12), 0wx3f)))
+                                w2c(W.orb(0wx80, W.andb(w, 0wx3f)))
                                   :: w2c(W.orb(0wx80, W.andb(W.>>(w, 0w6), 0wx3f)))
-                                  :: w2c(W.orb(0wx80, W.andb(w, 0wx3f)))
+                                  :: w2c(W.orb(0wx80, W.andb(W.>>(w, 0w12), 0wx3f)))
+                                  :: w2c(W.orb(0wxf0, W.>>(w, 0w18)))
                                   :: cs)
                               else error' (ctx, src, InvalidUnicodeEscape)
                       in
                         if (u0 < 0wxD800)
                           then toUTF8 (src, u0)
-                        else if (u0 <= 0wxDBFF)
+                        else if (u0 <= 0wxDBFF) (* D800-DBFF: high surrogate *)
                           then scanLowSurrogate src
-                          else error' (ctx, src, InvalidUnicodeEscape)
+                        else if (u0 <= 0wxDFFF) (* DC00-DFFF: low surrogate *)
+                          then error' (ctx, src, InvalidUnicodeSurrogatePair)
+                        else toUTF8 (src, u0)
                       end (* scanUnicodeEscape *)
                 (* a simple state machine for getting a valid UTF-8 byte sequence.  See
                  * https://unicode.org/mail-arch/unicode-ml/y2003-m02/att-0467/01-The_Algorithm_to_Valide_an_UTF-8_String
