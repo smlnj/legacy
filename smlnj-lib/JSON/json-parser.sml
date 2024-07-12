@@ -233,11 +233,14 @@ structure JSONParser :> sig
                        of (#"\000", _) => error' (start, UnclosedString)
                         | (#"\"", src) => (mkString(n, cs), src)
                         | (#"\\", src) => scanEscape (src, n, cs)
-                        | (c, src) => if (#" " <= c) andalso (c < #"\127")
-                            (* printable ASCII character *)
-                            then scan (src, inc n, c::cs)
-                            (* either non-printable ASCII or UTF-8 byte sequence *)
-                            else scanUTF8 (src, c, c2w c, n, cs)
+                        | (c, src) =>
+                            if c < #" "
+                              then error' (src, NonPrintingASCII)
+                            else if c < #"\127"
+                              (* printable ASCII character *)
+                              then scan (src, inc n, c::cs)
+                              (* either non-printable ASCII or UTF-8 byte sequence *)
+                              else scanUTF8 (src, c, c2w c, n, cs)
                       (* end case *))
                 and scanEscape (src, n, cs) = let
                       fun return (src, c) = scan (src, inc n, c::cs)
