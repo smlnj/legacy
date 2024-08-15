@@ -2,6 +2,8 @@
  *
  * COPYRIGHT (c) 2017 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
+ *
+ * NOTE: this version of the Translate structure is not currently used.
  *)
 
 signature TRANSLATE =
