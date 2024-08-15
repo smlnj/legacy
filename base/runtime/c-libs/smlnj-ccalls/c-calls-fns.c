@@ -177,7 +177,7 @@ PVT Word_t convert_result(ml_state_t *msp,code_header_t *chp,ml_val_t val)
     char *t = chp->rettype;
     int err;
 
-    /* front-end of interface guarantees that ret is a valid 
+    /* front-end of interface guarantees that ret is a valid
      * return value for a C function: Word_t or some pointer
      */
     err = datumMLtoC(msp,&t,&q,val);
@@ -213,7 +213,7 @@ int no_args_entry()
 #endif
     RunML (visible_msp);
 
-    
+
 #ifdef DEBUG_C_CALLS
     printf("no_args_entry: return value is %d\n", visible_msp->ml_arg);
 #endif
@@ -266,7 +266,7 @@ int some_args_entry(Word_t first,...)
 #endif
     RunML (visible_msp);
 
-    
+
 #ifdef DEBUG_C_CALLS
     printf("some_args_entry: return value is %d\n", visible_msp->ml_arg);
 #endif
@@ -285,7 +285,7 @@ PVT void *build_entry(ml_state_t *msp,code_header_t h)
 
 
 #ifdef DEBUG_C_CALLS
-    printf ("grabPC=%lx, grabPCend=%lx, code size is %d\n", 
+    printf ("grabPC=%lx, grabPCend=%lx, code size is %d\n",
  	    grabPC, grabPCend, szb);
     printf ("code_header size is %d\n", sizeof(code_header_t));
 #endif
@@ -300,7 +300,7 @@ PVT void *build_entry(ml_state_t *msp,code_header_t h)
 #endif
     memcpy (p, (void *)grabPC, szb);
     FlushICache(p,szb);
-    return p;   
+    return p;
 }
 
 Word_t mk_C_function(ml_state_t *msp,
