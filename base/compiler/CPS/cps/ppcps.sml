@@ -164,7 +164,7 @@ structure PPCps : PPCPS =
     fun vpathToString (v, p) = let
 	  fun toList (OFFp 0) = []
 	    | toList (OFFp n) = ["+", Int.toString n] (* assumes n > 0 *)
-	    | toList (SELp(i, p)) = "." :: toList p
+	    | toList (SELp(i, p)) = "." :: Int.toString i :: toList p
 	  in
 	    String.concat(value2str v :: toList p)
 	  end
