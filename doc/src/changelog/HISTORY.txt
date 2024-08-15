@@ -104,7 +104,27 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //////////////////////////////////////////////////////////////////////
 
 //====================================================================
-//== Recent updates
+== Recent updates
+
+//--------------------------------------------------------------------
+[2024/08/15]::
++
+Improved the tracing of variable bindings in contraction by adding
+the `ARITHinfo` and `PUREinfo` constructors (the `WRPinfo` constructor
+is rendered obsolete).  This change was motivated by the desire to
+eliminate a redundant range test from the code
++
+[[source,sml]
+------------
+fun byte2char w = chr (Word8.toInt w)
+------------
++
+It also allows for `WRAP(UNWRAP ...)` fusion.  In the future, we can
+also use this mechanism to move the numeric-conversion fusion operations
+to the `ContractPrim` structure, which will allow us to fuse compositions
+that are not adjacent in the IR.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
 
 //====================================================================
 == Version 110.99.5; 2024/03/14

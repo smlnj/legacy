@@ -1,7 +1,11 @@
 (* contract.sml
  *
- * COPYRIGHT (c) 2017 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2024 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
+ *
+ * TODO: since we now track variables defined by ARITH and PURE, we can move
+ * the fusion of integer/word conversions to `ContractPrim`, which should cover
+ * more situations.
  *)
 
 (*
@@ -184,8 +188,8 @@ datatype info = datatype ContractPrim.info
       }
   | RECinfo of record_kind * (value * accesspath) list
   | SELinfo of int * value * cty
-  | OFFinfo of int * value
-  | WRPinfo of P.numkind * value				(* P.wrap of a value *)
+  | ARITHinfo of CPS.P.arith * value list
+  | PUREinfo of CPS.P.pureop * value list
   | IFIDIOMinfo of {body : (lvar * cexp * cexp) option ref}
   | MISCinfo of cty
 *)
@@ -247,7 +251,14 @@ fun enterREC(w,kind,vl) = enter(w,{info=RECinfo(kind,vl), called=ref 0,used=ref 
 fun enterMISC (w,ct) = enter(w,{info=MISCinfo ct, called=ref 0, used=ref 0})
 val miscBOG = MISCinfo CPSUtil.BOGt
 fun enterMISC0 w = enter(w,{info=miscBOG, called=ref 0, used=ref 0})
-fun enterWRP (w, kind, u) = enter(w, {info=WRPinfo(kind, u), called=ref 0, used=ref 0})
+fun enterARITH (w, p, vs) = enter(w, {info=ARITHinfo(p, vs), called=ref 0, used=ref 0})
+fun enterPURE (w, P.CAST, [VAR v]) = (
+    (* for `w = CAST arg`, we treat it as identity if `v` is interesting *)
+      case get v
+       of {info=MISCinfo _, ...} => enterMISC0 w
+	| {info, ...} => enter(w, {info=info, called=ref 0, used=ref 0})
+      (* end case *))
+  | enterPURE (w, p, vs) = enter(w, {info=PUREinfo(p, vs), called=ref 0, used=ref 0})
 
 fun enterFN (_,f,vl,cl,cexp) =
       (enter(f,{called=ref 0,used=ref 0,
@@ -257,12 +268,6 @@ fun enterFN (_,f,vl,cl,cexp) =
 			    specialuse=ref NONE,
 			    liveargs=ref NONE}});
        ListPair.appEq enterMISC (vl, cl))
-
-(* for `w = CAST arg`, we treat it as identity if arg is interesting *)
-fun enterCAST (w, arg) = (case get arg
-       of {info=MISCinfo _, ...} => enterMISC0 w
-	| {info, ...} => enter(w, {info=info, called=ref 0, used=ref 0})
-      (* end case *))
 
 (*********************************************************************
    checkFunction: used by pass1(FIX ...) to decide
@@ -299,7 +304,6 @@ fun pass1 cexp = let
 		  enter(w,{info=SELinfo(i,v,ct), called=ref 0, used=ref 0});
 		  use v; p1 noInline e)
 	      | OFFSET (i,v,w,e) => (
-		  enter(w,{info=OFFinfo(i,v), called=ref 0, used=ref 0});
 		  use v; p1 noInline e)
 	      | APP(f, vl) => (
 		  if noInline
@@ -344,14 +348,14 @@ fun pass1 cexp = let
 		  app use vl; p1 noInline e)
 	      | LOOKER(i,vl,w,_,e) => (
 		  app use vl; enterMISC0 w; p1 noInline e)
-	      | ARITH(i,vl,w,_,e) => (
-		  app use vl; enterMISC0 w; p1 noInline e)
-	      | PURE(P.CAST, [VAR x], w, _, e) => (
-		  inc(#used(get x)); enterCAST(w, x); p1 noInline e)
-	      | PURE(P.WRAP kind, [u], w, _, e) => (
-		  use u; enterWRP(w, kind, u); p1 noInline e)
-	      | PURE(i,vl,w,_,e) => (
-		  app use vl; enterMISC0 w; p1 noInline e)
+              | ARITH(p, vl, w, _, e) => (
+                  app use vl;
+                  enterARITH (w, p, vl);
+                  p1 noInline e)
+              | PURE(p, vl, w, _, e) => (
+                  app use vl;
+                  enterPURE (w, p, vl);
+                  p1 noInline e)
 	      | RCC(k,l,p,vl,wtl,e) => (
 		  app use vl; app (enterMISC0 o #1) wtl; p1 noInline e)
 	    (* end case *))

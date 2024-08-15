@@ -18,8 +18,8 @@ structure ContractPrim : sig
 	  }
       | RECinfo of CPS.record_kind * (CPS.value * CPS.accesspath) list
       | SELinfo of int * CPS.value * CPS.cty
-      | OFFinfo of int * CPS.value
-      | WRPinfo of CPS.P.numkind * CPS.value			(* CPS.P.wrap of a value *)
+      | ARITHinfo of CPS.P.arith * CPS.value list
+      | PUREinfo of CPS.P.pure * CPS.value list
       | IFIDIOMinfo of {body : (CPS.lvar * CPS.cexp * CPS.cexp) option ref}
       | MISCinfo of CPS.cty
 
@@ -59,8 +59,8 @@ structure ContractPrim : sig
 	  }
       | RECinfo of CPS.record_kind * (value * CPS.accesspath) list
       | SELinfo of int * value * CPS.cty
-      | OFFinfo of int * value
-      | WRPinfo of CPS.P.numkind * value			(* CPS.P.wrap of a value *)
+      | ARITHinfo of P.arith * value list
+      | PUREinfo of P.pure * value list
       | IFIDIOMinfo of {body : (CPS.lvar * CPS.cexp * CPS.cexp) option ref}
       | MISCinfo of CPS.cty
 
@@ -75,12 +75,14 @@ structure ContractPrim : sig
 		  "SELinfo(", Int.toString i, ", ", PPCps.value2str v, ", ",
 		  CPSUtil.ctyToString cty, ")"
 		]
-	    | OFFinfo(i, v) => concat[
-		  "OFFinfo(", Int.toString i, ", ", PPCps.value2str v, ")"
-		]
-	    | WRPinfo(nk, v) => concat[
-		  "WRPinfo(", PPCps.numkindToString nk, ", ", PPCps.value2str v, ")"
-		]
+            | ARITHinfo(p, vs) => concat[
+                  "ARITHinfo(", PPCps.arithToString p, ", [",
+                  String.concatWithMap "," PPCps.value2str vs, "])"
+                ]
+            | PUREinfo(p, vs) => concat[
+                  "PUREinfo(", PPCps.pureToString p, ", [",
+                  String.concatWithMap "," PPCps.value2str vs, "])"
+                ]
 	    | IFIDIOMinfo _ => "IFIDIOMinfo{...}"
 	    | MISCinfo cty => concat[
 		  "MISCinfo(", CPSUtil.ctyToString cty, ")"
@@ -329,16 +331,28 @@ structure ContractPrim : sig
 	    | (P.INT_TO_REAL{to, ...}, [NUM{ival, ...}]) =>
 	      (* NOTE: this conversion might lose precision *)
 		Val(REAL{rval = RealLit.fromInt ival, ty=to})
-	    | (P.UNWRAP(P.INT sz), [x as VAR v]) => (case get v
-		  of {info=WRPinfo(P.INT sz', u), ...} => if (sz = sz')
+	    | (P.WRAP(P.INT sz), [x as VAR v]) => (case get v
+                  of {info=PUREinfo(P.UNWRAP(P.INT sz'), [u]), ...} => if (sz = sz')
 		       then Val u
-		       else bug "wrap/unwrap float size conflict"
+		       else bug "wrap(unwrap int) size conflict"
+		   | _ => None
+		 (* end case *))
+	    | (P.WRAP(P.FLOAT sz), [x as VAR v]) => (case get v
+                  of {info=PUREinfo(P.UNWRAP(P.FLOAT sz'), [u]), ...} => if (sz = sz')
+		       then Val u
+		       else bug "wrap(unwrap float) size conflict"
+		   | _ => None
+		 (* end case *))
+	    | (P.UNWRAP(P.INT sz), [x as VAR v]) => (case get v
+                  of {info=PUREinfo(P.WRAP(P.INT sz'), [u]), ...} => if (sz = sz')
+		       then Val u
+		       else bug "unwrap(wrap int) size conflict"
 		   | _ => None
 		 (* end case *))
 	    | (P.UNWRAP(P.FLOAT sz), [x as VAR v]) => (case get v
-		  of {info=WRPinfo(P.FLOAT sz', u), ...} => if (sz = sz')
+                  of {info=PUREinfo(P.WRAP(P.FLOAT sz'), [u]), ...} => if (sz = sz')
 		       then Val u
-		       else bug "wrap/unwrap int size conflict"
+		       else bug "unwrap(wrap float) size conflict"
 		   | _ => None
 		 (* end case *))
 	    | _ => None
@@ -351,26 +365,42 @@ structure ContractPrim : sig
 	    | cond (P.BOXED, [STRING s]) = SOME true
 	    | cond (P.BOXED, [VAR v]) = (case get v
 		 of {info=RECinfo _, ...} => SOME true
-		  | {info=WRPinfo _, ...} => SOME true
+		  | {info=PUREinfo(P.WRAP _, _), ...} => SOME true
 		  | _ => NONE
 		(* end case *))
-	    | cond (P.CMP{oper=P.LT, ...}, [VAR v, VAR w]) = if v=w then SOME false else NONE
-	    | cond (P.CMP{oper=P.LTE, ...}, [VAR v, VAR w]) = if v=w then SOME true else NONE
-	    | cond (P.CMP{oper=P.LT, kind=P.INT _}, [NUM i, NUM j]) = SOME(#ival i < #ival j)
+	    | cond (P.CMP{oper=P.LT, ...}, [VAR v, VAR w]) =
+                if v=w then SOME false else NONE
+	    | cond (P.CMP{oper=P.LT, kind=P.INT _}, [NUM i, NUM j]) =
+                SOME(#ival i < #ival j)
 	    | cond (P.CMP{oper=P.LT, kind=P.UINT sz}, [NUM i, NUM j]) =
 		SOME(CA.uLess(sz, #ival i, #ival j))
 	    | cond (P.CMP{oper=P.LT, kind=P.UINT sz}, [_, NUM{ival=0, ...}]) =
 		SOME false (* no unsigned value is < 0 *)
+            | cond (P.CMP{oper=P.LT, kind=P.UINT _}, [VAR v, NUM{ival=256, ...}]) = (
+                (* this might be a `Word8.word` to `char` conversion *)
+                case get v
+                 of {info=PUREinfo(P.COPY{from=8, to}, [x]), ...} => if (to > 8)
+                      (* no sign extension, so `0 <= v < 256` *)
+                      then SOME true
+                      else NONE
+                  | _ => NONE
+		(* end case *))
+	    | cond (P.CMP{oper=P.LTE, ...}, [VAR v, VAR w]) =
+                if v=w then SOME true else NONE
 	    | cond (P.CMP{oper=P.LTE, kind=P.INT _}, [NUM i, NUM j]) =
 		SOME(#ival i <= #ival j)
 	    | cond (P.CMP{oper=P.LTE, kind=P.UINT sz}, [NUM i, NUM j]) =
 		SOME(CA.uLessEq(sz, #ival i, #ival j))
 	    | cond (P.CMP{oper=P.LTE, kind=P.UINT sz}, [NUM{ival=0, ...}, _]) =
 		SOME true (* 0 is <= all unsigned values *)
-	    | cond (P.CMP{oper=P.GT, kind}, [w,v]) = cond (P.CMP{oper=P.LT, kind=kind}, [v,w])
-	    | cond (P.CMP{oper=P.GTE, kind}, vl) = notCond (P.CMP{oper=P.LT, kind=kind}, vl)
-(* TODO: if both arguments are literals, we can optimize this, but we need to be careful
- * about inexact representations.
+	    | cond (P.CMP{oper=P.GT, kind}, [w,v]) =
+                (* flip comparison and operands: `w > v` iff `v < w` *)
+                cond (P.CMP{oper=P.LT, kind=kind}, [v,w])
+	    | cond (P.CMP{oper=P.GTE, kind}, vl) =
+                (* negate comparison: `w >= v` iff `not(w < v)` *)
+                notCond (P.CMP{oper=P.LT, kind=kind}, vl)
+(* TODO: if both arguments are literals, we can optimize equality tests on floats,
+ * but we need to be careful about inexact representations and NaNs.
  *)
 	    | cond (P.CMP{oper=P.EQL, kind=P.FLOAT _}, _) = NONE (* in case of NaN's *)
 	    | cond (P.CMP{oper=P.EQL, ...}, [VAR v, VAR w]) = if v=w then SOME true else NONE
