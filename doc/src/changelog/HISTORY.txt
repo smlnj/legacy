@@ -107,6 +107,16 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
+[2024/08/20]::
+Taking advantage of the previous change by moving the fusion of
+integer/word conversions to the `ContractPrim` structure.  This
+change means that conversions do not have to be adjacent in the
+CPS IR to be composed.  Also addded some missing identities for
+the conversions.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2024/08/15]::
 +
 Improved the tracing of variable bindings in contraction by adding

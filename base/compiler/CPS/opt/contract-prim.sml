@@ -1,14 +1,17 @@
 (* contract-prim.sml
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2024 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *
- * Contraction for CPS primitive operations.
+ * Contraction for CPS primitive operations.  For details about the fusion of conversion
+ * operators, see
+ *
+ *      https://github.com/smlnj/.github/wiki/Integer-Word-Conversions-Explained
  *)
 
 structure ContractPrim : sig
 
-  (* information about a variable *)
+    (* information about a variable's binding *)
     datatype info
       = FNinfo of {
 	    args: CPS.lvar list,
@@ -34,7 +37,7 @@ structure ContractPrim : sig
       | Arith of CPS.P.arith * CPS.value list	(* strength reduction *)
       | Pure of CPS.P.pure * CPS.value list	(* strength reduction *)
 
-    val arith : CPS.P.arith * CPS.value list -> result
+    val arith : get_info -> CPS.P.arith * CPS.value list -> result
 
     val pure : get_info -> CPS.P.pure * CPS.value list -> result
 
@@ -140,11 +143,16 @@ structure ContractPrim : sig
 	    | NONE => None
 	  (* end case *))
 
+  (* smart constructor for COPY conversion that detects when it is the identity *)
+    fun mkCOPY (from, to, arg) = if (from = to)
+          then Val arg
+          else Pure(P.COPY{from=from, to=to}, [arg])
+
   (* contraction for impure arithmetic operations; note that 64-bit IMUL, IDIV,
    * IMOD, IQUOT, and IREM have three arguments on 32-bit targets, so we need
    * to allow for the extra argument in the patterns.
    *)
-    fun arith (rator, args) = ((case (rator, args)
+    fun arith (get : get_info) arg = ((case arg
 	    (***** IADD *****)
 	   of (P.IARITH{oper=P.IADD, ...}, [NUM{ival=0, ...}, v]) => Val v
 	    | (P.IARITH{oper=P.IADD, ...}, [v, NUM{ival=0, ...}]) => Val v
@@ -200,16 +208,73 @@ structure ContractPrim : sig
 	    (***** INEG *****)
 	    | (P.IARITH{oper=P.INEG, sz}, [NUM i]) =>
 		Val(NUM{ival = CA.sNeg(sz, #ival i), ty = #ty i})
-	    (***** TEST *****)
-	    | (P.TEST{from, to}, [NUM{ival, ...}]) => let
-	      (* first convert to signed representation and then narrow *)
-		val ival' = CA.sNarrow(to, CA.toSigned(from, ival))
-		in
-		  Val(mkNum(to, ival'))
-		end
-	    (***** TESTU *****)
-	    | (P.TESTU{from, to}, [NUM{ival, ...}]) =>
+	    (***** TEST *****
+             *
+             * Note that on 32-bit platforms, `TEST` will have an extra argument
+             * (the `w64ToInt32X` function) when `from` is 64.
+             *)
+            | (P.TEST{from=n, to=p}, v::_) => if (n = p)
+                (* TEST(n, n) => IDENTITY *)
+                then Val v
+                else (case v
+                   of NUM{ival, ...} => let
+                        (* first convert to signed representation and then narrow.  The
+                         * narrow operation mau raise Overflow, which is caught and
+                         * mapped to `None` below.
+                         *)
+                        val ival' = CA.sNarrow(p, CA.toSigned(n, ival))
+                        in
+                          Val(mkNum(p, ival'))
+                        end
+                    | VAR x => (case #info(get x)
+                         of ARITHinfo(P.TEST{from=m, ...}, args) =>
+                              (* TEST(n,p) o TEST(m,n) ==> TEST(m, p) *)
+                              Arith(P.TEST{from=m, to=p}, args)
+                          | ARITHinfo(P.TEST_INF _, [u, f]) =>
+                              (* TEST(n,p) o TEST(∞,n) ==> TEST(∞, p) *)
+                              Arith(P.TEST_INF p, [u, f])
+                          | PUREinfo(P.COPY{from=m, ...}, [u]) =>
+                              if (p >= m)
+                                (* TEST(n,p) o COPY(m,n) ==> COPY(m, p) if (p >= m) *)
+                                then mkCOPY(m, p, u)
+                                (* TEST(n,p) o COPY(m,n) ==> TEST(m, p) if (p < m) *)
+                                else Arith(P.TEST{from=m, to=p}, [u])
+                          | PUREinfo(P.EXTEND{from=m, ...}, [u]) =>
+                              if (p >= m)
+                                (* TEST(n,p) o EXTEND(m,n) ==> EXTEND(m, p) if (p >= m) *)
+                                then Pure(P.EXTEND{from=m, to=p}, [u])
+                                (* TEST(n,p) o EXTEND(m,n) ==> TEST(m, p) if (p < m) *)
+                                else Arith(P.TEST{from=m, to=p}, [u])
+                          | _ => None
+                        (* end case *))
+                    | _ => bug "bogus argument to TEST"
+                  (* end case *))
+	    (***** TESTU *****
+             *
+             * Unlike the other conversions, the `TESTU` operator is not the identity
+             * when `from = to`.  Also note that on 32-bit platforms, `TESTU` will
+             * have an extra argument (the `w64ToInt32` function) when `from` is 64.
+             *)
+	    | (P.TESTU{from, to}, NUM{ival, ...}::_) =>
 		Val(mkNum(to, CA.sNarrow(to, ival)))
+            | (P.TESTU{to=p, ...}, VAR v::_) => (case #info(get v)
+                 of ARITHinfo(P.TESTU{from=m, ...}, [u]) =>
+                      (* TESTU(n,p) o TESTU(m,n) ==> TESTU(m, p) *)
+                      Arith(P.TESTU{from=m, to=p}, [u])
+                  | PUREinfo(P.COPY{from=m, ...}, [u]) =>
+                      if (p >= m)
+                        (* TESTU(n,p) o COPY(m,n) ==> COPY(m, p) if (p >= m) *)
+                        then mkCOPY(m, p, u)
+                        (* TESTU(n,p) o COPY(m,n) ==> TESTU(m, p) if (p < m) *)
+                        else Arith(P.TESTU{from=m, to=p}, [u])
+                  | PUREinfo(P.EXTEND{from=m, ...}, [u]) =>
+                      if (p >= m)
+                        (* TESTU(n,p) o EXTEND(m,n) ==> EXTEND(m, p) if (p >= m) *)
+                        then Pure(P.EXTEND{from=m, to=p}, [u])
+                        (* TESTU(n,p) o EXTEND(m,n) ==> TESTU(m, p) if (p < m) *)
+                        else Arith(P.TESTU{from=m, to=p}, [u])
+                  | _ => None
+                (* end case *))
 	    | _ => None
 	  (* end case *))
 	    handle _ => None)
@@ -315,42 +380,142 @@ structure ContractPrim : sig
 	    (***** NOTB *****)
 	    | (P.PURE_ARITH{oper=P.NOTB, kind}, [NUM i]) =>
 		Val(NUM{ival = CA.bNot(sizeOfKind kind, #ival i), ty = #ty i})
+            (***** COPY *****)
+            | (P.COPY{from=n, to=p}, [v]) => if (n = p)
+                (* COPY(n, n) ==> IDENTITY *)
+                then Val v
+                else (case v
+                   of NUM{ival, ...} => Val(mkNum(p, ival))
+                    | VAR x => (case #info(get x)
+                         of PUREinfo(P.COPY{from=m, ...}, [u]) =>
+                            (* COPY(n,p) o COPY(m,n) ==> COPY(m,p) *)
+                            mkCOPY(m, p, u)
+                          | _ => None
+                        (* end case *))
+                    | _ => bug "bogus argument to COPY"
+                  (* end case *))
+            (***** EXTEND *****)
+            | (P.EXTEND{from=n, to=p}, [v]) => if (n = p)
+                (* EXTEND(n, n) ==> IDENTITY *)
+                then Val v
+                else (case v
+                   of NUM{ival, ...} =>
+                        if (ival > 0)
+                        andalso (IntInf.andb(IntInf.<<(1, Word.fromInt(n-1)), ival) <> 0)
+                          then Val(mkNum(p, ival - IntInf.<<(1, Word.fromInt n)))
+                          else Val(mkNum(p, ival))
+                    | VAR x => (case #info(get x)
+                         of PUREinfo(P.EXTEND{from=m, ...}, arg) =>
+                              (* EXTEND(n,p) o EXTEND(m,n) ==> EXTEND(m,p) *)
+                              Pure(P.EXTEND{from=m, to=p}, arg)
+                          | PUREinfo(P.COPY{from=m, to=n}, [u]) =>
+                              if (n > m)
+                                (* EXTEND(n,p) o COPY(m,n) ==> COPY(m,p) if (n > m) *)
+                                then mkCOPY(m, p, u)
+                                else None
+                          | _ => None
+                        (* end case *))
+                    | _ => bug "bogus argument to EXTEND"
+                  (* end case *))
+            (***** TRUNC *****)
+	    | (P.TRUNC{from=n, to=p}, [v]) => if (n = p)
+                (* TRUNC(n, n) ==> IDENTITY *)
+                then Val v
+                else (case v
+                   of NUM{ival, ...} => let
+                        val ival' = IntInf.andb(IntInf.<<(1, Word.fromInt p)-1, ival)
+                        in
+                          Val(mkNum(p, ival'))
+                        end
+                    | VAR x => (case #info(get x)
+                         of PUREinfo(P.TRUNC{from=m, ...}, arg) =>
+                              (* TRUNC(n,p) o TRUNC(m,n) ==> TRUNC(m,p) *)
+                              Pure(P.TRUNC{from=m, to=p}, arg)
+                          | PUREinfo(P.TRUNC_INF _, arg) =>
+                              (* TRUNC(n,p) o TRUNC(∞,n) ==> TRUNC(∞,p) *)
+                              Pure(P.TRUNC_INF p, arg)
+                          | PUREinfo(P.COPY{from=m, ...}, [u]) =>
+                              if (p >= m)
+                                (* TRUNC(n,p) o COPY(m,n) ==> COPY(m,p) if (p >= m) *)
+                                then mkCOPY(m, p, u)
+                                (* TRUNC(n,p) o COPY(m,n) ==> TRUNC(m,p) if (p < m) *)
+                                else Pure(P.TRUNC{from=m, to=p}, [u])
+                          | PUREinfo(P.EXTEND{from=m, to=n}, arg) =>
+                              if (p >= m)
+                                (* TRUNC(n,p) o EXTEND(m,n) ==> EXTEND(m,p) if (p >= m) *)
+                                then Pure(P.EXTEND{from=m, to=p}, arg)
+                                (* TRUNC(n,p) o EXTEND(m,n) ==> TRUNC(m,p) if (p < m) *)
+                                else Pure(P.TRUNC{from=m, to=p}, arg)
+                          | _ => None
+                        (* end case *))
+                    | _ => bug "bogus argument to TRUNC"
+                  (* end case *))
+            (***** COPY_INF *****)
+            | (P.COPY_INF _, [VAR v, f]) => (case #info(get v)
+                 of PUREinfo(P.COPY{from=m, ...}, [u]) =>
+                      (* COPY(n,∞) o COPY(m,n) ==> COPY(m,∞) *)
+                      Pure(P.COPY_INF m, [u, f])
+                  | _ => None
+                (* end case *))
+            (***** EXTEND_INF *****)
+            | (P.EXTEND_INF n, [VAR v, f]) => (case #info(get v)
+                 of PUREinfo(P.EXTEND{from=m, ...}, arg) =>
+                      (* EXTEND(n,∞) o EXTEND(m,n) ==> EXTEND(m,∞) *)
+                      Pure(P.EXTEND_INF m, arg)
+                  | PUREinfo(P.COPY{from=m, ...}, [u]) => if (m < n)
+                      (* EXTEND(n,∞) o COPY(m,n) ==> COPY(m,∞) when (m < n) *)
+                      then Pure(P.COPY_INF m, [u, f])
+                      (* EXTEND(n,∞) o COPY(m,n) ==> EXTEND(m,∞) when (m = n) *)
+                      else Pure(P.EXTEND_INF m, [u, f])
+                  | _ => None
+                (* end case *))
+            (***** TRUNC_INF *****)
+            | (P.TRUNC_INF p, [VAR v, _]) => (case #info(get v)
+                 of PUREinfo(P.COPY_INF m, [u, _]) => if (p >= m)
+                      (* TRUNC(∞,p) o COPY(m,∞) ==> COPY(m,p) when (p >= m) *)
+                      then mkCOPY(m, p, u)
+                      (* TRUNC(∞,p) o COPY(m,∞) ==> TRUNC(m,p) when (m > p) *)
+                      else Pure(P.TRUNC{from=m, to=p}, [u])
+                  | PUREinfo(P.EXTEND_INF m, [u, _]) => if (p >= m)
+                      (* TRUNC(∞,p) o EXTEND(m,∞) ==> EXTEND(m,p) when (p >= m) *)
+                      then Pure(P.EXTEND{from=m, to=p}, [u])
+                      (* TRUNC(∞,p) o EXTEND(m,∞) ==> COPY(m,p) when (m > p) *)
+                      else mkCOPY(m, p, u)
+                  | _ => None
+                (* end case *))
 	    (***** Other primops *****)
 	    | (P.LENGTH, [STRING s]) => Val(tagInt(size s))
-	    | (P.COPY{from, to}, [NUM{ival, ...}]) => Val(mkNum(to, ival))
-	    | (P.EXTEND{from, to}, [NUM{ival, ...}]) =>
-		if (ival > 0)
-		andalso (IntInf.andb(IntInf.<<(1, Word.fromInt(from-1)), ival) <> 0)
-		  then Val(mkNum(to, ival - IntInf.<<(1, Word.fromInt from)))
-		  else Val(mkNum(to, ival))
-	    | (P.TRUNC{from, to}, [NUM{ival, ...}]) => let
-		val ival' = IntInf.andb(IntInf.<<(1, Word.fromInt to)-1, ival)
-		in
-		  Val(mkNum(to, ival'))
-		end
 	    | (P.INT_TO_REAL{to, ...}, [NUM{ival, ...}]) =>
-	      (* NOTE: this conversion might lose precision *)
+	        (* NOTE: this conversion might lose precision *)
 		Val(REAL{rval = RealLit.fromInt ival, ty=to})
-	    | (P.WRAP(P.INT sz), [x as VAR v]) => (case get v
-                  of {info=PUREinfo(P.UNWRAP(P.INT sz'), [u]), ...} => if (sz = sz')
+            | (P.BOX, [VAR v]) => (case #info(get v)
+                 of PUREinfo(P.UNBOX, [u]) => Val u
+                  | _ => None
+		 (* end case *))
+            | (P.UNBOX, [VAR v]) => (case #info(get v)
+                 of PUREinfo(P.BOX, [u]) => Val u
+                  | _ => None
+		 (* end case *))
+	    | (P.WRAP(P.INT sz), [x as VAR v]) => (case #info(get v)
+                  of PUREinfo(P.UNWRAP(P.INT sz'), [u]) => if (sz = sz')
 		       then Val u
 		       else bug "wrap(unwrap int) size conflict"
 		   | _ => None
 		 (* end case *))
-	    | (P.WRAP(P.FLOAT sz), [x as VAR v]) => (case get v
-                  of {info=PUREinfo(P.UNWRAP(P.FLOAT sz'), [u]), ...} => if (sz = sz')
+	    | (P.WRAP(P.FLOAT sz), [x as VAR v]) => (case #info(get v)
+                  of PUREinfo(P.UNWRAP(P.FLOAT sz'), [u]) => if (sz = sz')
 		       then Val u
 		       else bug "wrap(unwrap float) size conflict"
 		   | _ => None
 		 (* end case *))
-	    | (P.UNWRAP(P.INT sz), [x as VAR v]) => (case get v
-                  of {info=PUREinfo(P.WRAP(P.INT sz'), [u]), ...} => if (sz = sz')
+	    | (P.UNWRAP(P.INT sz), [x as VAR v]) => (case #info(get v)
+                  of PUREinfo(P.WRAP(P.INT sz'), [u]) => if (sz = sz')
 		       then Val u
 		       else bug "unwrap(wrap int) size conflict"
 		   | _ => None
 		 (* end case *))
-	    | (P.UNWRAP(P.FLOAT sz), [x as VAR v]) => (case get v
-                  of {info=PUREinfo(P.WRAP(P.FLOAT sz'), [u]), ...} => if (sz = sz')
+	    | (P.UNWRAP(P.FLOAT sz), [x as VAR v]) => (case #info(get v)
+                  of PUREinfo(P.WRAP(P.FLOAT sz'), [u]) => if (sz = sz')
 		       then Val u
 		       else bug "unwrap(wrap float) size conflict"
 		   | _ => None
@@ -363,9 +528,11 @@ structure ContractPrim : sig
 	  fun cond (P.UNBOXED, vl) = notCond(P.BOXED, vl)
 	    | cond (P.BOXED, [NUM{ty={tag, ...}, ...}]) = SOME(not tag)
 	    | cond (P.BOXED, [STRING s]) = SOME true
-	    | cond (P.BOXED, [VAR v]) = (case get v
-		 of {info=RECinfo _, ...} => SOME true
-		  | {info=PUREinfo(P.WRAP _, _), ...} => SOME true
+	    | cond (P.BOXED, [VAR v]) = (case #info(get v)
+		 of RECinfo _ => SOME true
+                  | PUREinfo(P.MKSPECIAL, _) => SOME true
+                  | PUREinfo(P.BOX, _) => SOME true
+		  | PUREinfo(P.WRAP _, _) => SOME true
 		  | _ => NONE
 		(* end case *))
 	    | cond (P.CMP{oper=P.LT, ...}, [VAR v, VAR w]) =
