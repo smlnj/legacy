@@ -2,17 +2,13 @@ This is a list of changes to the SML/NJ Library; the version numbers
 correspond to SML/NJ releases (past and future).
 
 --------------------------------------------------------------------------------
-SML/NJ 110.99.7
+SML/NJ 110.99.6
 -------------------
 
 [2024-08-06]
         Further specialization of the `IntHashTable` implementation.  Since the
         hash and key values are the same bit pattern, we do not need to test
         keys for equality.
-
---------------------------------------------------------------------------------
-SML/NJ 110.99.6
--------------------
 
 [2024-07-03]
         Fixed Issue #314 (Wrong description of brace syntax in RegExp Library
