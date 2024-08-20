@@ -285,7 +285,7 @@ structure TransPrim : sig
 			val (argTy, resTy) = (case LT.ltd_arrow lt
 			       of (_, [a], [r]) => (a, r)
 				| _ => bug (concat[
-				      "unexpected type ", LT.lt_print lt, " of TEST"
+				      "unexpected type ", LT.lt_print lt, " of TESTU"
 				    ])
 			      (* end case *))
 			val extraTy = lt_arw (argTy, resTy)
