@@ -270,6 +270,11 @@ structure JSONStreamParser :> sig
           and scanString (start : JSONSource.state) = let
                 fun c2w c = W.fromInt(ord c)
                 fun w2c w = Char.chr(W.toInt w)
+                (* scan a string
+                 * `src` is the input source
+                 * `n` is the number of bytes in the result
+                 * `cs` is the result list of characters in reverse order
+                 *)
                 fun scan (src, n, cs) = (case next src
                        of (#"\000", _) => error' (ctx, start, UnclosedString)
                         | (#"\"", src) => (mkString(n, cs), src)
@@ -302,6 +307,7 @@ structure JSONStreamParser :> sig
                  * is encoded as a UTF-8 byte sequence.
                  *)
                 and scanUnicodeEscape (src, n, cs) = let
+                      (* scan a hex digit *)
                       fun getDigit src = (case next src
                              of (#"0", src) => (0w0, src)
                               | (#"1", src) => (0w1, src)
@@ -328,7 +334,7 @@ structure JSONStreamParser :> sig
                               | _ => error' (ctx, src, InvalidUnicodeEscape)
                             (* end case *))
                       fun getDigits src = let
-                            (* get four digits *)
+                            (* get a four-digit hex number *)
                             val (d0, src) = getDigit src
                             val (d1, src) = getDigit src
                             val (d2, src) = getDigit src
@@ -363,16 +369,20 @@ structure JSONStreamParser :> sig
                                   (* end case *))
                               | _ => error' (ctx, src, InvalidUnicodeSurrogatePair)
                             (* end case *))
-                      (* convert a word to a UTF-8 sequence *)
+                      (* convert a word to a UTF-8 sequence; remember that `cs`
+                       * is in reverse order.
+                       *)
                       and toUTF8 (src, w) = if (w <= 0wx7f)
                               then scan (src, inc n, w2c w :: cs)
                             else if (w <= 0wx7ff)
+                              (* two bytes *)
                               then scan (src,
                                 n+2,
                                 w2c(W.orb(0wx80, W.andb(w, 0wx3f)))
                                   :: w2c(W.orb(0wxc0, W.>>(w, 0w6)))
                                   :: cs)
                             else if (w <= 0wxffff)
+                              (* three bytes *)
                               then scan (src,
                                 n+3,
                                 w2c(W.orb(0wx80, W.andb(w, 0wx3f)))
@@ -380,6 +390,7 @@ structure JSONStreamParser :> sig
                                   :: w2c(W.orb(0wxe0, W.>>(w, 0w12)))
                                   :: cs)
                             else if (w <= 0wx10ffff)
+                              (* four bytes *)
                               then scan (src,
                                 n+4,
                                 w2c(W.orb(0wx80, W.andb(w, 0wx3f)))
@@ -397,7 +408,7 @@ structure JSONStreamParser :> sig
                           then error' (ctx, src, InvalidUnicodeSurrogatePair)
                         else toUTF8 (src, u0)
                       end (* scanUnicodeEscape *)
-                (* a simple state machine for getting a valid UTF-8 byte sequence.  See
+                (* a simple state machine for scanning a valid UTF-8 byte sequence.  See
                  * https://unicode.org/mail-arch/unicode-ml/y2003-m02/att-0467/01-The_Algorithm_to_Valide_an_UTF-8_String
                  * for a description of the state machine.
                  *)
