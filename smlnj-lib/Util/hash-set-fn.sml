@@ -87,18 +87,12 @@ functor HashSetFn (Key : HASH_KEY) : MONO_HASH_SET =
 		Array.update(arr, indx, B(h, item, Array.sub(arr, indx)));
 		nItems := !nItems + 1;
 		growTableIfNeeded (table, !nItems);
-		NIL)
+		())
 	    | look (B(h', item', r)) = if ((h = h') andalso same(item, item'))
-		then NIL (* item already present *)
-		else (case (look r)
-		   of NIL => NIL
-		    | rest => B(h', item', rest)
-		  (* end case *))
+		then () (* item already present *)
+		else look r
 	  in
-	    case (look (Array.sub (arr, indx)))
-	     of NIL => ()
-	      | b => Array.update(arr, indx, b)
-	    (* end case *)
+	    look (Array.sub (arr, indx))
 	  end
 
   (* Add an item to a set *)
