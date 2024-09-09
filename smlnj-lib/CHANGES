@@ -5,6 +5,9 @@ correspond to SML/NJ releases (past and future).
 SML/NJ 110.99.6
 -------------------
 
+[2024-09-09]
+	Merged pull request #322 (Remove useless branches in `HashSetFn.insert`).
+
 [2024-09-02]
         Added the `combineWith` function to the various implementations of the
         `ORD_SET` signature.
