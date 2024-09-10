@@ -92,9 +92,10 @@ functor HashSetFn (Key : HASH_KEY) : MONO_HASH_SET =
 	  in
             if findInBucket (bucket, h, item)
               then ()
-              else (Array.update (arr, indx, B (h, item, bucket));
-                    nItems := !nItems + 1;
-                    growTableIfNeeded (table, !nItems))
+              else (
+                Array.update (arr, indx, B (h, item, bucket));
+                nItems := !nItems + 1;
+                growTableIfNeeded (table, !nItems))
 	  end
 
   (* Add an item to a set *)
