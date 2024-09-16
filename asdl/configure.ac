@@ -64,10 +64,11 @@ AC_ARG_ENABLE([c++],
 
 dnl enable Swift generator?
 dnl
-AC_ARG_ENABLE([swift],
-  AS_HELP_STRING([--enable-swift], [enable support for Swift]),
-  [ENABLE_SWIFT=yes],
-  [ENABLE_SWIFT=no])
+# TODO
+#AC_ARG_ENABLE([swift],
+#  AS_HELP_STRING([--enable-swift], [enable support for Swift]),
+#  [ENABLE_SWIFT=yes],
+#  [ENABLE_SWIFT=no])
 
 dnl check for a specified target size
 dnl
@@ -223,8 +224,8 @@ CXXFLAG_fPIC=""
 case "$host_os" in
   darwin*)
     DSLEXT="dylib"
-    LD_STATIC=$LD
-    LD_DYNAMIC="$CXX -dynamiclib"
+    LD_STATIC="$LD -static"
+    LD_DYNAMIC="$CXX -dynamiclib -r"
   ;;
   linux*)
   # On Linux we include the -rpath option to pick up dynamically-loaded libraries
@@ -232,7 +233,7 @@ case "$host_os" in
     CXXFLAG_fPIC="-fPIC"
     DSLEXT="so"
     LD_STATIC=$LD
-    LD_DYNAMIC="$CXX -shared"
+    LD_DYNAMIC="$LD -r"
   ;;
 esac
 

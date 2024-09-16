@@ -83,6 +83,9 @@ https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 | [.bugid]#314#
 | {issue-base}/314[Wrong description of brace syntax in RegExp Library in SML of NJ Library]
 | n.a.
+| [.bugid]#323#
+| {issue-base}/323[Can't build 2024.2 because of problem with ASDL C++ library]
+| n.a.
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]

@@ -16,7 +16,7 @@ INSTALL =		@INSTALL@
 BUILD_DIRS =		src doc
 
 INSTALL_DIR =		@prefix@
-INSTALL_BINDIR =	$(PREFIX)/bin
+INSTALL_BINDIR =	$(INSTALL_DIR)/bin
 INSTALL_HEAPDIR =	$(INSTALL_BINDIR)/.heap
 INSTALL_WRAPPER =	@ASDL_BINDIR@/install-sml-wrapper.sh
 SML =			@SMLNJ_CMD@
@@ -52,7 +52,7 @@ install:	$(BUILD_DIRS)
 	  (cd $$dir && $(MAKE) install) || exit $$?; \
 	done
 
-build:		$(BUILD_DIRS) examples doc
+build:		$(BUILD_DIRS) examples
 	(cd src && $(MAKE) build) || exit $$?
 
 doc:
