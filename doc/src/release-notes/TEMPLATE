@@ -63,7 +63,7 @@ FILES::
 
 Here is a list of the issues that are fixed (or closed) with this release.
 We include the original bug numbers for bugs that were reported using the
-https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
+gforge bug tracker.
 
 [.buglist,cols="^1,<10,^2",strips="none",options="header"]
 |=======
