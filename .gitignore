@@ -101,7 +101,7 @@ autom4te.cache
 
 ## Repo-specific files
 
-preload.standard
+preloads.standard
 asdl/Makefile
 asdl/examples/Makefile
 asdl/doc/Makefile
