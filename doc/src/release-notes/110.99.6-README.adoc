@@ -38,16 +38,6 @@ but it also contains a number of minor bug fixes.
 
 // **** details: include those sections that are relevant
 
-=== Compiler
-
-=== CM
-
-=== MLRISC
-
-=== Runtime System
-
-=== Basis Library
-
 === SML/NJ Library
 
 There were a number of bug fixes to the Library (see the **Bugs** section below).
@@ -66,13 +56,9 @@ In addition, the following changes were made:
   in front of values.  There was also a problem with Unicode escape sequences
   in strings that has been fixed.
 
-=== Successor ML
-
-=== ML-LPT
-
-=== Documentation
-
 === Installation
+
+Installation on **macOS** 15 (Sequoia) is now supported.
 
 == Bugs
 
