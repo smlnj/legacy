@@ -89,9 +89,6 @@ gforge bug tracker.
 | [.bugid]#323#
 | {issue-base}/323[Can't build 2024.2 because of problem with ASDL C++ library]
 | n.a.
-//| [.bugid]#@ID#
-//| {issue-base}/@ID[@DESCRIPTION]
-//| [old bug #@OLDID]
 |=======
 
 // ***** include a list of unnumbered bugs here *****
