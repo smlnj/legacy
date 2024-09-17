@@ -120,6 +120,8 @@ tested some of them:
 | {nbsp} | |
 |=======
 
+The system also works on Apple Silicon using Rosetta2.
+
 === 32-bit macOS issues
 
 While the {dist-dir}smlnj-x86-{version}.pkg[x86 installer]
