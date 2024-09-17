@@ -67,13 +67,16 @@ FILES::
 
 Here is a list of the issues that are fixed (or closed) with this release.
 We include the original bug numbers for bugs that were reported using the
-https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
+gforge bug tracker.
 
 [.buglist,cols="^1,<10,^2",strips="none",options="header"]
 |=======
 | Issue
 | Description
 | Gforge Bug
+| [.bugid]#305#
+| {issue-base}/305[`Date.date` incorrectly modifies local time with timezone offset]
+| n.a.
 | [.bugid]#310#
 | {issue-base}/310[`HashSetFn.isSubset` function accesses out of bound element]
 | n.a.
@@ -82,6 +85,9 @@ https://smlnj-gforge.cs.uchicago.edu/projects/smlnj-bugs[gforge bug tracker].
 | n.a.
 | [.bugid]#314#
 | {issue-base}/314[Wrong description of brace syntax in RegExp Library in SML of NJ Library]
+| n.a.
+| [.bugid]#315#
+| {issue-base}/315[Support macOS 15 Sequoia]
 | n.a.
 | [.bugid]#323#
 | {issue-base}/323[Can't build 2024.2 because of problem with ASDL C++ library]
