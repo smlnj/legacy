@@ -1,6 +1,4 @@
-// A template for creating release notes for a version
-//
-:version: @VERSION@
+:version: 110.99.6
 :date: @DATE@
 :dist-dir: https://smlnj.org/dist/working/{version}/
 :history: {dist-dir}HISTORY.html
@@ -33,7 +31,8 @@ FILES::
 
 == Summary
 
-// **** summary description of release
+The primary purpose of this release is to enable support for **macOS** 15 (Sequoia),
+but it also contains a number of minor bug fixes.
 
 == Details
 
@@ -114,8 +113,9 @@ tested some of them:
 | | macOS 12 (Monterey) | Tested
 | | macOS 13 (Ventura) | Tested
 | | macOS 14 (Sonoma) | Tested
-| | Ubuntu 22.04.4 LTS | Tested
+| | macOS 15 (Sequoia) | Tested
 | | Ubuntu 20.04.6 LTS | Tested
+| | Ubuntu 22.04.4 LTS | Tested
 | {nbsp} | |
 | Power PC | Mac OS X 10.5 (Leopard) |
 | | AIX |
@@ -130,8 +130,9 @@ tested some of them:
 | | Mac OS X 10.10 (Yosemite) |
 | | Mac OS X 10.11 (El Capitan) |
 | | macOS 10.12 (Sierra) |
-| | macOS 10.13 (High Sierra) | Tested
+| | macOS 10.13 (High Sierra) |
 | | macOS 10.14 (Mojave) |
+| | macOS 10.15 (Catalina) |
 | | Ubuntu 16.04.3 LTS |
 | | Other Linux variants |
 | | FreeBSD 12.0 |
@@ -141,6 +142,8 @@ tested some of them:
 | | Cygwin (32-bit) |
 | {nbsp} | |
 |=======
+
+The system also works on Apple Silicon using Rosetta2.
 
 === 32-bit macOS issues
 
