@@ -50,9 +50,21 @@ but it also contains a number of minor bug fixes.
 
 === SML/NJ Library
 
+There were a number of bug fixes to the Library (see the **Bugs** section below).
+In addition, the following changes were made:
+
+* Added the `combineWith` function to the various implementations of the
+  `ORD_SET` signature.
+
+* Some minor improvements to hash sets and integer hash tables.
+
+* Fixed the reporting of field-not-found errors in JSON library (the error
+  message was garbled).
+
 * Fixed some bugs in the new JSON parser.  The first byte of a UTF-8
   sequence was being dropped and comments were only allowed immediately
-  in front of values.
+  in front of values.  There was also a problem with Unicode escape sequences
+  in strings that has been fixed.
 
 === Successor ML
 
