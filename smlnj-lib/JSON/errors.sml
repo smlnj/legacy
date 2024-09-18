@@ -24,7 +24,6 @@ structure Errors : sig
     exception JSONError of exn * JSON.value
 
     (* specific errors that are used as the first argument to `JSONError` *)
-    exception Failure of string
     exception NotNull
     exception NotBool
     exception NotInt
