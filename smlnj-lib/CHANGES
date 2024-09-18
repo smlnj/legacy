@@ -5,6 +5,14 @@ correspond to SML/NJ releases (past and future).
 SML/NJ 110.99.6
 -------------------
 
+[2024-09-18]
+        Refactored how error exceptions are used in the `JSONDecode` and `JSONUtil`
+        modules.  The new design, which follows the Basis Library pattern of
+        the `IO.Io` exception, uses a single `JSONError` exception for all errors.
+        The `JSONError` exception has two arguments: the first is an exception
+        that details the particular kind of error and the second is the JSON value
+        that was being processed when the error was detected.
+
 [2024-09-09]
 	Merged pull request #322 (Remove useless branches in `HashSetFn.insert`).
 
