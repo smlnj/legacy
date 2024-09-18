@@ -479,8 +479,8 @@ structure ContractPrim : sig
                   | PUREinfo(P.EXTEND_INF m, [u, _]) => if (p >= m)
                       (* TRUNC(∞,p) o EXTEND(m,∞) ==> EXTEND(m,p) when (p >= m) *)
                       then Pure(P.EXTEND{from=m, to=p}, [u])
-                      (* TRUNC(∞,p) o EXTEND(m,∞) ==> COPY(m,p) when (m > p) *)
-                      else mkCOPY(m, p, u)
+                      (* TRUNC(∞,p) o EXTEND(m,∞) ==> TRUNC(m,p) when (m > p) *)
+                      else Pure(P.TRUNC{from=m, to=p}, [u])
                   | _ => None
                 (* end case *))
 	    (***** Other primops *****)
