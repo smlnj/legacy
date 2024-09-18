@@ -104,14 +104,25 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //////////////////////////////////////////////////////////////////////
 
 //====================================================================
-== Recent updates
+//== Recent updates
+
+//====================================================================
+== Version 110.99.6; 2024/09/19
+
+//--------------------------------------------------------------------
+[2024/09/17]::
+Fix for {issue-base}/320[Issue #320 (`TimeLimit.timeLimit` immediately
+throws exception on Windows)].  This fix was a minor change to the runtime
+system code.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
 
 //--------------------------------------------------------------------
 [2024/08/20]::
 Taking advantage of the previous change by moving the fusion of
 integer/word conversions to the `ContractPrim` structure.  This
 change means that conversions do not have to be adjacent in the
-CPS IR to be composed.  Also addded some missing identities for
+CPS IR to be composed.  Also added some missing identities for
 the conversions.
 +
 owner:cs.uchicago.edu/~jhr[John Reppy]

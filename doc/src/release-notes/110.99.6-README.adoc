@@ -1,5 +1,5 @@
 :version: 110.99.6
-:date: @DATE@
+:date: September 19, 2024
 :dist-dir: https://smlnj.org/dist/working/{version}/
 :history: {dist-dir}HISTORY.html
 :issue-base: https://github.com/smlnj/legacy/issues/
@@ -36,7 +36,12 @@ but it also contains a number of minor bug fixes.
 
 == Details
 
-// **** details: include those sections that are relevant
+=== Compiler
+
+* The fusing of conversions between integer and word types has been improved.
+  Basically, we have switched from only fusing operations that are adjacent
+  in the CPS IR to fusing operations that are logically adjacent (_i.e._, there
+  is a def-use dependency between them).
 
 === SML/NJ Library
 
@@ -55,6 +60,15 @@ In addition, the following changes were made:
   sequence was being dropped and comments were only allowed immediately
   in front of values.  There was also a problem with Unicode escape sequences
   in strings that has been fixed.
+
+ * Refactored how error exceptions are used in the `JSONDecode` and `JSONUtil`
+  modules.  The new design, which follows the Basis Library pattern of
+  the `IO.Io` exception, uses a single `JSONError` exception for all errors.
+  The `JSONError` exception has two arguments: the first is an exception
+  that details the particular kind of error and the second is the JSON value
+  that was being processed when the error was detected.
+  Note that this change will break code that is explicitly matching on the
+  exceptions defined in the `JSONDecode` and `JSONUtil` modules.
 
 === Installation
 
@@ -86,12 +100,12 @@ gforge bug tracker.
 | [.bugid]#315#
 | {issue-base}/315[Support macOS 15 Sequoia]
 | n.a.
+| [.bugid]#320#
+| {issue-base}/320[`TimeLimit.timeLimit` immediately throws exception on Windows]
 | [.bugid]#323#
 | {issue-base}/323[Can't build 2024.2 because of problem with ASDL C++ library]
 | n.a.
 |=======
-
-// ***** include a list of unnumbered bugs here *****
 
 == Supported systems
 
