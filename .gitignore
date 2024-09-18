@@ -101,6 +101,8 @@ autom4te.cache
 
 ## Repo-specific files
 
+preloads.standard
+./sml.boot.*
 asdl/Makefile
 asdl/examples/Makefile
 asdl/doc/Makefile
@@ -137,10 +139,12 @@ base/runtime/objs/gen-unix-sigtbl
 base/runtime/objs/ml-sizes.h
 base/runtime/objs/mlstate-offsets.h
 base/runtime/objs/prim.s
+base/runtime/objs/reg-mask.h
 base/runtime/objs/run.*
 base/runtime/objs/runx.*
 base/runtime/objs/system-signals.h
 base/runtime/objs/unix-sigtbl.c
+base/runtime/objs/win32-sigtbl.c
 base/runtime/**/v-*
 base/system/sml.boot*
 base/system/sml.*-*
