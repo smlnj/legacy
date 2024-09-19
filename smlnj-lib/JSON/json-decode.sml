@@ -7,19 +7,23 @@
 structure JSONDecode :> sig
 
     (* exceptions used as errors; note that most of these come from the
-     * JSONUtil module.
+     * JSONUtil module.  The standard practice is to raise `JSONError(ex, v)`
+     * for an error on JSON value `v`, where `ex` specifies more detail about
+     * the actual error.
      *)
-    exception Failure of string * JSON.value
-    exception NotNull of JSON.value
-    exception NotBool of JSON.value
-    exception NotInt of JSON.value
-    exception NotNumber of JSON.value
-    exception NotString of JSON.value
-    exception NotObject of JSON.value
-    exception FieldNotFound of JSON.value * string
-    exception NotArray of JSON.value
-    exception ArrayBounds of JSON.value * int
-    exception ElemNotFound of JSON.value
+    exception JSONError of exn * JSON.value
+
+    (* specific errors that are used as the first argument to `JSONError` *)
+    exception NotNull
+    exception NotBool
+    exception NotInt
+    exception NotNumber
+    exception NotString
+    exception NotObject
+    exception FieldNotFound of string
+    exception NotArray
+    exception ArrayBounds of int
+    exception ElemNotFound
 
     val exnMessage : exn -> string
 
@@ -88,7 +92,7 @@ structure JSONDecode :> sig
     (* `succeed v` returns a decoder that always yields `v` for any JSON input *)
     val succeed : 'a -> 'a decoder
 
-    (* `fail msg` returns a decoder that raises `Failure(msg, jv)` for
+    (* `fail msg` returns a decoder that raises `JSONError(Fail msg, jv)` for
      * any JSON input `jv`.
      *)
     val fail : string -> 'a decoder
@@ -146,29 +150,29 @@ structure JSONDecode :> sig
           (decode decoder (JSONParser.parseFile fname))
 
     fun asBool (BOOL b) = b
-      | asBool v = raise NotBool v
+      | asBool v = notBool v
     val bool = D asBool
 
     fun asInt jv = (case jv
            of INT n => Int.fromLarge n
-            | _ => raise NotInt jv
+            | _ => notInt jv
           (* end case *))
     val int = D asInt
 
     fun asIntInf (INT n) = n
-      | asIntInf v = raise NotInt v
+      | asIntInf v = notInt v
     val intInf = D asIntInf
 
     fun asNumber (INT n) = Real.fromLargeInt n
       | asNumber (FLOAT f) = f
-      | asNumber v = raise NotNumber v
+      | asNumber v = notNumber v
     val number = D asNumber
 
     fun asString (STRING s) = s
-      | asString v = raise NotString v
+      | asString v = notString v
     val string = D asString
 
-    fun null dflt = D(fn NULL => dflt | jv => raise NotNull jv)
+    fun null dflt = D(fn NULL => dflt | jv => notNull jv)
 
     val raw = D(fn jv => jv)
 
@@ -183,7 +187,7 @@ structure JSONDecode :> sig
           fun decodeList ([], elems) = List.rev elems
             | decodeList (jv::jvs, elems) = decodeList(jvs, elemDecoder jv :: elems)
           fun decoder (ARRAY elems) = decodeList (elems, [])
-            | decoder jv = raise NotArray jv
+            | decoder jv = notArray jv
           in
             D decoder
           end
@@ -200,9 +204,9 @@ structure JSONDecode :> sig
     fun field key valueDecoder = D(fn jv => (case jv
            of OBJECT fields => (case List.find (fn (l, v) => (l = key)) fields
                  of SOME(_, v) => decode valueDecoder v
-                  | _ => raise FieldNotFound(jv, key)
+                  | _ => fieldNotFound(key, jv)
                 (* end case *))
-            | _ => raise NotObject jv
+            | _ => notObject jv
           (* end case *)))
 
     fun reqField key valueDecoder k = seq (field key valueDecoder) k
@@ -232,19 +236,19 @@ structure JSONDecode :> sig
     fun sub i (D d) = D(fn jv => (case jv
            of jv as ARRAY arr => let
                 fun get (0, item::_) = d item
-                  | get (_, []) = raise ArrayBounds(jv, i)
+                  | get (_, []) = arrayBounds(i, jv)
                   | get (i, _::r) = get (i-1, r)
                 in
-                  if (i < 0) then raise ArrayBounds(jv, i) else get (i, arr)
+                  if (i < 0) then arrayBounds(i, jv) else get (i, arr)
                 end
-            | _ => raise NotArray jv
+            | _ => notArray jv
           (* end case *)))
 
     fun at path (D d) = D(fn jv => d (U.get(jv, path)))
 
     fun succeed x = D(fn _ => x)
 
-    fun fail msg = D(fn jv => raise Failure(msg, jv))
+    fun fail msg = D(fn jv => failure(msg, jv))
 
     fun andThen f (D d) = D(fn jv => decode (f (d jv)) jv)
 

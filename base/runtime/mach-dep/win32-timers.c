@@ -8,7 +8,6 @@
 
 #include <windows.h>
 #include <sys/types.h>
-#define _USE_32BIT_TIME_T /* since we only support 32-bit windows */
 #include <sys/timeb.h>
 #include "ml-base.h"
 #include "vproc-state.h"
