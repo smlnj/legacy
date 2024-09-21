@@ -102,6 +102,7 @@ gforge bug tracker.
 | n.a.
 | [.bugid]#320#
 | {issue-base}/320[`TimeLimit.timeLimit` immediately throws exception on Windows]
+| n.a.
 | [.bugid]#323#
 | {issue-base}/323[Can't build 2024.2 because of problem with ASDL C++ library]
 | n.a.
