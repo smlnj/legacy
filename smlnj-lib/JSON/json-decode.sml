@@ -44,6 +44,12 @@ structure JSONDecode :> sig
     (* returns the raw JSON value without further decoding *)
     val raw : JSON.value decoder
 
+    (* decides a JSON OBJECT into a list of labeled JSON values *)
+    val rawObject : (string * JSON.value) list decoder
+
+    (* decides a JSON ARRAY into a vector of JSON values *)
+    val rawArray : JSON.value vector decoder
+
     (* returns a decoder that maps the JSON `null` value to `NONE` and otherwise
      * returns `SOME v`, where `v` is the result of decoding the value using
      * the supplied decoder.
@@ -154,7 +160,8 @@ structure JSONDecode :> sig
     val bool = D asBool
 
     fun asInt jv = (case jv
-           of INT n => Int.fromLarge n
+           of INT n =>
+                (Int.fromLarge n handle Overflow => raise (JSONError(Overflow, jv)))
             | _ => notInt jv
           (* end case *))
     val int = D asInt
@@ -176,6 +183,10 @@ structure JSONDecode :> sig
 
     val raw = D(fn jv => jv)
 
+    val rawObject = D(fn (OBJECT fields) => fields | jv => notObject jv)
+
+    val rawArray = D(fn (ARRAY elems) => Vector.fromList elems | jv => notArray jv)
+
     fun nullable (D decoder) = let
           fun decoder' NULL = NONE
             | decoder' jv = SOME(decoder jv)
@@ -192,7 +203,7 @@ structure JSONDecode :> sig
             D decoder
           end
 
-    fun try (D d) = D(fn jv => (SOME(d jv) handle _ => NONE))
+    fun try (D d) = D(fn jv => (SOME(d jv) handle JSONError _ => NONE | ex => raise ex))
 
     fun seq (D d1) (D d2) = D(fn jv => let
           val v = d1 jv
@@ -252,7 +263,11 @@ structure JSONDecode :> sig
 
     fun andThen f (D d) = D(fn jv => decode (f (d jv)) jv)
 
-    fun orElse (D d1, D d2) = D(fn jv => (d1 jv handle _ => d2 jv))
+    fun orElse (D d1, D d2) =
+          (* try the first decoder.  If it fails with a `JSONError` exception, then
+           * we try the second.
+           *)
+          D(fn jv => (d1 jv handle JSONError _ => d2 jv | ex => raise ex))
 
     (* `choose [d1, ..., dn]` is equivalent to
      * `orElse(d1, orElse(d2, ..., orElse(dn, fail "no choice") ... ))`

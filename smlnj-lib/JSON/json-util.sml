@@ -41,10 +41,11 @@ structure JSONUtil : sig
      *)
     val exnMessage : exn -> string
 
-    (* conversion functions for atomic values.  These raise the corresponding
-     * "NotXXX" exceptions when their argument has the wrong shape.  Also note
-     * that asNumber will accept both integers and floats and asInt may raise
-     * Overflow if the number is too large.
+    (* conversion functions for atomic values.  These raise the JSONError exception
+     * wrapped around the corresponding "NotXXX" exceptions when their argument
+     * has the wrong shape.  Also note that asNumber will accept both integers and
+     * floats and asInt may raise `JSONError(Overflow, ...)` if the number is too
+     * large.
      *)
     val asBool : JSON.value -> bool
     val asInt : JSON.value -> Int.int

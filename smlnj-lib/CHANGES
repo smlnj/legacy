@@ -2,6 +2,15 @@ This is a list of changes to the SML/NJ Library; the version numbers
 correspond to SML/NJ releases (past and future).
 
 --------------------------------------------------------------------------------
+SML/NJ 110.99.7
+-------------------
+
+[2024-09-20]
+        Added `rawArray` and `rawObject` decoders to the `JSONDecode` structure.
+        Be more consistent about using the `JSONError` exception to signal
+        decoding failures.
+
+--------------------------------------------------------------------------------
 SML/NJ 110.99.6
 -------------------
 

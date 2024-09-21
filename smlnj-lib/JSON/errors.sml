@@ -69,6 +69,7 @@ structure Errors : sig
 	  in
 	    case exn
 	     of Fail msg => String.concat["Failure: ", msg]
+              | Overflow => "integer too large"
               | NotNull => String.concat[
 		    "expected 'null', but found ", v2s v
 		  ]
