@@ -12,7 +12,7 @@ SHELL =		/bin/sh
 MAKE =		make
 # Explicitly stating the target to let Arm machines use x64 system headers
 # and assembler.
-AS =		/usr/bin/as -arch x86_64
+AS =		/usr/bin/as -target x86_64-apple-darwin
 CC =		/usr/bin/clang -m64 -std=c99 -target x86_64-apple-darwin
 CFLAGS =	-g -O2 -D_DARWIN_C_SOURCE
 CPP =           /usr/bin/clang -x assembler-with-cpp -E -P -std=c99
