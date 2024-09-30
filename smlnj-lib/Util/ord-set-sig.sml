@@ -52,15 +52,15 @@ signature ORD_SET =
     (* return true if and only if the set is empty *)
     val isEmpty : set -> bool
 
+    (* return the smallest element of the set (raises Empty if the set is empty).
+     * Added in SML/NJ 110.80.
+     *)
     val minItem : set -> item
-	(* return the smallest element of the set (raises Empty if the set is empty).
-         * Added in SML/NJ 110.80.
-         *)
 
+    (* return the largest element of the set (raises Empty if the set is empty).
+     * Added in SML/NJ 110.80.
+     *)
     val maxItem : set -> item
-	(* return the largest element of the set (raises Empty if the set is empty).
-         * Added in SML/NJ 110.80.
-         *)
 
     (* return true if and only if the two sets are equal *)
     val equal : (set * set) -> bool
