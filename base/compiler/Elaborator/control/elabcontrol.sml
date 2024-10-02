@@ -72,6 +72,8 @@ structure ElabControl : ELAB_CONTROL =
 
     val printAbsyn = ref false
 
+    val ovlddisable = onew ("ovld-disable", "disable overloading", false)
+
   (***** Controls for warning messages *****)
 
 (* NOTE: we currently disable this check because of false positives for

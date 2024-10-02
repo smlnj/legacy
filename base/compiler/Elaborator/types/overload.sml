@@ -18,7 +18,8 @@ signature OVERLOAD =
 	    resolve : StaticEnv.staticEnv -> unit
 	  }
 
-    val debugging : bool ref (* = ElabControl.debugging = Control.Elab.debugging *)
+    val debugging : bool ref (* = ElabControl.ovlddebugging = Control.Elab.ovlddebugging *)
+    val disable : bool ref (* = ElabControl.ovlddisable = Control.Elab.ovlddisable *)
 
   end  (* signature OVERLOAD *)
 
@@ -26,6 +27,7 @@ structure Overload : OVERLOAD =
   struct
 
     val debugging = ElabControl.ovlddebugging
+    val disable = ElabControl.ovlddisable
 
     structure EM = ErrorMsg
     structure BT = BasicTypes
@@ -49,8 +51,37 @@ structure Overload : OVERLOAD =
    *)
     type num_info = IntInf.int * string * Ty.ty * ErrorMsg.complainer
 
+  (* stub *)
+    fun new_stub () =
+        let
+          fun pushvar (varref as ref (VC.OVLDvar{name,variants}), region, err) =
+              let val defaultTy = OLV.defaultTy name
+                  val defaultVar :: _ = variants
+                  val scheme = OLV.symToScheme name
+              in
+                TU.applyTyfun(scheme, [defaultTy])
+              end
+            | pushvar _ = bug "Overload.pushvar"
+          fun pushlit (info as (_,_,ty as Ty.VARty tyvar,_)) =
+              (case !tyvar
+                of Ty.OVLDI _ => tyvar := Ty.INSTANTIATED BT.intTy
+                 | Ty.OVLDW _ => tyvar := Ty.INSTANTIATED BT.wordTy
+                 | Ty.INSTANTIATED ty => ()
+                 | _ => bug "Ovarload.pushlit";
+               ty)
+
+          (* No need to resolve, since OVLDs not generated *)
+          fun resolve _ = ()
+        in
+          {
+            pushv = pushvar,
+            pushl = pushlit,
+            resolve = resolve
+          }
+        end
+
   (* overloaded functions *)
-    fun new () =
+    fun new_real () =
 	let (* the overloaded variable and literal stacks *)
 	  val overloadedvars = ref (nil: (VC.var ref * Ty.tyvar * ErrorMsg.complainer) list)
 	  val overloadedlits = ref (nil: num_info list)
@@ -142,5 +173,10 @@ structure Overload : OVERLOAD =
 	 in
 	    {pushv = pushvar, pushl = pushlit, resolve = resolve}
 	 end (* new *)
+
+    fun new () =
+      if !disable
+        then new_stub ()
+        else new_real ()
 
   end (* structure Overload *)

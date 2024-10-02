@@ -26,6 +26,7 @@ signature ELAB_CONTROL =
     val unidebugging : bool ref
 	(* Unify *)
     val ovlddebugging : bool ref
+    val ovlddisable : bool ref
 	(* Overload *)
     val instantiateSigs : bool ref
 	(* ElabMod, Control_MC *)
