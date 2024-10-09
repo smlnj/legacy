@@ -1,11 +1,15 @@
-(*
- * Pathname handling for CM.
+(* srcpath-lib.cm
  *
- * (C) 1999 Lucent Technologies, Bell Laboratories
+ * COPYRIGHT (c) 2021 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
  *
  * Author: Matthias Blume (blume@kurims.kyoto-u.ac.jp)
  *)
+
 Library
-	group($cm/paths/srcpath-lib.cm)
+
+  group($cm/paths/srcpath-lib.cm)
+
 is
-	$cm/paths/srcpath-lib.cm
+
+  $cm/paths/srcpath-lib.cm

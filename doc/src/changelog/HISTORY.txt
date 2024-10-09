@@ -104,7 +104,18 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //////////////////////////////////////////////////////////////////////
 
 //====================================================================
-//== Recent updates
+== Recent updates
+
+//--------------------------------------------------------------------
+[2024/10/09]::
+Changed the version banner to match the format used in the development
+repository.  The main change is that the release date is printed,
+instead of the date when the particular heap image was built.  This
+change should make the packaging of *SML/NJ* easier for some systems.
+Also changed the startup behavior so that if the `@SMLquiet` command-line
+option is specified, then the banner is not printed.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
 
 //====================================================================
 == Version 110.99.6; 2024/09/19
