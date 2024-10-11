@@ -107,6 +107,13 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
+[2024/10/11]::
+Added `Unsafe.Array.create0`, which is a function for creating zero-length
+polymorphic arrays.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2024/10/09]::
 Changed the version banner to match the format used in the development
 repository.  The main change is that the release date is printed,
