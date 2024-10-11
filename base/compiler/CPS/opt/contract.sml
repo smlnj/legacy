@@ -2,10 +2,6 @@
  *
  * COPYRIGHT (c) 2024 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
- *
- * TODO: since we now track variables defined by ARITH and PURE, we can move
- * the fusion of integer/word conversions to `ContractPrim`, which should cover
- * more situations.
  *)
 
 (*
@@ -235,13 +231,13 @@ fun call(VAR v) =
     end
   | call(LABEL v) = call(VAR v)
   | call _ = ()
-fun call_less(VAR v) = if deadup then
+fun callLess(VAR v) = if deadup then
                          let val {called,used,...} = get v
 			 in  dec called; dec used
 			 end
 		       else ()
-  | call_less(LABEL v) = call_less(VAR v)
-  | call_less _ = ()
+  | callLess(LABEL v) = callLess(VAR v)
+  | callLess _ = ()
 fun call_and_clobber(VAR v) =
     let val {called,used,info} = get v
     in  inc called; inc used;
@@ -409,9 +405,9 @@ fun newnames(v::vl, w::wl) = (newname(v,w); newnames(vl,wl))
 (* This should match up closely with pass1 above.                    *)
 (*********************************************************************)
 local val useLess = useLess o ren
-      val call_less = call_less o ren
+      val callLess = callLess o ren
 in
-fun drop_body (APP(f,vl)) = (call_less f; app useLess vl)
+fun drop_body (APP(f,vl)) = (callLess f; app useLess vl)
   | drop_body (SELECT(_,v,_,_,e)) = (useLess v; drop_body e)
   | drop_body (OFFSET(_,v,_,e)) = (useLess v; drop_body e)
   | drop_body (RECORD(_,vl,_,e)) = (app (useLess o #1) vl; drop_body e)
@@ -565,7 +561,7 @@ and g hdlr = let
 				    case body
 				     of ref(SOME b) => (
 					  newnames(args, vl');
-					  call_less f';
+					  callLess f';
 					  app useLess vl';
 					  body := NONE;
 					  g' b)
