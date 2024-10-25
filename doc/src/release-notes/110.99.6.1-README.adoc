@@ -1,0 +1,199 @@
+:version: 110.99.6.1
+:date: October 25, 2024
+:dist-dir: https://smlnj.org/dist/working/{version}/
+:history: {dist-dir}HISTORY.html
+:issue-base: https://github.com/smlnj/legacy/issues/
+:pull-base: https://github.com/smlnj/legacy/pull/
+:stem: latexmath
+:source-highlighter: pygments
+:stylesheet: release-notes.css
+:notitle:
+
+= Standard ML of New Jersey Release Notes
+
+[subs=attributes]
+++++
+<div class="smlnj-banner">
+  <span class="title"> Standard ML of New Jersey <br/> Release Notes </span>
+  <br/> <br/>
+  <span class="subtitle"> Version {version} <br/> {date} </span>
+</div>
+++++
+
+''''''''
+--
+SML/NJ HOME::
+  https://www.smlnj.org/index.html[[.tt]#https://smlnj.org#]
+FILES::
+  {dist-dir}index.html[[.tt]#{dist-dir}#]
+--
+''''''''
+
+== Patch Release 110.99.6.1
+
+This patch release fixes a critical bug in 110.99.6.  In addition, there are
+three other minor changes that were planned for 110.99.7.  The changes
+are:
+
+* Fix for Issue #328 (`Real.fromString` broken in 110.99.5 and 110.99.6)
+
+* Added `Unsafe.Array.create0` for creating zero-length polymorphic arrays.
+
+* Changed the version banner to match the format used in the development
+  repository.  This change means that the release date will be displayed
+  instead of the build date.
+
+* Added `rawArray` and `rawObject` decoders to the `JSONDecode` structure
+  in the SML/NJ Library.
+
+The remainder of this document consists of the 110.99.6 release notes.
+
+== Summary
+
+The primary purpose of this release is to enable support for **macOS** 15 (Sequoia),
+but it also contains a number of minor bug fixes.
+
+== Details
+
+=== Compiler
+
+* The fusing of conversions between integer and word types has been improved.
+  Basically, we have switched from only fusing operations that are adjacent
+  in the CPS IR to fusing operations that are logically adjacent (_i.e._, there
+  is a def-use dependency between them).
+
+=== SML/NJ Library
+
+There were a number of bug fixes to the Library (see the **Bugs** section below).
+In addition, the following changes were made:
+
+* Added the `combineWith` function to the various implementations of the
+  `ORD_SET` signature.
+
+* Some minor improvements to hash sets and integer hash tables.
+
+* Fixed the reporting of field-not-found errors in JSON library (the error
+  message was garbled).
+
+* Fixed some bugs in the new JSON parser.  The first byte of a UTF-8
+  sequence was being dropped and comments were only allowed immediately
+  in front of values.  There was also a problem with Unicode escape sequences
+  in strings that has been fixed.
+
+ * Refactored how error exceptions are used in the `JSONDecode` and `JSONUtil`
+  modules.  The new design, which follows the Basis Library pattern of
+  the `IO.Io` exception, uses a single `JSONError` exception for all errors.
+  The `JSONError` exception has two arguments: the first is an exception
+  that details the particular kind of error and the second is the JSON value
+  that was being processed when the error was detected.
+  Note that this change will break code that is explicitly matching on the
+  exceptions defined in the `JSONDecode` and `JSONUtil` modules.
+
+=== Installation
+
+Installation on **macOS** 15 (Sequoia) is now supported.
+
+== Bugs
+
+Here is a list of the issues that are fixed (or closed) with this release.
+We include the original bug numbers for bugs that were reported using the
+gforge bug tracker.
+
+[.buglist,cols="^1,<10,^2",strips="none",options="header"]
+|=======
+| Issue
+| Description
+| Gforge Bug
+| [.bugid]#305#
+| {issue-base}/305[`Date.date` incorrectly modifies local time with timezone offset]
+| n.a.
+| [.bugid]#310#
+| {issue-base}/310[`HashSetFn.isSubset` function accesses out of bound element]
+| n.a.
+| [.bugid]#313#
+| {issue-base}/313[`Random.randRange` when low = hi]
+| n.a.
+| [.bugid]#314#
+| {issue-base}/314[Wrong description of brace syntax in RegExp Library in SML of NJ Library]
+| n.a.
+| [.bugid]#315#
+| {issue-base}/315[Support macOS 15 Sequoia]
+| n.a.
+| [.bugid]#320#
+| {issue-base}/320[`TimeLimit.timeLimit` immediately throws exception on Windows]
+| n.a.
+| [.bugid]#323#
+| {issue-base}/323[Can't build 2024.2 because of problem with ASDL C++ library]
+| n.a.
+|=======
+
+== Supported systems
+
+We believe that SML/NJ will build and run on the following systems, but have only
+tested some of them:
+
+[.support-table,cols="^2s,^4v,^3v",options="header",strips="none"]
+|=======
+| Architecture | Operating System | Status
+| AMD64 | FreeBSD 12.0 |
+| | macOS 10.14 (Mojave) |
+| | macOS 10.15 (Catalina) |
+| | macOS 11 (Big Sur) |
+| | macOS 12 (Monterey) | Tested
+| | macOS 13 (Ventura) | Tested
+| | macOS 14 (Sonoma) | Tested
+| | macOS 15 (Sequoia) | Tested
+| | Ubuntu 20.04.6 LTS | Tested
+| | Ubuntu 22.04.4 LTS | Tested
+| {nbsp} | |
+| Power PC | Mac OS X 10.5 (Leopard) |
+| | AIX |
+| {nbsp} | |
+| Sparc | Solaris |
+| | Linux |
+| {nbsp} | |
+| x86 (32-bit) | Mac OS X 10.6 (Snow Leopard) |
+| | Mac OS X 10.7 (Lion) |
+| | Mac OS X 10.8 (Mountain Lion) |
+| | Mac OS X 10.9 (Mavericks) |
+| | Mac OS X 10.10 (Yosemite) |
+| | Mac OS X 10.11 (El Capitan) |
+| | macOS 10.12 (Sierra) |
+| | macOS 10.13 (High Sierra) |
+| | macOS 10.14 (Mojave) |
+| | macOS 10.15 (Catalina) |
+| | Ubuntu 16.04.3 LTS |
+| | Other Linux variants |
+| | FreeBSD 12.0 |
+| | Other BSD variants |
+| | Windows 7 |
+| | Windows 10 |
+| | Cygwin (32-bit) |
+| {nbsp} | |
+|=======
+
+The system also works on Apple Silicon using Rosetta2.
+
+=== 32-bit macOS issues
+
+While the {dist-dir}smlnj-x86-{version}.pkg[x86 installer]
+for {version} works on **macOs** 10.14 Mojave, building from source
+requires some extra steps because the version of **Xcode**
+distributed for Mojave does not include a 32-bit SDK.
+
+Another issue that you may encounter
+when building on **macOs** 10.14 Mojave is an error message for a shell
+script of the form
+
+.....
+  /bin/sh: bad interpreter: Operation not permitted
+.....
+
+This error arises because the `com.apple.quarantine` attribute is set on the
+shell script.  To fix the problem, remove the attribute using the command
+
+[source,shell]
+-----
+  xattr -d com.apple.quarantine shell-script
+-----
+and resume the build.
