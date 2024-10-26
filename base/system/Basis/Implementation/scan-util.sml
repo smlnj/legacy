@@ -55,8 +55,9 @@ structure ScanUtil : sig
   end = struct
 
   (* A table for mapping digits to values.  Whitespace characters map to
-   * 128, "+" maps to 129, "-","~" map to 130, and the characters 0-9,A-Z,a-z
-   * map to their base-36 value.  All other characters map to 255.
+   * 128, "+" maps to 129, "-","~" map to 130, "." maps to 131, and the
+   * characters 0-9,A-Z,a-z map to their base-36 value.  All other
+   * characters map to 255.
    *)
     val cvtTable = "\
 	  \\255\255\255\255\255\255\255\255\255\128\128\255\255\255\255\255\
