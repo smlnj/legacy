@@ -111,8 +111,8 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 
 //--------------------------------------------------------------------
 [2024/10/25]::
-Fix for {issue-base}/320[Issue #328 (`Real.fromString` broken in
-110.99.5 and 110.99.6).
+Fix for {issue-base}/328[Issue #328 (`Real.fromString` broken in
+110.99.5 and 110.99.6)].
 +
 owner:cs.uchicago.edu/~jhr[John Reppy]
 
@@ -142,6 +142,13 @@ owner:cs.uchicago.edu/~jhr[John Reppy]
 Fix for {issue-base}/320[Issue #320 (`TimeLimit.timeLimit` immediately
 throws exception on Windows)].  This fix was a minor change to the runtime
 system code.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
+[2024/09/17]::
+Fix for {issue-base}/305[Issue #305 (`Date.date` incorrectly modifies
+local time with timezone offset)].
 +
 owner:cs.uchicago.edu/~jhr[John Reppy]
 
