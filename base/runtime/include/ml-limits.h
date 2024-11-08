@@ -6,8 +6,8 @@
  * Various limits and default settings for the SML/NJ run-time system.
  */
 
-#ifndef _ML_DEFAULTS_
-#define _ML_DEFAULTS_
+#ifndef _ML_LIMITS_
+#define _ML_LIMITS_
 
 #include "ml-base.h"
 
@@ -107,5 +107,5 @@
 #define POLL_GRAIN_BITS 10       /* log_2 POLL_GRAIN_CPSI */
 #endif
 
-#endif /* !_ML_DEFAULTS_ */
+#endif /* !_ML_LIMITS_ */
 

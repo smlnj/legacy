@@ -104,7 +104,16 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //////////////////////////////////////////////////////////////////////
 
 //====================================================================
-//== Recent updates
+== Recent updates
+
+//--------------------------------------------------------------------
+[2024/11/08]::
+Collecting basic statistics about memory allocation and GC is now
+enabled by default in the garbage collector.  These statistics are
+made available to *SML* code by two new functions in the runtime
+*C* library.  They will be given *SML* bindings in the next release.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
 
 //====================================================================
 == Version 110.99.6.1; 2024/10/25
