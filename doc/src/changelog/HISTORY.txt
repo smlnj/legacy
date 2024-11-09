@@ -108,6 +108,17 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 
 //--------------------------------------------------------------------
 [2024/11/08]::
+Added a temporary fix for Issue #329 (`Date.fmt` fails on the `%Z`
+specifier for hand-constructed dates) to the runtime-system's
+`_ml_Date_strftime` function.  A better fix will be to use the `mktime`
+function as part of the date normalization process in the `Data`
+module, but that will require adding a new function to the date
+*C* library.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
+[2024/11/08]::
 Collecting basic statistics about memory allocation and GC is now
 enabled by default in the garbage collector.  These statistics are
 made available to *SML* code by two new functions in the runtime
