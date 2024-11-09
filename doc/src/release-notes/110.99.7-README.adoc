@@ -49,6 +49,9 @@ FILES::
 
 === Runtime System
 
+* Collecting basic statistics about memory allocation and GC is now
+  enabled by default in the garbage collector.
+
 === Basis Library
 
 * Added `Unsafe.Array.create0` for creating zero-length polymorphic arrays.
@@ -79,6 +82,9 @@ gforge bug tracker.
 | Gforge Bug
 | [.bugid]#328#
 | {issue-base}/328[`Real.fromString` broken in 110.99.5 and 110.99.6]
+| n.a.
+| [.bugid]#329#
+| {issue-base}/329[`Date.fmt` fails on the `%Z` specifier for hand-constructed dates]
 | n.a.
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
