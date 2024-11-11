@@ -64,10 +64,12 @@ struct heap {
 					/* of big objects. */
     ml_val_t	    *weakList;		/* A list of weak pointers forwarded*/
 					/* during GC. */
-    cntr_t	    numAlloc;		/* Keep track of the number of bytes */
-					/* allocated and the number copied into */
-    cntr_t	    numCopied		/* each arena. */
-			[MAX_NUM_GENS][NUM_ARENAS];
+    cntr_t	    numAlloc;		/* Number of bytes allocated in the nursery */
+    cntr_t          numAlloc1;          /* Number of bytes allocated directly in the
+                                         * first generation (e.g., for large strings)
+                                         */
+    cntr_t	    numCopied[MAX_NUM_GENS][NUM_ARENAS];
+                                        /* number of bytes copied into each arena */
     int		    numMinorGCs;	/* The number of times the allocation space */
 					/* has been collected. */
 #ifdef HEAP_MONITOR

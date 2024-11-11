@@ -331,6 +331,7 @@ void ResetGCStats (heap_t *heap)
 
     heap->numMinorGCs = 0;
     CNTR_ZERO(&(heap->numAlloc));
+    CNTR_ZERO(&(heap->numAlloc1));
     for (i = 0;  i < heap->numGens;  i++) {
         heap->gen[i]->numGCs = 0;
 	for (j = 0;  j < NUM_ARENAS;  j++) {
@@ -364,7 +365,7 @@ void GetGCStats (ml_state_t *msp, gc_stats_t *statsOut)
     CNTR_INCR(&(heap->numAlloc), nbytesAlloc);
     statsOut->allocCnt = ROUND_COUNT(&heap->numAlloc);
 
-    statsOut->allocFirstCnt = 0;  /* FIXME */
+    statsOut->allocFirstCnt = ROUND_COUNT(&heap->numAlloc1);
 
     statsOut->numGCs[0] = heap->numMinorGCs;
     for (i = 0;  i < heap->numGens;  ++i) {

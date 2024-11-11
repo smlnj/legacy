@@ -31,6 +31,7 @@
 #endif
 
 #ifdef COLLECT_STATS
+/* FIXME: this is redundant, since we now always track allocation */
 #define COUNT_ALLOC(msp, nbytes)	{	\
 	heap_t		*__h = msp->ml_heap;	\
 	CNTR_INCR(&(__h->numAlloc), (nbytes));	\
@@ -148,6 +149,7 @@ ml_val_t ML_AllocRaw (ml_state_t *msp, Word_t nwords)
 	    ap->nextw += nwords;
             ASSERT(ap->nextw < ap->tospTop);
 	END_CRITICAL_SECT(MP_GCGenLock)
+        CNTR_INCR(&msp->ml_heap->numAlloc1, szb);
 	COUNT_ALLOC(msp, szb);
     }
     else {
@@ -228,6 +230,7 @@ ml_val_t ML_AllocRaw64 (ml_state_t *msp, Word_t nelems)
 	    res = PTR_CtoML(ap->nextw);
 	    ap->nextw += nwords;
 	END_CRITICAL_SECT(MP_GCGenLock)
+        CNTR_INCR(&msp->ml_heap->numAlloc1, szb);
 	COUNT_ALLOC(msp, szb);
     }
     else {
@@ -352,6 +355,7 @@ ml_val_t ML_AllocArrayData (ml_state_t *msp, Word_t len, ml_val_t initVal)
 	    ap->nextw += len;
 	    ap->sweep_nextw = ap->nextw;
 	END_CRITICAL_SECT(MP_GCGenLock)
+        CNTR_INCR(&msp->ml_heap->numAlloc1, szb);
 	COUNT_ALLOC(msp, szb);
     }
     else {
@@ -428,6 +432,7 @@ ml_val_t ML_AllocVector (ml_state_t *msp, Word_t len, ml_val_t initVal)
 	    ap->nextw += len;
 	    ap->sweep_nextw = ap->nextw;
 	END_CRITICAL_SECT(MP_GCGenLock)
+        CNTR_INCR(&msp->ml_heap->numAlloc1, szb);
 	COUNT_ALLOC(msp, szb);
     }
     else {
