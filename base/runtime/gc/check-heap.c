@@ -132,6 +132,26 @@ void CheckHeap (heap_t *heap, int maxSweptGen)
 
 } /* end of CheckHeap */
 
+/* SeqHdrKind:
+ * return a string describing the kind of sequence header.
+ */
+PVT char *SeqHdrKind (ml_val_t desc)
+{
+    bool_t isVec = (GET_TAG(desc) == DTAG_vec_hdr);
+
+    switch (GET_LEN(desc)) {
+      case SEQ_poly:
+        return (isVec ? "vector" : "array");
+      case SEQ_word8:
+        return (isVec ? "byte-vector" : "byte-array");
+      case SEQ_real64:
+        return (isVec ? "real-vector" : "real-array");
+      default:
+        return (isVec ? "unknown-vector" : "unknown-array");
+    }
+
+} /* end of SeqHdrKind */
+
 /* CheckRecordArena:
  *
  * Check the record arena.
@@ -167,7 +187,7 @@ PVT void CheckRecordArena (arena_t *ap)
 		if (isDESC(w)) {
 		    ERROR;
 		    SayDebug (
-			"** @%p: unexpected descriptor %p in slot %d of %d\n",
+			"** @%p: unexpected descriptor %p in record slot %d of %d\n",
 			p, w, i, GET_LEN(desc));
 		    return;
 		}
@@ -180,10 +200,12 @@ PVT void CheckRecordArena (arena_t *ap)
 	  case DTAG_vec_hdr:
 	    switch (GET_LEN(desc)) {
 	      case SEQ_poly:
-		if (GET_TAG(desc) == DTAG_arr_hdr)
+		if (GET_TAG(desc) == DTAG_arr_hdr) {
 		    CheckPtr (p, *p, gen, OBJC_record, OBJC_ARRFLG);
-		else
+                }
+		else {
 		    CheckPtr (p, *p, gen, OBJC_record, OBJC_RECFLG|OBJC_PAIRFLG);
+                }
 		break;
 	      case SEQ_word8:
 	      case SEQ_word16:
@@ -201,8 +223,8 @@ PVT void CheckRecordArena (arena_t *ap)
 	    }
 	    if (! isUNBOXED(p[1])) {
 		ERROR;
-		SayDebug ("** @%p: sequence header length field not an int (%p)\n",
-		    p+1, p[1]);
+		SayDebug ("** @%p: %s header length field not an int (%p)\n",
+		    p+1, SeqHdrKind(desc), p[1]);
 	    }
 	    p += 2;
 	    break;

@@ -81,8 +81,9 @@ void InvokeGC (ml_state_t *msp, int level)
 #endif
 
   /* Gather the roots */
-    for (i = 0;  i < NumCRoots;  i++)
+    for (i = 0;  i < NumCRoots;  i++) {
 	*rootsPtr++ = CRoots[i];
+    }
 #ifdef MP_SUPPORT
     {
 	vproc_state_t   *vsp;

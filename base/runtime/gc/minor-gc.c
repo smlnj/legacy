@@ -158,6 +158,7 @@ void MinorGC (ml_state_t *msp, ml_val_t **roots)
 }
 #endif
 
+    /* update allocation and GC counters */
     {
 	int i;
         Addr_t nbytes;
@@ -322,8 +323,9 @@ PVT ml_val_t MinorGC_ForwardObj (gen_t *gen1, ml_val_t v)
 	    obj[0] = (ml_val_t)(Addr_t)new_obj;
 	    return PTR_CtoML(new_obj);
 	}
-	else
+	else {
 	    arena = gen1->arena[RECORD_INDX];
+        }
 #endif
 	break;
       case DTAG_vec_hdr:
