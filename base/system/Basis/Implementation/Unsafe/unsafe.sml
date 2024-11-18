@@ -130,6 +130,8 @@ structure Unsafe :> UNSAFE =
 
     val cast = InlineT.cast
 
+    fun ptrEq (x : 'a, y : 'a) = (cast x : word) = (cast y : word)
+
     (* actual representation of pStruct *)
     datatype runDynEnv
       = NILrde
