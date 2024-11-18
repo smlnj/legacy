@@ -66,4 +66,9 @@ signature UNIVERSAL =
    *)
     val tagProject : 'a tag -> universal -> 'a
 
+  (* `tagTryProject tag un` returns `SOME x` if the universal value `univ` was
+   * formed by the expression `tagInject tag x` and returns `NONE` otherwise.
+   *)
+    val tagTryProject : 'a tag -> universal -> 'a option
+
   end
