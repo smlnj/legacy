@@ -368,7 +368,8 @@ void MajorGC (ml_state_t *msp, ml_val_t **roots, int level)
 	for (j = 0;  j < NUM_ARENAS;  j++) {
 	    arena_t	*ap = heap->gen[i]->arena[j];
 	    if (isACTIVE(ap)) {
-		CNTR_INCR(&(heap->numCopied[i][j]), ap->nextw - tospTop[j]);
+                Addr_t nbytes = (Addr_t)ap->nextw - (Addr_t)ap->tospBase;
+		CNTR_INCR(&(heap->numCopied[i][j]), nbytes);
 	    }
 	}
     }
