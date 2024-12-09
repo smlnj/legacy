@@ -1926,6 +1926,11 @@ raise Fail "unexpected constant branch"
 		InvokeGC.emitLongJumpsToGCInvocation stream;
 		compile(endCluster(clusterAnnotations()))
 	      end (* genCluster *)
+handle ex => (
+print "***********************************************\n";
+print (concat["Exception ", General.exnMessage ex, "\n"]);
+List.app printCPSFun cluster;
+raise ex)
 
 	fun finishCompilationUnit file = let
 	      val stream = MLTreeComp.selectInstructions (Flowgen.build ())
