@@ -247,7 +247,10 @@ structure PEqual : PEQUAL =
                       APP(prim(PO.PTREQL, eqLty objTy), RECORD[VAR dx, VAR dy]))))))
                 end
 
-	  fun atomeq (tyc, ty) = (case numKind tyc
+          (* equality tests for primitive types that have the `YES` equality
+           * property; e.g., numbers, strings, etc.
+           *)
+	  fun atomEq (tyc, ty) = (case numKind tyc
 		 of SOME(PO.INT sz) => prim(PU.mkIEQL sz, intEqTy sz)
 		  | SOME(PO.UINT sz) => prim(PU.mkUIEQL sz, uintEqTy sz)
                   | SOME(PO.FLOAT _) => bug "real equality test"
@@ -255,14 +258,20 @@ structure PEqual : PEQUAL =
 		      if TU.equalTycon(tyc, BT.boolTycon)   then prim(PU.IEQL,booleqty)
 		      else if TU.equalTycon(tyc, BT.stringTycon) then getStrEq()
 		      else if TU.equalTycon(tyc, BT.intinfTycon) then getIntInfEq()
-		      else if TU.equalTycon(tyc, BT.refTycon)    then ptrEq(PO.PTREQL, ty)
 		      else if TU.equalTycon(tyc, BT.pointerTycon) then ptrEq(PO.PTREQL, ty)
-		      else if TU.equalTycon(tyc, BT.arrayTycon) then arrayEq ty
-		      else if TU.equalTycon(tyc, BT.chararrayTycon) then arrayEq ty
-		      else if TU.equalTycon(tyc, BT.word8arrayTycon) then arrayEq ty
-		      else if TU.equalTycon(tyc, BT.real64arrayTycon) then arrayEq ty
 		      else raise Poly
 		(* end case *))
+
+          (* equality tests for primitive types that have the `OBJ` equality
+           * property; i.e., arrays and references.
+           *)
+          fun objectEq (tyc, ty) =
+		if TU.equalTycon(tyc, BT.refTycon) then ptrEq(PO.PTREQL, ty)
+                else if TU.equalTycon(tyc, BT.arrayTycon) then arrayEq ty
+                else if TU.equalTycon(tyc, BT.chararrayTycon) then arrayEq ty
+                else if TU.equalTycon(tyc, BT.word8arrayTycon) then arrayEq ty
+                else if TU.equalTycon(tyc, BT.real64arrayTycon) then arrayEq ty
+                else raise Poly
 
 	  fun test (ty, 0) = raise Poly
 	    | test (ty, depth) = (
@@ -297,8 +306,8 @@ structure PEqual : PEQUAL =
 			  end)
 		  | CONty (tyc as GENtyc { kind, eq, stamp, arity, path, ... }, tyl) => (
 		      case (!eq, kind)
-		       of (YES, PRIMITIVE) => atomeq (tyc, ty)
-                        | (OBJ, PRIMITIVE) => atomeq (tyc, ty) (* for array types *)
+		       of (YES, PRIMITIVE) => atomEq (tyc, ty)
+                        | (OBJ, PRIMITIVE) => objectEq (tyc, ty)
 			| (YES, ABSTRACT tyc') => test (CONty (tyc', tyl), depth)
 			| (ABS,_) =>
 			    test(T.CONty(GENtyc{eq=ref YES,stamp=stamp,arity=arity,
@@ -315,7 +324,7 @@ structure PEqual : PEQUAL =
 			      | expandRECdcon z = z
 			    in
 			      case map expandRECdcon dcons0
-			       of [{rep=REF,...}] => atomeq(tyc, ty)
+			       of [{rep=REF,...}] => objectEq(tyc, ty)
 				| dcons => (
 				    find ty
 				      handle Notfound => let
