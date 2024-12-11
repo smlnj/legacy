@@ -142,6 +142,14 @@ structure BasicTypes : BASICTYPES =
 
     val (word8vectorTycon, word8vectorTy) = mkPrimTycTy("word8vector", 0, T.YES)
     val (word8arrayTycon, word8arrayTy) = mkPrimTycTy("word8array", 0, T.OBJ)
+(* TODO: word16vectorTycon *)
+(* TODO: word16arrayTycon *)
+(* TODO: word32vectorTycon *)
+(* TODO: word32arrayTycon *)
+(* TODO: word64vectorTycon *)
+(* TODO: word64arrayTycon *)
+(* TODO: wordvectorTycon *)
+(* TODO: wordarrayTycon *)
 
     val real64arrayTycon = mkPrimTyc("real64array", 0, T.OBJ)
 (* TODO: real64vectorTycon *)
