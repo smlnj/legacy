@@ -176,8 +176,8 @@ structure PEqual : PEQUAL =
     fun intEqTy sz = eqLty (LT.ltc_num sz)
     val uintEqTy = intEqTy  (* unsigned numbers same as signed in LT *)
     val booleqty = eqLty (LT.ltc_bool)
-(* FIXME: since real is **not** an equality type, this definition is not needed!!! *)
-    val realeqty = eqLty (LT.ltc_real)
+    (* ML object type *)
+    val objTy = LT.ltc_prim PrimTyc.ptc_obj
 
     exception Notfound
 
@@ -230,27 +230,37 @@ structure PEqual : PEQUAL =
 		else if TU.equalTycon(tyc, BT.word64Tycon)  then SOME(PO.UINT 64)
 		else NONE
 
+          (* equality for arrays requires comparing their data pointers *)
+          fun arrayEq ty = let
+                val lt = toLty ty
+                val v = mkv() and x = mkv() and y = mkv()
+                val dx = mkv() and dy = mkv()
+                fun getDataPtr z = APP(
+                      prim(PO.GET_SEQ_DATA, LT.ltc_parrow(lt, objTy)),
+                      VAR z)
+                in
+                  FN(v, LT.ltc_tuple [lt, lt],
+                    LET(x, SELECT(0, VAR v),
+                    LET(dx, getDataPtr x,
+                    LET(y, SELECT(1, VAR v),
+                    LET(dy, getDataPtr y,
+                      APP(prim(PO.PTREQL, eqLty objTy), RECORD[VAR dx, VAR dy]))))))
+                end
+
 	  fun atomeq (tyc, ty) = (case numKind tyc
 		 of SOME(PO.INT sz) => prim(PU.mkIEQL sz, intEqTy sz)
 		  | SOME(PO.UINT sz) => prim(PU.mkUIEQL sz, uintEqTy sz)
+                  | SOME(PO.FLOAT _) => bug "real equality test"
 		  | NONE =>
 		      if TU.equalTycon(tyc, BT.boolTycon)   then prim(PU.IEQL,booleqty)
-(* FIXME: since real is **not** an equality type, this case is not needed!!! *)
-		      else if TU.equalTycon(tyc, BT.realTycon)   then prim(PU.FEQLd,realeqty)
 		      else if TU.equalTycon(tyc, BT.stringTycon) then getStrEq()
 		      else if TU.equalTycon(tyc, BT.intinfTycon) then getIntInfEq()
 		      else if TU.equalTycon(tyc, BT.refTycon)    then ptrEq(PO.PTREQL, ty)
 		      else if TU.equalTycon(tyc, BT.pointerTycon) then ptrEq(PO.PTREQL, ty)
-		  (**********************
-		   * For arrays under the new array representation, we need to compare
-		   * the data pointers for equality.  polyequal does this comparison
-		   * correctly, so use it as the fallback. (JHR)
-		   *
-		      else if TU.equalTycon(tyc,BT.arrayTycon) then ptrEq(PO.PTREQL, ty)
-		      else if TU.equalTycon(tyc,BT.word8arrayTycon) then ptrEq(PO.PTREQL, ty)
-		      else if TU.equalTycon(tyc,BT.real64arrayTycon) then ptrEq(PO.PTREQL, ty)
-		    ## also still falling back on polyequal for int64 and word64 -- 64BIT fixme ##
-		  **********************)
+		      else if TU.equalTycon(tyc, BT.arrayTycon) then arrayEq ty
+		      else if TU.equalTycon(tyc, BT.chararrayTycon) then arrayEq ty
+		      else if TU.equalTycon(tyc, BT.word8arrayTycon) then arrayEq ty
+		      else if TU.equalTycon(tyc, BT.real64arrayTycon) then arrayEq ty
 		      else raise Poly
 		(* end case *))
 
@@ -288,6 +298,7 @@ structure PEqual : PEQUAL =
 		  | CONty (tyc as GENtyc { kind, eq, stamp, arity, path, ... }, tyl) => (
 		      case (!eq, kind)
 		       of (YES, PRIMITIVE) => atomeq (tyc, ty)
+                        | (OBJ, PRIMITIVE) => atomeq (tyc, ty) (* for array types *)
 			| (YES, ABSTRACT tyc') => test (CONty (tyc', tyl), depth)
 			| (ABS,_) =>
 			    test(T.CONty(GENtyc{eq=ref YES,stamp=stamp,arity=arity,
@@ -392,7 +403,7 @@ structure PEqual : PEQUAL =
 	    (* end case *)
 	  end handle Poly =>
 	    (GENOP({default=getPolyEq(),
-		    (* might want to include intinf into this table (but we
+		    (* FIXME: include intinf into this table (but we
 		     * need a tcc_intinf for that)... *)
 		    table=[([LT.tcc_string], getStrEq())]},
 		   PO.POLYEQL, toLty polyEqTy,

@@ -107,6 +107,15 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
+[2024/12/11]::
+Added support for generating an equality test for array types (including
+monomorphic arrays) instead of falling back on polymorphic equality.
+This change fixes Issue #331 (Array comparisons always result in
+polyEqual warning).
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2024/11/08]::
 Added a temporary fix for Issue #329 (`Date.fmt` fails on the `%Z`
 specifier for hand-constructed dates) to the runtime-system's

@@ -56,6 +56,10 @@ FILES::
 
 * Added `Unsafe.Array.create0` for creating zero-length polymorphic arrays.
 
+* Added `gcCounterReset` and `gcCounterRead` functions to `SMLofNJ.Internal.GC`
+  structure.  These functions provide access to some basic statistics about
+  allocation and garbage collection.
+
 === SML/NJ Library
 
 * Added `rawArray` and `rawObject` decoders to the `JSONDecode` structure
@@ -85,6 +89,9 @@ gforge bug tracker.
 | n.a.
 | [.bugid]#329#
 | {issue-base}/329[`Date.fmt` fails on the `%Z` specifier for hand-constructed dates]
+| n.a.
+| [.bugid]#331#
+| {issue-base}/331[Array comparisons always result in polyEqual warning]
 | n.a.
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
