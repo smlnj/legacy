@@ -149,10 +149,10 @@ structure UTF8 :> UTF8 =
     fun toString wc =
 	  if isAscii wc
 	    then Char.toCString(toAscii wc)
-	  else if (wc <= max2Byte)
+	  else if (wc <= 0wxFFFF)
 	    then "\\u" ^ (StringCvt.padLeft #"0" 4 (W.toString wc))
 	  (* NOTE: the following is not really SML syntax *)
-	    else "\\u" ^ (StringCvt.padLeft #"0" 8 (W.toString wc))
+	    else "\\U" ^ (StringCvt.padLeft #"0" 8 (W.toString wc))
 
   (* return a list of characters that is the UTF8 encoding of a wide character *)
     fun encode' (wc, chrs) = if (wc <= 0wx7f)
