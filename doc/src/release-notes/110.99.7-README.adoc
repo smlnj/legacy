@@ -100,6 +100,8 @@ associated with them (or were bug fixes back-ported from the
 development repository):
 --
 * fixed a further issue with `Real.fromString`.
+
+* fixed span in lexer for illegal string escapes
 --
 
 == Supported systems

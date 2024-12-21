@@ -7,6 +7,7 @@ The Fellowship of SML/NJ
 :tabsize: 8
 :note-caption: UPDATE
 :issue-base: https://github.com/smlnj/legacy/issues
+:pull-base: https://github.com/smlnj/legacy/pull
 
 This file documents changes to the *Standard ML of New Jersey* system since
 March of 2000 (around Version 110.26).  The change log  primarily covers
@@ -105,6 +106,13 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 
 //====================================================================
 == Recent updates
+
+//--------------------------------------------------------------------
+[2024/12/14]::
+Merge lexer fix (see {pull-base}/334:[Pull Request 334].  Thanks to
+Skye Soss for the fix.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
 
 //--------------------------------------------------------------------
 [2024/12/14]::
