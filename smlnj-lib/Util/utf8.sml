@@ -25,6 +25,7 @@ structure UTF8 :> UTF8 =
     fun w2c w = Char.chr(W.toInt w)
 
     val maxCodePoint : wchar = 0wx0010FFFF
+    val replacementCharacter : wchar = 0wxFFFD
 
   (* maximum values for the first byte for each encoding length *)
     val max1Byte : W.word = 0wx7f (* 0xxx xxxx *)
@@ -40,6 +41,9 @@ structure UTF8 :> UTF8 =
   (* bit mask for continuation bytes *)
     val maskContByte : W.word = 0wx3f
 
+    datatype decode_strategy =
+        DECODE_STRICT
+      | DECODE_REPLACE
 
     exception Incomplete
     exception Invalid
@@ -48,70 +52,57 @@ structure UTF8 :> UTF8 =
      * See https://unicode.org/mail-arch/unicode-ml/y2003-m02/att-0467/01-The_Algorithm_to_Valide_an_UTF-8_String
      * for a description of the state machine.
      *)
-    fun getu getc = let
-          fun getByte inS = (case getc inS
-                 of SOME(c, inS') => (Word.fromInt(ord c), inS')
-                  | NONE => raise Incomplete
+    fun getuWith strategy getc = let
+          fun getByte (inS, k) = (case getc inS
+                 of SOME(c, inS') => k (Word.fromInt(ord c), inS')
+                  | NONE => (case strategy of
+                      DECODE_STRICT => raise Incomplete
+                    | DECODE_REPLACE => SOME (replacementCharacter, inS)
+                    (* end case *))
                 (* end case *))
           fun inRange (minB : word, b, maxB) = ((b - minB) <= maxB - minB)
           (* add the bits of a continuation byte to the accumulator *)
           fun addContBits (accum, b) = W.orb(W.<<(accum, 0w6), W.andb(0wx3f, b))
+          (* handles an invalid byte in the input stream *)
+          val invalid = (case strategy of
+                DECODE_STRICT => (fn _ => raise Invalid)
+              | DECODE_REPLACE => (fn inS => SOME (replacementCharacter, inS))
+            (* end case *))
           (* handles last byte for all multi-byte sequences *)
-          fun stateA (inS, accum) = let
-                val (b, inS) = getByte inS
-                in
+          fun stateA (inS, accum) = getByte (inS, fn (b, inS') =>
                   if inRange(0wx80, b, 0wxbf)
-                    then SOME(addContBits(accum, b), inS)
-                    else raise Invalid
-                end
+                    then SOME(addContBits(accum, b), inS')
+                    else invalid inS)
           (* handles second/third byte for three/four-byte sequences *)
-          and stateB (inS, accum) = let
-                val (b, inS) = getByte inS
-                in
+          and stateB (inS, accum) = getByte (inS, fn (b, inS') =>
                   if inRange(0wx80, b, 0wxbf)
-                    then stateA (inS, addContBits(accum, b))
-                    else raise Invalid
-                end
+                    then stateA (inS', addContBits(accum, b))
+                    else invalid inS)
           (* byte0 = 0b1110_0000 (3-byte sequence) *)
-          and stateC (inS, accum) = let
-                val (b, inS) = getByte inS
-                in
+          and stateC (inS, accum) = getByte (inS, fn (b, inS') =>
                   if inRange(0wxa0, b, 0wxbf)
-                    then stateA (inS, addContBits(accum, b))
-                    else raise Invalid
-                end
+                    then stateA (inS', addContBits(accum, b))
+                    else invalid inS)
           (* byte0 = 0b1110_1101 (3-byte sequence) *)
-          and stateD (inS, accum) = let
-                val (b, inS) = getByte inS
-                in
+          and stateD (inS, accum) = getByte (inS, fn (b, inS') =>
                   if inRange(0wx80, b, 0wx9f)
-                    then stateA (inS, addContBits(accum, b))
-                    else raise Invalid
-                end
+                    then stateA (inS', addContBits(accum, b))
+                    else invalid inS)
           (* byte0 = 0b1111_0001 .. 0b1111_0011 (4-byte sequence) *)
-          and stateE (inS, accum) = let
-                val (b, inS) = getByte inS
-                in
+          and stateE (inS, accum) = getByte (inS, fn (b, inS') =>
                   if inRange(0wx80, b, 0wxbf)
-                    then stateB (inS, addContBits(accum, b))
-                    else raise Invalid
-                end
+                    then stateB (inS', addContBits(accum, b))
+                    else invalid inS)
           (* byte0 = 0b1111_0000 (4-byte sequence) *)
-          and stateF (inS, accum) = let
-                val (b, inS) = getByte inS
-                in
+          and stateF (inS, accum) = getByte (inS, fn (b, inS') =>
                   if inRange(0wx90, b, 0wxbf)
-                    then stateB (inS, addContBits(accum, b))
-                    else raise Invalid
-                end
+                    then stateB (inS', addContBits(accum, b))
+                    else invalid inS)
           (* byte0 = 0b1111_1000 (4-byte sequence) *)
-          and stateG (inS, accum) = let
-                val (b, inS) = getByte inS
-                in
+          and stateG (inS, accum) = getByte (inS, fn (b, inS') =>
                   if inRange(0wx80, b, 0wx8f)
-                    then stateB (inS, addContBits(accum, b))
-                    else raise Invalid
-                end
+                    then stateB (inS', addContBits(accum, b))
+                    else invalid inS)
           and start inS = (case getc inS
                  of SOME(c, inS) => let
                       val byte0 = Word.fromInt(ord c)
@@ -133,13 +124,15 @@ structure UTF8 :> UTF8 =
                           then stateF (inS, W.andb(byte0, mask4Byte))
                         else if (byte0 = 0wxf4)
                           then stateG (inS, W.andb(byte0, mask4Byte))
-                          else raise Invalid
+                          else invalid inS
                       end
                   | NONE => NONE
                 (* end case *))
           in
             start
           end
+
+    fun getu getc = getuWith DECODE_STRICT getc
 
     fun isAscii (wc : wchar) = (wc <= max1Byte)
     fun toAscii (wc : wchar) = w2c(W.andb(0wx7f, wc))
@@ -149,10 +142,10 @@ structure UTF8 :> UTF8 =
     fun toString wc =
 	  if isAscii wc
 	    then Char.toCString(toAscii wc)
-	  else if (wc <= max2Byte)
+	  else if (wc <= 0wxFFFF)
 	    then "\\u" ^ (StringCvt.padLeft #"0" 4 (W.toString wc))
 	  (* NOTE: the following is not really SML syntax *)
-	    else "\\u" ^ (StringCvt.padLeft #"0" 8 (W.toString wc))
+	    else "\\U" ^ (StringCvt.padLeft #"0" 8 (W.toString wc))
 
   (* return a list of characters that is the UTF8 encoding of a wide character *)
     fun encode' (wc, chrs) = if (wc <= 0wx7f)

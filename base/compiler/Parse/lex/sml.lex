@@ -267,7 +267,7 @@ bad_escape="\\"[\000-\008\011\012\014-\031 !#$%&'()*+,\-./:;<=>?@A-Z\[\]_`c-eg-m
                     val x = Word.toIntX (valOf (Word.fromString (String.substring(yytext, 2, 4))))
                     in
 		      if x>255
-			then err (yypos,yypos+4) COMPLAIN (concat[
+			then err (yypos,yypos+6) COMPLAIN (concat[
                             "illegal string escape '", yytext, "' is too large"
                           ]) nullErrorBody
 			else addChar(charlist, Char.chr x);

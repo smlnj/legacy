@@ -11,7 +11,19 @@ signature UTF8 =
 
     type wchar = word
 
-    val maxCodePoint : wchar	(* = 0wx0010FFFF *)
+    val maxCodePoint : wchar	       (* = 0wx0010FFFF *)
+    val replacementCharacter : wchar (* = 0wxFFFD *)
+
+    datatype decode_strategy =
+      (* raises `Incomplete` when the end of input is encountered in the
+       * middle of an otherwise acceptable multi-byte encoding,
+       * and raises `Invalid` when an invalid byte is encountered.
+       * This is the default decoding option. *)
+        DECODE_STRICT
+      (* replaces invalid input with REPLACEMENT CHARACTER (U+FFFD)
+       * using the W3C standard substitution of maximal subparts algorithm
+       * https://www.unicode.org/versions/Unicode16.0.0/core-spec/chapter-3/#G66453 *)
+      | DECODE_REPLACE
 
     (* raised by some operations when applied to incomplete strings. *)
     exception Incomplete
@@ -29,6 +41,11 @@ signature UTF8 =
      * is encountered.
      *)
     val getu : (char, 'strm) StringCvt.reader -> (wchar, 'strm) StringCvt.reader
+
+    (* convert a character reader to a wide-character reader; the reader
+     * uses the given decoding strategy to handle invalid input.
+     *)
+    val getuWith : decode_strategy -> (char, 'strm) StringCvt.reader -> (wchar, 'strm) StringCvt.reader
 
     (* return the UTF8 encoding of a wide character; raises Invalid if the
      * wide character is larger than the maxCodePoint, but does not do any
