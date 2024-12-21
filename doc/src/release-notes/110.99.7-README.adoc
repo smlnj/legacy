@@ -67,6 +67,10 @@ FILES::
 
 === SML/NJ Library
 
+* Added the `decode_strategy` mechanism to the `UTF8` structure.  This
+  mechanism allows specifying how to handle incomplete/invalid multibyte
+  sequences.  See {pull-base}/334[Pull Request 334] for more discussion.
+
 * Added `rawArray` and `rawObject` decoders to the `JSONDecode` structure
   in the SML/NJ Library.
 
@@ -101,7 +105,8 @@ development repository):
 --
 * fixed a further issue with `Real.fromString`.
 
-* fixed span in lexer for illegal string escapes
+* fixed span in lexer for illegal string escapes (part of
+  {pull-base}/334[Pull Request 334]).
 --
 
 == Supported systems

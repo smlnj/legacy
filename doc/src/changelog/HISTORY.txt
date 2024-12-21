@@ -109,7 +109,7 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 
 //--------------------------------------------------------------------
 [2024/12/14]::
-Merge lexer fix (see {pull-base}/334:[Pull Request 334].  Thanks to
+Merge lexer fix (see {pull-base}/334[Pull Request 334]).  Thanks to
 Skye Soss for the fix.
 +
 owner:cs.uchicago.edu/~jhr[John Reppy]

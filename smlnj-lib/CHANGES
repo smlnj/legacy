@@ -5,6 +5,11 @@ correspond to SML/NJ releases (past and future).
 SML/NJ 110.99.7
 -------------------
 
+[2024-12-21]
+        Added the `decode_strategy` mechanism to the `UTF8` structure.  This
+        mechanism allows specifying how to handle incomplete/invalid multibyte
+        sequences.
+
 [2024-09-20]
         Added `rawArray` and `rawObject` decoders to the `JSONDecode` structure.
         Be more consistent about using the `JSONError` exception to signal
