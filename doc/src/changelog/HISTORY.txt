@@ -105,13 +105,32 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //////////////////////////////////////////////////////////////////////
 
 //====================================================================
-== Recent updates
+//== Recent updates
+
+//====================================================================
+== Version 110.99.7; 2024/12/28
 
 //--------------------------------------------------------------------
 [2024/12/27]::
 Added optional store-list-item count to GC statistics.  To enable
 collecting this information, the runtime must be compiled with
-the `COUNT_STORE_LIST` pre-processor symbol defined.
+the `COUNT_STORE_LIST` pre-processor symbol defined.  This change
+affects the `readCounters` function, which now returns a record with
+the following fields:
++
+--
+* `nbAlloc` -- The number of bytes allocated in the nursery.
+* `nStores` -- The optional number of store-list items allocated in the
+  nursery.
+* `nbAlloc1` -- The number of bytes of allocation in first generation
+  (these are for objects that are deemed too large for the nursery)
+* `nbPromote` -- The number of bytes that have been promoted from the
+  nursery into the first generation.
+* `nGCs` -- the number of collections by generation. The first entry
+  is the nursery, then first generation, _etc_.  If the list is empty,
+  then there have been no collections since the last call to
+  `resetCounters`.
+--
 +
 owner:cs.uchicago.edu/~jhr[John Reppy]
 
