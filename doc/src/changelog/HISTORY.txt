@@ -108,6 +108,14 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
+[2024/12/27]::
+Added optional store-list-item count to GC statistics.  To enable
+collecting this information, the runtime must be compiled with
+the `COUNT_STORE_LIST` pre-processor symbol defined.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2024/12/14]::
 Merge lexer fix (see {pull-base}/334[Pull Request 334]).  Thanks to
 Skye Soss for the fix.

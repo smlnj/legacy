@@ -1,5 +1,5 @@
 :version: 110.99.7
-:date: @DATE@
+:date: December 28, 2024
 :dist-dir: https://smlnj.org/dist/working/{version}/
 :history: {dist-dir}HISTORY.html
 :issue-base: https://github.com/smlnj/legacy/issues/
@@ -31,7 +31,8 @@ FILES::
 
 == Summary
 
-// **** summary description of release
+Thie end-of-year release has a small number of bug fixes and
+changes.
 
 == Details
 
@@ -43,14 +44,11 @@ FILES::
   repository.  This change means that the release date will be displayed
   instead of the build date.
 
-=== CM
-
-=== MLRISC
-
 === Runtime System
 
 * Collecting basic statistics about memory allocation and GC is now
-  enabled by default in the garbage collector.
+  enabled by default in the garbage collector.  Access to this information
+  is via the `SMLofNJ.Internals.GC` structure (see below).
 
 === Basis Library
 

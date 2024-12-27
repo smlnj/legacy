@@ -43,12 +43,13 @@ ml_val_t _ml_RunT_gc_counter_reset (ml_state_t *msp, ml_val_t arg)
 }
 
 /* _ml_RunT_gc_counter_read : unit
- *      -> (Word.word * Word.word * Word.word * Word.word * Word.word list)
+ *      -> (Word.word * Word.word * Word.word * Word.word * Word.word * Word.word list)
  *
  * read the counters.  The results are:
  *
  *  - scaling factor for counts (Word.word)
  *  - scaled allocation count (Word.word)
+ *  - optional store-list count (Word.word)
  *  - scaled first-generation allocation count (Word.word)
  *  - scaled count of promotions to first generation (Word.word)
  *  - # of collections in a list `[n0, n1, n2, ...]`, where ni is the number of
@@ -62,6 +63,12 @@ ml_val_t _ml_RunT_gc_counter_read (ml_state_t *msp, ml_val_t arg)
 
     ml_val_t scale = INT_CtoML(stats.bytesPerCnt);
     ml_val_t nAlloc = INT_CtoML(stats.allocCnt);
+#ifdef COUNT_STORE_LIST
+    ml_val_t nStores;
+    OPTION_SOME(msp, nStores, INT_CtoML(stats.storeCnt));
+#else
+    ml_val_t nStores = OPTION_NONE;
+#endif
     ml_val_t nFirstAlloc = INT_CtoML(stats.allocFirstCnt);
     ml_val_t nPromote = INT_CtoML(stats.promoteCnt[0]);
 
@@ -79,7 +86,7 @@ ml_val_t _ml_RunT_gc_counter_read (ml_state_t *msp, ml_val_t arg)
     }
 
     /* allocate result tuple */
-    ml_val_t res = ML_Alloc5(msp, scale, nAlloc, nFirstAlloc, nPromote, lp);
+    ml_val_t res = ML_Alloc6(msp, scale, nAlloc, nStores, nFirstAlloc, nPromote, lp);
 
     return res;
 

@@ -32,6 +32,10 @@ signature GC =
             nbAlloc : IntInf.int,       (* the number of bytes allocated in the
                                          * nursery.
                                          *)
+            nStores : IntInf.int option,(* an optional count of the number of store-list
+                                         * items allocated in the nursery.  It will be
+                                         * `NONE` if the count was not collected.
+                                         *)
             nbAlloc1 : IntInf.int,      (* the number of bytes of allocation in
                                          * first generation (these are for objects
                                          * that are deemed too large for the nursery)
