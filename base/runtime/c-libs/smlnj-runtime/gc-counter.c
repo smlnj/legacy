@@ -15,8 +15,6 @@
 #include "ml-objects.h"
 #include "cfun-proto-list.h"
 
-static Unsigned32_t numGCs[MAX_NGENS+1];
-
 /* _ml_RunT_gc_counter_reset : bool -> unit
  *
  * reset the counters.  If the flag is true, the we force a GC of all
@@ -29,10 +27,10 @@ ml_val_t _ml_RunT_gc_counter_reset (ml_state_t *msp, ml_val_t arg)
     /* check if a full GC is requested */
     if (arg == ML_true) {
         // collect all generations
-        InvokeGCWithRoots (msp, heap->numGens, &arg, NIL(ml_val_t *));
+        InvokeGC (msp, heap->numGens);
     } else {
         // minor collection
-        InvokeGCWithRoots (msp, 0, &arg, NIL(ml_val_t *));
+        InvokeGC (msp, 0);
     }
 
     ResetGCStats (heap);
