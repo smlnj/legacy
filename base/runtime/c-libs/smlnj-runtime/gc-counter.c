@@ -1,11 +1,9 @@
 /* gc-counter.c
  *
- * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2024 The Fellowship of SML/NJ (https://www.smlnj.org)
  * All rights reserved.
  *
- * Some counters for measuring allocation rates, etc.  Note that these
- * are not part of the distribution, but are just defined in this branch
- * for research purposes.
+ * Some counters for measuring allocation rates, etc.
  */
 
 #include "ml-base.h"
@@ -43,17 +41,17 @@ ml_val_t _ml_RunT_gc_counter_reset (ml_state_t *msp, ml_val_t arg)
 }
 
 /* _ml_RunT_gc_counter_read : unit
- *      -> (Word.word * Word.word * Word.word * Word.word * Word.word * Word.word list)
+ *      -> (word * word * word option * word * word * word list)
  *
  * read the counters.  The results are:
  *
- *  - scaling factor for counts (Word.word)
- *  - scaled allocation count (Word.word)
- *  - optional store-list count (Word.word)
- *  - scaled first-generation allocation count (Word.word)
- *  - scaled count of promotions to first generation (Word.word)
+ *  - scaling factor for counts (word)
+ *  - scaled allocation count (word)
+ *  - optional store-list count (word option)
+ *  - scaled first-generation allocation count (word)
+ *  - scaled count of promotions to first generation (word)
  *  - # of collections in a list `[n0, n1, n2, ...]`, where ni is the number of
- *    times generation i has been collected since the "reset" call. (Word.word list)
+ *    times generation i has been collected since the "reset" call. (word list)
  */
 ml_val_t _ml_RunT_gc_counter_read (ml_state_t *msp, ml_val_t arg)
 {
