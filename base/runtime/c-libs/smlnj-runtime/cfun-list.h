@@ -1,6 +1,6 @@
 /* cfun-list.h
  *
- * COPYRIGHT (c) 1994 AT&T Bell Laboratories.
+ * COPYRIGHT (c) 2024 AT&T Bell Laboratories.
  *
  * This file lists the directory library of C functions that are callable by ML.
  */
