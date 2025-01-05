@@ -18,9 +18,6 @@ signature GC =
     (* invoke GC; the argument specifies the minimum generation to collect *)
     val doGC : int -> unit
 
-    (* invoke GC; the argument specifies the minimum generation to collect *)
-    val doGC : int -> unit
-
     (* turn on/off GC messages (default is off) *)
     val messages : bool -> unit
 
