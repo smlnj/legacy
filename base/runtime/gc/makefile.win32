@@ -11,7 +11,7 @@ RANLIB =	lib
 LIB =		libgc.lib
 MP_LIB =	libmp-gc.lib
 
-GC_OBJS =	init-gc.obj call-gc.obj minor-gc.obj major-gc.obj flip.obj gc-util.obj \
+GC_OBJS =	init-gc.obj call-gc.obj minor-gc.obj major-gc.obj flip.obj gc-counter.obj gc-util.obj \
 		big-objects.obj ml-objects.obj obj-info.obj build-literals.obj \
 		old-literals.obj \
 		record-ops.obj \
@@ -92,6 +92,13 @@ flip.obj:		flip.c \
 		$(INC_DIR)\bibop.h $(INC_DIR)\ml-state.h \
 		heap.h arena-id.h
 	$(CC) /c $(CFLAGS) $(DEFS) $(INCLUDES) flip.c
+
+gc-counter.obj:	gc-counter.c \
+		$(OBJS_DIR)\ml-sizes.h \
+		$(INC_DIR)\ml-base.h $(INC_DIR)\ml-limits.h \
+		$(INC_DIR)\ml-values.h $(INC_DIR)\bibop.h $(INC_DIR)\memory.h \
+		heap.h arena-id.h
+	$(CC) /c $(CFLAGS) $(DEFS) $(INCLUDES) gc-counter.c
 
 gc-util.obj:	gc-util.c \
 		$(OBJS_DIR)\ml-sizes.h \
