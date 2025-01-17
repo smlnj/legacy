@@ -1,0 +1,189 @@
+:version: 110.99.7.1
+:date: January 17, 2025
+:dist-dir: https://smlnj.org/dist/working/{version}/
+:history: {dist-dir}HISTORY.html
+:issue-base: https://github.com/smlnj/legacy/issues/
+:pull-base: https://github.com/smlnj/legacy/pull/
+:stem: latexmath
+:source-highlighter: pygments
+:stylesheet: release-notes.css
+:notitle:
+
+= Standard ML of New Jersey Release Notes
+
+[subs=attributes]
+++++
+<div class="smlnj-banner">
+  <span class="title"> Standard ML of New Jersey <br/> Release Notes </span>
+  <br/> <br/>
+  <span class="subtitle"> Version {version} <br/> {date} </span>
+</div>
+++++
+
+''''''''
+--
+SML/NJ HOME::
+  https://www.smlnj.org/index.html[[.tt]#https://smlnj.org#]
+FILES::
+  {dist-dir}index.html[[.tt]#{dist-dir}#]
+--
+''''''''
+
+== Patch Release {version}
+
+This patch release fixes a critical bug in 110.99.7.  In addition, there is
+a minor change that was planned for 110.99.8.  The changes
+are:
+
+* Fix for Issue #337 (compiler bug aborts build of istari)
+
+* Added `numGens` and `nurserySizeInBytes` functions to the
+  `SMLofNJ.Internals.GC` structure, with corresponding runtime-system
+  support.
+
+The remainder of this document consists of the 110.99.6 release notes.
+
+== Summary
+
+Thie end-of-year release has a small number of bug fixes and
+changes.
+
+== Details
+
+=== Compiler
+
+* Changed the version banner to match the format used in the development
+  repository.  This change means that the release date will be displayed
+  instead of the build date.
+
+=== Runtime System
+
+* Collecting basic statistics about memory allocation and GC is now
+  enabled by default in the garbage collector.  Access to this information
+  is via the `SMLofNJ.Internals.GC` structure (see below).
+
+=== Basis Library
+
+* Added the `resetCounters` and `readCounters` functions to the
+  `SMLofNJ.Internals.GC` structure.  These functions can be used
+  to get the GC and allocation statistics maintained by the runtime
+  system.
+
+* Added `Unsafe.Array.create0` for creating zero-length polymorphic arrays.
+
+* Added `gcCounterReset` and `gcCounterRead` functions to `SMLofNJ.Internal.GC`
+  structure.  These functions provide access to some basic statistics about
+  allocation and garbage collection.
+
+=== SML/NJ Library
+
+* Added the `decode_strategy` mechanism to the `UTF8` structure.  This
+  mechanism allows specifying how to handle incomplete/invalid multibyte
+  sequences.  See {pull-base}/334[Pull Request 334] for more discussion.
+
+* Added `rawArray` and `rawObject` decoders to the `JSONDecode` structure
+  in the SML/NJ Library.
+
+== Bugs
+
+Here is a list of the issues that are fixed (or closed) with this release.
+We include the original bug numbers for bugs that were reported using the
+gforge bug tracker.
+
+[.buglist,cols="^1,<10,^2",strips="none",options="header"]
+|=======
+| Issue
+| Description
+| Gforge Bug
+| [.bugid]#328#
+| {issue-base}/328[`Real.fromString` broken in 110.99.5 and 110.99.6]
+| n.a.
+| [.bugid]#329#
+| {issue-base}/329[`Date.fmt` fails on the `%Z` specifier for hand-constructed dates]
+| n.a.
+| [.bugid]#331#
+| {issue-base}/331[Array comparisons always result in polyEqual warning]
+| n.a.
+//| [.bugid]#@ID#
+//| {issue-base}/@ID[@DESCRIPTION]
+//| [old bug #@OLDID]
+|=======
+
+We also fixed the following bugs that did not have issues
+associated with them (or were bug fixes back-ported from the
+development repository):
+--
+* fixed a further issue with `Real.fromString`.
+
+* fixed span in lexer for illegal string escapes (part of
+  {pull-base}/334[Pull Request 334]).
+--
+
+== Supported systems
+
+We believe that SML/NJ will build and run on the following systems, but have only
+tested some of them:
+
+[.support-table,cols="^2s,^4v,^3v",options="header",strips="none"]
+|=======
+| Architecture | Operating System | Status
+| AMD64 | FreeBSD 12.0 |
+| | macOS 10.14 (Mojave) |
+| | macOS 10.15 (Catalina) |
+| | macOS 11 (Big Sur) |
+| | macOS 12 (Monterey) | Tested
+| | macOS 13 (Ventura) | Tested
+| | macOS 14 (Sonoma) | Tested
+| | Ubuntu 22.04.4 LTS | Tested
+| | Ubuntu 20.04.6 LTS | Tested
+| {nbsp} | |
+| Power PC | Mac OS X 10.5 (Leopard) |
+| | AIX |
+| {nbsp} | |
+| Sparc | Solaris |
+| | Linux |
+| {nbsp} | |
+| x86 (32-bit) | Mac OS X 10.6 (Snow Leopard) |
+| | Mac OS X 10.7 (Lion) |
+| | Mac OS X 10.8 (Mountain Lion) |
+| | Mac OS X 10.9 (Mavericks) |
+| | Mac OS X 10.10 (Yosemite) |
+| | Mac OS X 10.11 (El Capitan) |
+| | macOS 10.12 (Sierra) |
+| | macOS 10.13 (High Sierra) | Tested
+| | macOS 10.14 (Mojave) |
+| | Ubuntu 16.04.3 LTS |
+| | Other Linux variants |
+| | FreeBSD 12.0 |
+| | Other BSD variants |
+| | Windows 7 |
+| | Windows 10 |
+| | Cygwin (32-bit) |
+| {nbsp} | |
+|=======
+
+The system also works on Apple Silicon using Rosetta2.
+
+=== 32-bit macOS issues
+
+While the {dist-dir}smlnj-x86-{version}.pkg[x86 installer]
+for {version} works on **macOs** 10.14 Mojave, building from source
+requires some extra steps because the version of **Xcode**
+distributed for Mojave does not include a 32-bit SDK.
+
+Another issue that you may encounter
+when building on **macOs** 10.14 Mojave is an error message for a shell
+script of the form
+
+.....
+  /bin/sh: bad interpreter: Operation not permitted
+.....
+
+This error arises because the `com.apple.quarantine` attribute is set on the
+shell script.  To fix the problem, remove the attribute using the command
+
+[source,shell]
+-----
+  xattr -d com.apple.quarantine shell-script
+-----
+and resume the build.
