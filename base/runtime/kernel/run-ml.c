@@ -27,6 +27,10 @@
 #include "profile.h"
 #include "gc.h"
 
+#ifdef ENABLE_CACHEGRIND
+#include "valgrind/cachegrind.h"
+#endif
+
 /* local functions */
 PVT void UncaughtExn (ml_val_t e);
 
@@ -93,7 +97,15 @@ void RunML (ml_state_t *msp)
     for (;;) {
 
 	ASSIGN(ProfCurrent, prevProfIndex);
+#ifdef ENABLE_CACHEGRIND
+        /* turn on cachegrind instrumentation for ML code */
+        CACHEGRIND_START_INSTRUMENTATION
+#endif
 	request = restoreregs(msp);
+#ifdef ENABLE_CACHEGRIND
+        /* turn off cachegrind instrumentation for ML code */
+        CACHEGRIND_STOP_INSTRUMENTATION
+#endif
 	prevProfIndex = DEREF(ProfCurrent);
 	ASSIGN(ProfCurrent, PROF_RUNTIME);
 

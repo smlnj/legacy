@@ -28,7 +28,7 @@
 #    define OPSYS_ID	"aix"
 #  elif (defined(OPSYS_DARWIN))
 #    define OPSYS_ID    "darwin"
-#  elif (defined(OPSYS_FREEBSD) || defined(OPSYS_NETBSD) || defined(OPSYS_NETBSD2) || defined(OPSYS_OPENBSD))
+#  elif (defined(OPSYS_FREEBSD) || defined(OPSYS_NETBSD) || defined(OPSYS_OPENBSD))
 #    define OPSYS_ID	"bsd"
 #  elif (defined(OPSYS_LINUX))
 #    define OPSYS_ID	"linux"

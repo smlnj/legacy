@@ -113,11 +113,7 @@ PVT status_t ExportImage (ml_state_t *msp, int kind, FILE *file)
 
 	SAVE_REG(heapHdr.pervStruct, *PTR_MLtoC(ml_val_t, PervStruct));
 	SAVE_REG(heapHdr.runTimeCompUnit, RunTimeCompUnit);
-#ifdef ASM_MATH
-	SAVE_REG(heapHdr.mathVec, MathVec);
-#else
-	heapHdr.mathVec = ML_unit;
-#endif
+	heapHdr.mathVec = ML_unit; /* DEPRECATED; should remove from header */
 
 	HeapIO_WriteImageHeader(wr, kind);
 	WR_Write(wr, &heapHdr, sizeof(heapHdr));

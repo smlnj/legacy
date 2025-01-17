@@ -19,7 +19,7 @@
 #define FALSE	0
 #define TRUE	1
 
-#if (!defined(GLOBALS_HAVE_UNDERSCORE)) && (((defined(OPSYS_FREEBSD) || defined(OPSYS_NETBSD2) || defined(OPSYS_OPENBSD)) && !defined(__ELF__)) || defined(OPSYS_WIN32) || defined(OPSYS_DARWIN) || defined(OPSYS_CYGWIN))
+#if (!defined(GLOBALS_HAVE_UNDERSCORE)) && (((defined(OPSYS_FREEBSD) || defined(OPSYS_NETBSD) || defined(OPSYS_OPENBSD)) && !defined(__ELF__)) || defined(OPSYS_WIN32) || defined(OPSYS_DARWIN) || defined(OPSYS_CYGWIN))
 #  define GLOBALS_HAVE_UNDERSCORE
 #endif
 

@@ -144,9 +144,6 @@ ml_state_t *ImportHeapImage (const char *fname, heap_params_t *params)
   /* get the run-time pointers into the heap */
     *PTR_MLtoC(ml_val_t, PervStruct) = heapHdr.pervStruct;
     RunTimeCompUnit = heapHdr.runTimeCompUnit;
-#ifdef ASM_MATH
-    MathVec = heapHdr.mathVec;
-#endif
 
   /* read the externals table */
     externs = HeapIO_ReadExterns (&inBuf);
@@ -401,9 +398,6 @@ PVT void ReadHeap (inbuf_t *bp, ml_heap_hdr_t *hdr, ml_state_t *msp, ml_val_t *e
 	oldBIBOP, addrOffset, boRegionTbl, externs);
     RunTimeCompUnit = RepairWord (
 	RunTimeCompUnit, oldBIBOP, addrOffset, boRegionTbl, externs);
-#ifdef ASM_MATH
-    MathVec = RepairWord (MathVec, oldBIBOP, addrOffset, boRegionTbl, externs);
-#endif
 
   /* Adjust the ML registers to the new address space */
     ASSIGN(MLSignalHandler, RepairWord (
