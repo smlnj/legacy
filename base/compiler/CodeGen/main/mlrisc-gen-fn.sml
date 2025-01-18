@@ -1326,7 +1326,9 @@ functor MLRiscGen (
 	     * Generate code
 	     *)
 		(** RECORD **)
-	      and gen (C.RECORD(C.RK_VECTOR, vl, w, e), hp) = mkVector(vl, w, e, hp)
+	      and gen (C.RECORD(rk, [], _, _), _) =
+                    error ("gen: zero-length " ^ PPCps.rkToString rk)
+                | gen (C.RECORD(C.RK_VECTOR, vl, w, e), hp) = mkVector(vl, w, e, hp)
 		| gen (C.RECORD(C.RK_FCONT, vl, w, e), hp) = mkFblock(vl, w, e, hp)
 		| gen (C.RECORD(C.RK_RAW64BLOCK, vl, w, e), hp) = mkFblock(vl, w, e, hp)
 		| gen (C.RECORD(C.RK_RAWBLOCK, vl, w, e), hp) = mkIntBlock(vl, w, e, hp)
