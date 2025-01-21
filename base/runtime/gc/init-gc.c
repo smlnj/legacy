@@ -369,8 +369,6 @@ void GetGCStats (ml_state_t *msp, gc_stats_t *statsOut)
     statsOut->allocCnt = ROUND_COUNT(&heap->numAlloc);
 #ifdef COUNT_STORE_LIST
     statsOut->storeCnt = heap->numStores.cnt;
-#else
-    statsOut->storeCnt = 0;
 #endif
 
     statsOut->allocFirstCnt = ROUND_COUNT(&heap->numAlloc1);
