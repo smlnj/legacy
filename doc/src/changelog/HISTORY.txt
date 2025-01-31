@@ -105,7 +105,15 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //////////////////////////////////////////////////////////////////////
 
 //====================================================================
-//== Recent updates
+== Recent updates
+
+//--------------------------------------------------------------------
+[2025-01-31]::
+Add `uEq` comparison function to constant arithmetic library and use it to
+constant-fold word equality.  This change fixes {issue-base}/341[Issue #341
+(Incorrect constant folding of word equality)].
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
 
 //====================================================================
 == Version 110.99.7.1; 2025/01/17

@@ -77,6 +77,9 @@ gforge bug tracker.
 | [.bugid]#337#
 | {issue-base}/337[compiler bug aborts build of istari]
 | n.a.
+| [.bugid]#341#
+| {issue-base}/341[Incorrect constant folding of word equality]
+| n.a.
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]
