@@ -96,6 +96,7 @@ latex.out/
 
 # autoconf files
 configure
+configure~
 config.status
 autom4te.cache
 
@@ -104,19 +105,26 @@ autom4te.cache
 preloads.standard
 ./sml.boot.*
 asdl/Makefile
+asdl/config/config_h.in
 asdl/examples/Makefile
 asdl/doc/Makefile
 asdl/doc/manual-2.0/Makefile
 asdl/doc/manual-3.0/Makefile
 asdl/src/Makefile
+asdl/src/asdlgen/back-end/sml/fragments.gmk
+asdl/src/asdlgen/back-end/sml/fragments.sml
+asdl/src/asdlgen/common/config.sml
 asdl/src/tests/basics/Makefile
 asdl/src/tests/options/Makefile
 asdl/src/tests/primitives/Makefile
 asdl/src/tests/sequences/Makefile
 asdl/src/tests/Makefile
 asdl/src/gen/fragments/Makefile
+asdl/src/gen/fragments/mkfrags.sh
+asdl/src/gen/fragments/mkmk.sh
 asdl/src/asdlgen/Makefile
 asdl/src/lib/cxx/Makefile
+asdl/src/lib/cxx/include/asdl/config.h
 asdl/src/lib/Makefile
 base/cm/parse/cm.grm.desc
 base/cm/parse/cm.grm.sig
