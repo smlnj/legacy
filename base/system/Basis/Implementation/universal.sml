@@ -57,5 +57,6 @@ structure Universal :> UNIVERSAL =
 	   of SOME x => x
 	    | NONE => raise Match
 	  (* end case *))
+    fun tagTryProject (tag : 'a tag) univ = #prj tag univ
 
   end
