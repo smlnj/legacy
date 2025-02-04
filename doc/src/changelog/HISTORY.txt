@@ -108,6 +108,16 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
+[2025-02-04]::
+Added additional numeric-conversion fusions to the CPS contraction
+phase.  Also fixed the logic for `TESTU` fusions and made sure that
+constant arguments are normalized when doing constant folding.  These
+changes address {issue-base}/340[Issue #340 (`Word.toInt` does not
+raise an exception when out of range)].
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2025-01-31]::
 Add `uEq` comparison function to constant arithmetic library and use it to
 constant-fold word equality.  This change fixes {issue-base}/341[Issue #341

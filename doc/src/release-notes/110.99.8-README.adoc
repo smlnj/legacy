@@ -41,6 +41,11 @@ FILES::
 
 === Compiler
 
+* Fixed several bugs (including Issues {issue-base}/340[#340] and
+  {issue-base}/341[#341]) in the contraction of numeric conversions.
+  Also added some missing fusion rules for conversions via the
+  `IntInf.int` type.
+
 === CM
 
 === MLRISC
@@ -76,6 +81,9 @@ gforge bug tracker.
 | Gforge Bug
 | [.bugid]#337#
 | {issue-base}/337[compiler bug aborts build of istari]
+| n.a.
+| [.bugid]#340#
+| {issue-base}/340[`Word.toInt` does not raise an exception when out of range]
 | n.a.
 | [.bugid]#341#
 | {issue-base}/341[Incorrect constant folding of word equality]
