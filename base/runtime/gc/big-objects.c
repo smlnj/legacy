@@ -1,6 +1,6 @@
 /*! \file big-objects.c
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2025 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *
  * Code for managing big-object regions.
@@ -28,7 +28,7 @@ void PrintRegionMap (bigobj_region_t *r)
 	    dq = dp;
 	}
 	if (BO_IS_FREE(dp))
-	    SayDebug ("_");
+	    SayDebug ("-");
 	else
 	    SayDebug ("X");
     }
@@ -53,6 +53,10 @@ bigobj_desc_t *BO_AllocRegion (heap_t *heap, Addr_t reqSzB)
     bigobj_region_t *region;
     mem_obj_t	    *memObj;
     bigobj_desc_t   *desc;
+
+    if (reqSzB < MIN_BOREGION_SZB) {
+        reqSzB = MIN_BOREGION_SZB;
+    }
 
   /* Compute the memory-object size for the region.  A region consists of
    * a header followed by big-object pages.  The size of the header depends
@@ -118,7 +122,7 @@ bigobj_desc_t *BO_AllocRegion (heap_t *heap, Addr_t reqSzB)
 
   /* initialize the descriptor for the region's memory */
     desc->obj		= region->firstPage;
-    desc->sizeB		= reqSzB;
+    desc->sizeB		= npages * BIGOBJ_PAGE_SZB;
     desc->state		= BO_FREE;
     desc->region	= region;
 
@@ -315,8 +319,9 @@ Byte_t *BO_AddrToCodeObjTag (Word_t pc)
 	region = (bigobj_region_t *)BIBOP_INDEX_TO_ADDR(indx);
 	return BO_GetCodeObjTag (ADDR_TO_BODESC(region, pc));
     }
-    else
+    else {
 	return NIL(Byte_t *);
+    }
 
 } /* end of BO_AddrToCodeObjTag */
 
