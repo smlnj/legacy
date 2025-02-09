@@ -66,7 +66,7 @@
 #define exncont		REGOFF(8224,RSP)
 #define baseptr		REGOFF(8216,RSP)	/* start address of module */
 #define tempmem0	REGOFF(8192,RSP)
-#define pc		REGOFF(8208,RSP)	/* gcLink */
+#define pc		REGOFF(8208,RSP)	/* aka gcLink */
 #define mlStatePtr	REGOFF(8200,RSP)
 
 /* space reserved for spilling registers */

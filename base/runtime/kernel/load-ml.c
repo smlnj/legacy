@@ -37,4 +37,6 @@ void LoadML (const char *loadImage, heap_params_t *heapParams)
 
     RunML (msp);
 
+    FreeMLState (msp);
+
 } /* end of LoadML */

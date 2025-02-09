@@ -1,9 +1,13 @@
 /* gc.h
  *
- * COPYRIGHT (c) 1992 AT&T Bell Laboratories
- *
  * The external interface to the garbage collector.
  *
+ * \author John Reppy
+ */
+
+/*
+ * COPYRIGHT (c) 2025 The Fellowship of SML/NJ (https://www.smlnj.org)
+ * All rights reserved.
  */
 
 #ifndef _GC_
@@ -22,6 +26,8 @@
 /* typedef struct heap heap_t; */	/* from ml-base.h */
 
 extern void InitHeap (ml_state_t *msp, bool_t isBoot, heap_params_t *params);
+extern void FreeHeap (heap_t *heap);
+
 extern void InvokeGC (ml_state_t *msp, int level);
 extern void InvokeGCWithRoots (ml_state_t *msp, int level, ...);
 extern bool_t NeedGC (ml_state_t *msp, Word_t nbytes);

@@ -9,6 +9,10 @@
 #ifndef _CACHE_FLUSH_
 #define _CACHE_FLUSH_
 
+#ifndef _ML_BASE_
+#include "ml-base.h"
+#endif
+
 #if defined(ARCH_X86)
 /* 386 & 486 have unified caches and the pentium has hardware consistency */
 #  define FlushICache(addr, size)

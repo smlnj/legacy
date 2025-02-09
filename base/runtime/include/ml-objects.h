@@ -349,7 +349,7 @@ extern ml_val_t ML_AllocRealdarray (ml_state_t *msp, Word_t len);
 extern ml_val_t ML_AllocArrayData (ml_state_t *msp, Word_t len, ml_val_t initVal);
 extern ml_val_t ML_AllocArray (ml_state_t *msp, Word_t len, ml_val_t initVal);
 extern ml_val_t ML_AllocVector (ml_state_t *msp, Word_t len, ml_val_t initVal);
-extern ml_val_t ML_AllocRaw (ml_state_t *msp, Word_t len);
+extern ml_val_t ML_AllocRaw (ml_state_t *msp, Word_t nWords);
 extern void ML_ShrinkRaw (ml_state_t *msp, ml_val_t v, Word_t nWords);
 extern ml_val_t ML_AllocRaw64 (ml_state_t *msp, Word_t len);
 

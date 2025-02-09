@@ -134,7 +134,10 @@ PVT void ParseOptions (int argc, char **argv, heap_params_t **heapParams)
 		SilentLoad = FALSE;
 	    }
 	    else if (MATCH("objects")) {
-	      DumpObjectStrings = TRUE;
+	        DumpObjectStrings = TRUE;
+	    }
+	    else if (MATCH("gcmessages")) {
+		GCMessages = TRUE;
 	    }
 	    else if (MATCH("debug")) {
 		CHECK("debug");
