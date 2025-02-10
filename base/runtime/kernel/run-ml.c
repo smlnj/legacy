@@ -30,6 +30,9 @@
 #ifdef ENABLE_CACHEGRIND
 #include "valgrind/cachegrind.h"
 #endif
+#ifdef ENABLE_MEMCHECK
+#include "valgrind/memcheck.h"
+#endif
 
 /* local functions */
 PVT void UncaughtExn (ml_val_t e);
@@ -98,13 +101,21 @@ void RunML (ml_state_t *msp)
 
         ASSIGN(ProfCurrent, prevProfIndex);
 #ifdef ENABLE_CACHEGRIND
-        /* turn on cachegrind instrumentation for ML code */
-        CACHEGRIND_START_INSTRUMENTATION
+        /* turn on cachegrind instrumentation for SML code */
+        CACHEGRIND_START_INSTRUMENTATION;
+#endif
+#ifdef ENABLE_MEMCHECK
+        /* turn off error reporting while executing SML code */
+        VALGRIND_DISABLE_ERROR_REPORTING;
 #endif
         request = restoreregs(msp);
+#ifdef ENABLE_MEMCHECK
+        /* turn off error reporting while executing SML code */
+        VALGRIND_ENABLE_ERROR_REPORTING;
+#endif
 #ifdef ENABLE_CACHEGRIND
-        /* turn off cachegrind instrumentation for ML code */
-        CACHEGRIND_STOP_INSTRUMENTATION
+        /* turn off cachegrind instrumentation for SML code */
+        CACHEGRIND_STOP_INSTRUMENTATION;
 #endif
         prevProfIndex = DEREF(ProfCurrent);
         ASSIGN(ProfCurrent, PROF_RUNTIME);

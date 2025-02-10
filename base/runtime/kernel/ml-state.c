@@ -89,6 +89,16 @@ ml_state_t *AllocMLState (bool_t isBoot, heap_params_t *heapParams)
 
 } /* end of AllocMLState */
 
+void FreeMLState (ml_state_t *msp)
+{
+    FreeHeap (msp->ml_heap);
+
+    FREE(msp);
+    for (int i = 0;  i < NumVProcs;  ++i) {
+        FREE(VProc[i]);
+    }
+}
+
 /* InitVProcState:
  */
 PVT void InitVProcState (vproc_state_t *vsp)

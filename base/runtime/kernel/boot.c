@@ -119,6 +119,8 @@ void BootML (const char *bootlist, heap_params_t *heapParams)
         }
     }
 
+    FreeMLState (msp);
+
 } /* end of BootML */
 
 
