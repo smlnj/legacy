@@ -1,5 +1,10 @@
 (* Copyright 1996 by AT&T Bell Laboratories *)
 (* elabmod.sml *)
+(* This appears to be a partially _rationalized_ rewrite of elabmod.sml.
+ * - "constrStr" function renamed to "constrainStr
+ * - constrainStr returns an structure option, with the NONE case leading to construction of
+ *   a dummy return value where constrainStr is called -- which probably should be avoided.
+ *)
 
 signature ELABMOD =
 sig
