@@ -109,6 +109,14 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 
 //--------------------------------------------------------------------
 [2025-02-04]::
+Add the `CheckCPS` module, which implements some basic invariant
+checking on the CPS IR.  Setting the `Control.CG.checkCPS` flag
+to `true` will enable checks between the CPS transformation passes.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
+[2025-02-04]::
 Added additional numeric-conversion fusions to the CPS contraction
 phase.  Also fixed the logic for `TESTU` fusions and made sure that
 constant arguments are normalized when doing constant folding.  These
