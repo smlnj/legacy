@@ -67,7 +67,12 @@ structure PrimTyc :> PRIM_TYC =
 	  (* end case *))
 
     val ptc_int    = PT_NUM Target.defaultIntSz
-    fun ptc_num n  = PT_NUM n
+    (* return the FLINT primitive type for a given size of int or word.
+     * Note that we use the default tagged integer type to represent any
+     * numeric type of smaller precision.
+     *)
+    fun ptc_num n  = PT_NUM(Int.max(n, Target.defaultIntSz))
+
     val ptc_real   = PT_REAL Target.defaultRealSz
     val ptc_string = PT_STRING
     val ptc_exn    = PT_EXN
@@ -161,26 +166,20 @@ structure PrimTyc :> PRIM_TYC =
     fun realSize (PT_REAL sz) = SOME sz
       | realSize _ = NONE
 
-  (* return the FLINT primitive type for a given size of int or word.
-   * Note that we use the default tagged integer type to represent any numeric
-   * type of smaller precision.
-   *)
-    fun numPrim n = PT_NUM(Int.max (n, Target.defaultIntSz))
-
   (* mapping from Types.tycon to primtycs *)
     val primTycons = [
 	  (* int types *)
 	    (BT.intTycon, PT_NUM Target.defaultIntSz),
-	    (BT.int32Tycon, numPrim 32),
-	    (BT.int64Tycon, numPrim 64),
+	    (BT.int32Tycon, ptc_num 32),
+	    (BT.int64Tycon, ptc_num 64),
 	  (* word types *)
 	    (BT.wordTycon, PT_NUM Target.defaultIntSz),
-	    (BT.word8Tycon, numPrim 8),
-	    (BT.word32Tycon, numPrim 32),
-	    (BT.word64Tycon, numPrim 64),
+	    (BT.word8Tycon, ptc_num 8),
+	    (BT.word32Tycon, ptc_num 32),
+	    (BT.word64Tycon, ptc_num 64),
 	  (* other atomic types *)
 	    (BT.realTycon, PT_REAL 64),
-	    (BT.charTycon, numPrim 8),
+	    (BT.charTycon, ptc_num 8),
 	    (BT.exnTycon, PT_EXN),
 	    (BT.vectorTycon, PT_VECTOR),
 	    (BT.arrayTycon, PT_ARRAY),

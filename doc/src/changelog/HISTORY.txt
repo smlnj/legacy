@@ -108,6 +108,19 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
+[2025-02-23]::
+Made the translation of built-in numeric types to FLINT primitive
+types more consistent.  Previously, numeric types with fewer bits
+than the default precision were mapped to the default precision,
+while numeric literals of the same types had their precision preserved.
+This inconsistency resulted in FLINT type errors when the `check`
+flag was set to `true`.  We now use the same function for this mapping
+in both situations; this function (`ptc_num`) currently maps all
+smaller types to the default size.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2025-02-21]::
 Add the `CheckCPS` module, which implements some basic invariant
 checking on the CPS IR.  Setting the `Control.CG.checkCPS` flag
