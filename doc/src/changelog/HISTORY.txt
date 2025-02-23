@@ -108,7 +108,7 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
-[2025-02-04]::
+[2025-02-21]::
 Add the `CheckCPS` module, which implements some basic invariant
 checking on the CPS IR.  Setting the `Control.CG.checkCPS` flag
 to `true` will enable checks between the CPS transformation passes.
