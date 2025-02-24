@@ -1,11 +1,15 @@
 (* Copyright 1996 by AT&T Bell Laboratories *)
 (* entpath.sml *)
 
-signature ENT_PATH = sig
+signature ENT_PATH =
+sig
 
   type entVar = Stamps.stamp
   type entPath = entVar list
   type rEntPath
+
+  val mkEntVar : unit -> entVar
+  val eqEntVar : entVar * entVar -> bool
 
   val epnil : entPath
   val repnil : rEntPath
@@ -14,8 +18,8 @@ signature ENT_PATH = sig
   val ep2rep : entPath * rEntPath -> rEntPath
   val rep2ep : rEntPath -> entPath
 
-  val eqEntVar : entVar * entVar -> bool
   val eqEntPath : entPath * entPath -> bool
+      (* true if element-wise equal, same length *)
 
   val cmpEntVar : entVar * entVar -> order
   val cmpEntPath : entPath * entPath -> order
@@ -34,8 +38,11 @@ end  (* signature ENT_PATH *)
 structure EntPath :> ENT_PATH =
 struct
 
+(* imports *)
 local
+
   structure ST = Stamps
+
 in
 
 type entVar = ST.stamp
@@ -43,7 +50,11 @@ type entVar = ST.stamp
 type entPath = entVar list
 (* entPath has entVars in direct order, outer first *)
 
-type rEntPath = entVar list		(* reversed order; abstract *)
+(* rEntPath -- entPath in reversed order; abstract *)
+type rEntPath = entVar list
+
+val eqEntVar = ST.eq
+val mkEntVar = ST.mkStamp
 
 val epnil = []
 val repnil = []
@@ -52,35 +63,36 @@ val repcons = op ::
 val ep2rep = List.revAppend
 val rep2ep = rev
 
-val eqEntVar = ST.eq
 
-(* eqEntPath: elementwise equality of entPaths *)
+(* eqEntPath : entPath * entPath -> bool
+eqEntPath: elementwise equality of entPaths; false if entPaths have unequal lengths *)
 val eqEntPath = ListPair.allEq eqEntVar
 
 val cmpEntVar = ST.compare
 
 (* cmpEntPath: entPath * entPath -> order
- * lexicographic comparison of two entPaths *)
+ * lexicographic comparison of two entPaths, shorter path is less *)
 fun cmpEntPath (ep1, ep2) = 
-  let fun f(a::ar, b::br) =
-            (case ST.compare(a,b) of EQUAL => f(ar,br) | z => z)
-        | f(a::ar, nil) = GREATER
-        | f(nil, b::br) = LESS
-        | f(nil,nil) = EQUAL
-   in f(ep1,ep2)
-  end
+    let fun compare(a::ar, b::br) =
+	      (case ST.compare(a,b) of EQUAL => compare(ar,br) | z => z)
+	  | compare(a::ar, nil) = GREATER
+	  | compare(nil, b::br) = LESS
+	  | compare(nil,nil) = EQUAL
+     in compare(ep1,ep2)
+    end
 
 structure EvDict =
-  RedBlackMapFn(struct type ord_key = entVar 
-                       val compare = cmpEntVar
-                end)
+    RedBlackMapFn(struct
+		    type ord_key = entVar 
+		    val compare = cmpEntVar
+		  end)
 
 (* ListPair.all didn't cut it because it doesn't require lists of equal length
     length ep1 = length ep2 andalso
     ListPair.all eqEntVar (ep1, ep2)
 *)
 
-fun nullEntPath(ep: entPath) = List.null ep
+fun nullEntPath (ep: entPath) = List.null ep
 
 fun entVarToString (v: entVar) = ST.toShortString v
 

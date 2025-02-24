@@ -1,0 +1,124 @@
+2a3,7
+> (* This appears to be a partially _rationalized_ rewrite of elabmod.sml.
+>  * - "constrStr" function renamed to "constrainStr
+>  * - constrainStr returns an structure option, with the NONE case leading to construction of
+>  *   a dummy return value where constrainStr is called -- which probably should be avoided.
+>  *)
+13,14c18,19
+<           level     : bool,                     (* T if top-level decl. *)
+<           tdepth    : int,
+---
+>           level     : bool,                     (* true if top-level decl. *)
+>           tdepth    : int,                      (* deBruijn type/tycon variable binding depth *)
+611c616
+<  * The constrStr function is used to carry out the signature matching
+---
+>  * The constrainStr function is used to carry out the signature matching
+617,620c622,624
+< fun constrStr (transp, sign, str, strDec, strExp, evOp, tdepth, entEnv, rpath,
+<                env, region, compInfo) : A.dec * M.Structure * M.strExp =
+<   let val {resDec=matchedDec, resStr=matchedStr, resExp=matchedExp} =
+<           SM.matchStr{sign=sign, str=str, strExp=strExp, evOp=evOp,
+---
+> fun constrainStr (transp, sign, str, strDec, strExp, evOp, tdepth, entEnv, rpath,
+>                   env, region, compInfo) : (A.dec * M.Structure * M.strExp) option =
+>     (case SM.matchStr{sign=sign, str=str, strExp=strExp, evOp=evOp,
+623,627c627,633
+<    in if transp
+<       then (A.SEQdec[strDec, matchedDec], matchedStr, matchedExp)
+<       else (* instantiate the signature (opaque match) *)
+< 	   let val STR {rlzn=matchedRlzn, access, prim, ...} = matchedStr
+< 	       val {rlzn=abstractRlzn, ...} =
+---
+>        of SOME {resDec, resStr, resExp} => (* matchStr succeeded *)
+> 	    if transp
+> 	    then SOME (A.SEQdec[strDec, resDec], resStr, resExp)
+> 	    else (* instantiate the signature (opaque match) to define the str part*)
+> 	      (case resStr
+> 		 of STR {rlzn=matchedRlzn, access, prim, ...} => 
+> 		      let val {rlzn=abstractRlzn, ...} =
+631c637
+<             in (A.SEQdec[strDec, matchedDec], abstractStr, matchedExp)
+---
+> 		       in SOME (resDec, abstractStr, resExp)
+633c639,641
+<   end (* fun constrStr *)
+---
+> 		  | _ => EM.impossible "constrainStr: bad resStr")
+> 	  | NONE => NONE) (* matchStr failed *)
+>   (* end constrainStr *)
+636c644
+< (*** several invariants:
+---
+> (*** INVARIANTS:
+644c652
+<  *)
+---
+> e *)
+844,845c852,853
+<             let fun h x =
+<                   ES.elabSig {sigexp=x, nameOp=NONE, env=env,
+---
+>             let fun elabsig sigexp =
+>                     ES.elabSig {sigexp=sigexp, nameOp=NONE, env=env,
+849c857
+<                 val (csigOp, transparent) =
+---
+>                 val (constraintSigOp, transparent) =
+851,853c859,861
+<                        of Transparent x => (SOME (h x), true)
+< 			| Opaque x => (SOME (h x), false)
+< 			| _ => (NONE, true))
+---
+>                        of Transparent sigexp => (SOME (elabsig sigexp), true)
+> 			| Opaque sigexp => (SOME (elabsig sigexp), false)
+> 			| NoSig => (NONE, true))
+855c863
+<                 val (entsv, evOp) =
+---
+>                 val (entvarOp1, entvarOp2) =
+858,859c866,867
+< 			| _ => let val nentv = SOME(mkStamp())
+<                                 in (nentv, nentv)
+---
+> 			| _ => let val newEntvar = SOME (mkStamp())
+>                                 in (newEntvar, newEntvar)
+862c870
+<              in (entsv, evOp, csigOp, transparent)
+---
+>              in (entvarOp1, entvarOp2, constraintSigOp, transparent)
+881c889
+< 		      | _ => bug "unexpected while elaborating constrained str")
+---
+> 		      | _ => bug "missing entvar - elabStr..elab[ConstrainedStr]")
+886c894
+< 		of NONE =>
+---
+> 		of NONE =>  (* missing signature *)
+893,895c901,904
+<                       constrStr(transp, csig, str, strDecAbsyn, exp,
+<                                 evOp, depth, entEnv, rpath,
+<                                 env, region, compInfo)
+---
+> 		     (case constrainStr(transp, csig, str, strDecAbsyn, exp, evOp, depth,
+> 					entEnv, rpath, env, region, compInfo)
+>                         of SOME x => x  (* signature match succeeded *)
+> 			 | NONE => (strDecAbsyn, str, exp)) (* signature match failed *)
+1109,1111c1118,1121
+< 		   constrStr(csigTrans, csig, bodyStr, bodyDecAbsyn, bodyExp,
+< 			     entsv, depth', entEnv', IP.IPATH[], env',
+< 			     region, compInfo)
+---
+> 		     (case constrainStr(csigTrans, csig, bodyStr, bodyDecAbsyn, bodyExp, entsv, 
+> 					depth', entEnv', IP.IPATH[], env', region, compInfo)
+> 		        of SOME x => x
+> 			 | NONE => (bodyDecAbsyn, bodyStr, bodyExp))
+1291,1293c1301,1304
+<                     constrStr(transp, csig, str, strDecAbsyn, exp,
+<                               evOp, depth, entEnv0, IP.IPATH[name],
+<                               StaticEnv.atop(env,env0), region, compInfo)
+---
+>                     (case constrainStr(transp, csig, str, strDecAbsyn, exp, evOp, depth, entEnv0,
+> 				       IP.IPATH[name], StaticEnv.atop(env,env0), region, compInfo)
+> 		       of SOME x => x
+> 		        | NONE => (strDecAbsyn, str, exp))
