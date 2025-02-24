@@ -50,8 +50,8 @@ signature ACCESS = sig
       | LISTNIL
 
     datatype consig
-      = CSIG of int * int
-      | CNIL
+      = CSIG of int * int       (* number of constructor functions and constants *)
+      | CNIL                    (* unbounded; e.g., exceptions or numbers *)
 
   (** for printing the access *)
     val prAcc   : access -> string
