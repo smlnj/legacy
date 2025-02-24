@@ -4,12 +4,15 @@
 structure EntityEnv : ENTITY_ENV =
 struct
 
+(* imports *)
 local
+
   structure EP = EntPath
   structure ED = EntPath.EvDict
   structure ST = Stamps
   structure M = Modules
   structure T = Types
+
 in
 
 val say = Control_Print.say

@@ -34,12 +34,10 @@ in
 type pathmap = EP.rEntPath MI.umap
 
 (* 
- * A structure body (struct decls end) is "closed" if 
- *    it is a functor body structure
- * The idea is that the elements of a closed structure are not
- * directly referenced from outside the structure, so the pathEnv
- * local to the closed structure can be discarded after the structure
- * body is elaborated.
+ * A structure body (struct decls end) is _closed_ if it is a functor body structure.
+ * The idea is that the elements of a closed structure (i.e. a functor body) are not directly
+ * referenced from outside the structure, so the pathEnv local to the closed structure can be
+ * discarded after the structure body is elaborated.
  *)
 
 (* pathmap maps stamps to full entPaths relative to current functor context *)

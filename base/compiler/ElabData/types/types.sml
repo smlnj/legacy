@@ -75,7 +75,7 @@ and tyckind
       family : dtypeFamily,
       stripped : bool}            (* true if datatype has matched a simple type spec *)
   | ABSTRACT of tycon
-  | FLEXTYC of tycpath            (* instantiated formal type constructor *)
+  | FLEXTYC of tycpath            (* instantiated formal type constructor; get rid of it *)
   | FORMAL                        (* used only inside signatures *)
   | TEMP                          (* used only during datatype elaborations *)
 
@@ -91,8 +91,8 @@ and tycon
        entPath : EP.entPath,
        path : IP.path}
   | RECORDtyc of label list
-  | RECtyc of int                 (* used only in domain type of dconDesc *)
-  | FREEtyc of int                (* used only in domain type of dconDesc *)
+  | RECtyc of int                 (* index into datatype family; used only in domain type of dconDesc *)
+  | FREEtyc of int                (* index into free tyc list; used only in domain type of dconDesc *)
   | ERRORtyc                      (* for error recovery, and used as a dummy
                                      tycon in ElabMod.extractSig *)
 
