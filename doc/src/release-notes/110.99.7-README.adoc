@@ -59,10 +59,6 @@ changes.
 
 * Added `Unsafe.Array.create0` for creating zero-length polymorphic arrays.
 
-* Added `gcCounterReset` and `gcCounterRead` functions to `SMLofNJ.Internal.GC`
-  structure.  These functions provide access to some basic statistics about
-  allocation and garbage collection.
-
 === SML/NJ Library
 
 * Added the `decode_strategy` mechanism to the `UTF8` structure.  This
