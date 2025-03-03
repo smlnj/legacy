@@ -11,7 +11,7 @@
  *    The cleanup involves getting rid of duplicate SCC code (using
  *    the library module GraphSCCFn) and making use of integer set-
  *    and map-modules (from the same library).  The use of SortedList
- *    has been eliminated.
+ *    has been eliminated, using LambdaVar.Set in its place.
  *)
 
 structure Feedback :> sig

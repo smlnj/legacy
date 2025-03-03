@@ -13,29 +13,45 @@ signature FREEMAP =
 		  -> (CPS.cexp -> CPS.lvar list)
     val cexp_freevars: (CPS.lvar->CPS.lvar list)
                        -> CPS.cexp -> CPS.lvar list
-    val freemapClose : CPS.cexp -> ((CPS.lvar -> CPS.lvar list) *
-			               (CPS.lvar -> bool) *
-			               (CPS.lvar -> bool))
+    val freemapClose : CPS.cexp -> (CPS.lvar -> CPS.lvar list)
+				   * (CPS.lvar -> bool)
+   			           * (CPS.lvar -> bool)
   end
 
-structure FreeMap : FREEMAP = struct
+structure FreeMap : FREEMAP =
+struct
 
 local
-  open CPS SortedList
-  structure Intset = struct
-    fun new() = ref IntRedBlackSet.empty
-    fun add set i = set := IntRedBlackSet.add(!set, i)
-    fun mem set i =  IntRedBlackSet.member(!set, i)
-    fun rmv set i = set := IntRedBlackSet.delete(!set, i)
-  end
-in
+  open CPS
+ 
+ (* Could just use IntRedBlackSet except that here a set is a ref to a set *)
+ structure Intset =
+ struct
 
-fun clean l =
-  let fun vars(l, VAR x :: rest) = vars(x::l, rest)
-	| vars(l, _::rest) = vars(l,rest)
-	| vars(l, nil) = uniq l
-   in vars(nil, l)
-  end
+   type setRef = IntRedBlackSet ref
+
+   (* new : unit -> setRef *)
+   fun new () = ref IntRedBlackSet.empty
+
+   (* add : setRef * int -> unit *)
+   fun add (set, i) = set := IntRedBlackSet.add (!set, i)
+
+   (* subtract : setRef * int -> unit *)
+   fun subtract (set, i) = set := IntRedBlackSet.subtract (!set, i)
+
+   (* member : setRef * int -> bool *)
+   fun member (set, i) = IntRedBlackSet.member (!set, i)
+ end
+
+in (* local *)
+
+(* clean : CPS.value list -> ? *)
+fun clean (l: CPS.value) =
+    let fun vars(l, VAR x :: rest) = vars(x::l, rest)
+	  | vars(l, _::rest) = vars(l,rest)
+	  | vars(l, nil) = uniq l  (* uniq Undefined??? *)
+     in vars(nil, l)
+    end
 
 val enter = fn (VAR x,y) => enter(x,y) | (_,y) => y
 val error = ErrorMsg.impossible

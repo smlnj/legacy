@@ -16,7 +16,7 @@ Group
 	signature INVPATH
 	signature CONVERTPATHS
 	signature LAMBDA_VAR
-	signature STAMPS
+	signature STAMP
 	signature ENT_PATH
 	signature VARCON
 	signature MODULES
@@ -51,7 +51,7 @@ Group
 	structure InvPath
 	structure ConvertPaths
 	structure LambdaVar
-	structure Stamps
+	structure Stamp
 	structure StampMap
 	structure EntPath
 	structure VarCon
@@ -98,8 +98,8 @@ is
 	basics/lambdavar.sml
 	basics/env.sig
 	basics/env.sml
-	basics/stamps.sig
-	basics/stamps.sml
+	basics/stamp.sig
+	basics/stamp.sml
 	basics/stampmap.sml
 	basics/coresym.sml
 	basics/access.sig

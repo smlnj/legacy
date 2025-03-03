@@ -1,16 +1,17 @@
+base/compiler/MAP
+# Front End File/Module Map
+---------------------------
+# Does not cover FLINT, see FLINT/MAP
 
-Front End Map
--------------
-
-A color-coded map of the directory structure is available as
-a pdf file, or Omnigraffle source file.
+# A color-coded map of the directory structure is available as a pdf file, or Omnigraffle
+#source file. [This is out of date.]
 
 1. Lexing and Parsing
 ----------------------
 
   * syntax trees (AST) produced by parser
-  * lexical analysis (via ML-Lex spec)
-  * parsing (via ML-Yacc spec)
+  * lexical analysis (lexer produced from an ML-Lex spec)
+  * parsing (parser produced from an ML-Yacc spec)
 
 Parse/
   lexing and parsing, producing ast (concrete syntax trees)
@@ -125,6 +126,10 @@ Basics/
       A common representation of typed real literals to use in
       intermediate representations (from Absyn to CPS).
       defs: RealConst
+    compinfo.sml
+      New version of CompInfo structure providing "hooks" for stamp and lvar generation
+      and error management relative to a given "source".
+      defs: COMP_INFO, CompInfo
 
   Basics/util/
     wordstr-hashtable.sml
@@ -188,27 +193,33 @@ Basic datastructures used in elaboration (including type checking)
   ElabData/basics/
   basic representation types used in elaboration, plus coresym
     lambdavar.sig/sml
-      lambda variables, the abstract representation of variables, used
+      lambda variables, the abstract representation of value variables, used
       as roots of dynamic access chains
       defs: LAMBDA_VAR, LambdaVar
+    tyconvar.sig/sml
+      tycon variables, the abstract representation of variables, generated
+      during module elaboration and translated for use in FLINT.
+      [ Should kinds (TKinds) be assigned? ] 
+      defs: TYCON_VAR, TyconVar
     access.sig/sml
       dynamic access paths
       defs: ACCESS, Access : ACCESS
     debindex.sig/sml [FLINT, moved from Elaborator/basics]
-      FLINT book-keeping (move back to FLINT)
+      FLINT deBruijn indexes and related bookkeeping
+      [Should be eliminated, probably by using tycon vars instead?]
       defs: DEB_INDEX, DebIndex : DEB_INDEX
     env.sig/sml
       generic environments, mapping symbols to unspecified binding type
       defs: ENV, Env: ENV, INTSTRMAPV
-    stamps.sig/sml
+    stamp.sig/sml  (* !file names have changed *)
       static identifiers, used for nominal type equivalence
-      defs: STAMPS, Stamps:> STAMPS
+      defs: STAMP, Stamp:> STAMP (NOTE: change of names of files, STAMPS, Stamps)
     stampmap.sml
       generic finite mappings over stamps
       defs: StampMap
-    sympaths.sig/sml
+    sympaths.sig/sml (plural file name probably justified in this case, because 2 kinds of paths)
       SymPath and InvPath: direct and inverse symbolic paths (selecting
-      module components)
+      module components, aka "qualified identifiers")
       defs: SYMPATH, INVPATH, CONVERTPATHS, SymPath, InvPath, ConvertPaths
     coresym.sml
       defines the special structure symbol "_Core" used to access certain

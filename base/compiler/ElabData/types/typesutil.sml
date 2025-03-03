@@ -114,6 +114,7 @@ structure TypesUtil : TYPESUTIL =
 
     fun tyconArity(GENtyc { arity, ... } | PATHtyc{arity,...}) = arity
       | tyconArity(DEFtyc{tyfun=TYFUN{arity,...},...}) = arity
+							     
       | tyconArity(RECORDtyc l) = length l
       | tyconArity(ERRORtyc) = 0
       | tyconArity tycon = bugTyc("tyconArity",tycon)

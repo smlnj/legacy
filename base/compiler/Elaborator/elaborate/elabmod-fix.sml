@@ -2,6 +2,8 @@
 (* Copyright 1996 by AT&T Bell Laboratories *)
 (* Copyright 2025 by the Fellowship of SML/NJ *)
 
+(* NEW VERSION -- under construction *)
+
 (* This is a partially _rationalized_ rewrite of elabmod.sml.
  * - "constrStr" function renamed to "constrainStr
  * - constrainStr returns an structure option, with the NONE case leading to construction of
@@ -40,7 +42,7 @@ local
   structure S  = Symbol
   structure IP = InvPath
   structure SP = SymPath
-  structure SS = SpecialSymbols
+  structure SS = SpecialSymbols  (* should go away, or at least move to Elaborator/modules *)
   structure EP = EntPath
   structure EPC = EntPathContext
   structure EE = EntityEnv

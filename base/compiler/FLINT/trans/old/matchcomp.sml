@@ -2,6 +2,8 @@
  *
  * COPYRIGHT (c) 2017 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
+ * 
+ * This is the old Bill Aiken version.  Not used now, should delete now. *)
  *)
 
 signature MATCH_COMP =
@@ -58,10 +60,22 @@ local structure DA = Access
 in
 
 (* utility functions for managing rule lists (type rules) *)
-val intersect=SortedList.intersect
-val union = SortedList.merge
-val setDifference = SortedList.difference
-fun member(i,set) = SortedList.member set i
+(* FIX[SortedList]: what sort of lists are we dealing with here.  Obviously not sets of lvars for which
+ * we have the LambdaVar.Set structure. Looks like we need sets of ints (rule numbers)? 
+ * Maybe IntRedBlackSet is the right structure for this purpose?
+ * FIXED! no longer relevant.  This is the old Aitken match compiler code. *)
+
+type ruleSet = IntRedBlackSet.set ?
+
+(* union : ruleSet * ruleSet -> ruleSet *)
+val union = IntRedBlackSet.union
+
+(* intersect : ruleSet * ruleSet -> ruleSet *)
+val intersect = IntRedBlackSet.intersect
+
+(* (set)difference : ruleSet * ruleSet -> ruleSet *)
+val setDifference = IntRedBlackSet.difference  (* rename: setDifference -> difference *)
+fun member (i,set) = IntRedBlackSet.member (set, i)
 
 val debugging = Control.MC.debugging
 fun bug s = EM.impossible ("MatchComp: " ^ s)

@@ -4,6 +4,13 @@
  * All rights reserved.
  *)
 
+(* [DBM, 2025.02.27] Edited this file to replace SortedList (SL) functions with
+   appropriate LambdaVar.Set functions (local structure LVS), e.g. SL.merge -> LVS.union.
+   This probably introduces lots of type errors because the types LVS.set (lvar sets) and
+   SortedList.t = lvar list (implicitly sorted), do not agree. Code should be cleaned up
+   to consistently use LVS.set (= LambdaVar.Set.set) instead of lvar lists
+   (= LambdaVar.SortedList.t) *)
+
 (***************************************************************************
  *                                                                         *
  * freemapClose                                                            *
@@ -19,32 +26,46 @@ signature FREECLOSE =
   sig
     type snum
     type fvinfo
-    val freemapClose : CPS.function -> (CPS.function * (CPS.lvar -> snum)
-                                        * (CPS.lvar -> fvinfo)
-                                        * (CPS.lvar -> bool))
+    val freemapClose : CPS.function -> CPS.function
+				       * (CPS.lvar -> snum)
+                                       * (CPS.lvar -> fvinfo)
+                                       * (CPS.lvar -> bool)
   end
 
 structure FreeClose : FREECLOSE = struct
 
-    open Access CPS	(* replace with rebinding *)
-
+    structure A = Access
     structure LV = LambdaVar
     structure LVS = LV.Set
     structure LVM = LV.Map
-    structure SL = LV.SortedList
 
-  (* imperative sets of lvars *)
-    structure Set = struct
-      fun new() = ref LV.Set.empty
-      fun add set i = set := LV.Set.add(!set, i)
-      fun mem set i =  LV.Set.member(!set, i)
-      fun rmv set i = set := LV.Set.delete(!set, i)
+    (* imperative sets of lvars *)
+    structure SetRef =
+    struct
+
+      type setRef = LVS.set ref  (* reference to a set of lvars *)
+
+      (* new: unit -> setRef *)
+      fun new () = ref LV.Set.empty
+
+      (* add: setRef -> LV.lvar -> unit *)
+      fun add set lvar = set := LV.Set.add(!set, lvar)
+
+      (* rmv: setRef -> LV.lvar -> unit *)
+      fun rmv set lvar = set := LV.Set.subtract(!set, lvar)
+
+      (* mem: setRef -> LV.lvar -> bool *)
+      fun mem set lvar =  LV.Set.member(!set, lvar)
     end
 
-    structure SCC = GraphSCCFn (struct
-        type ord_key = LV.lvar
-	val compare = LV.compare
-      end)
+    structure SCC =
+      GraphSCCFn
+        (struct
+          type ord_key = LV.lvar
+	  val compare = LV.compare
+         end)
+
+    open CPS	(* replace with rebinding *)
 
     (***************************************************************************
      *  Misc and utility functions                                             *
@@ -53,34 +74,41 @@ structure FreeClose : FREECLOSE = struct
     fun vp v = say(LV.lvarName(v))
 
     fun addvL(v,NONE) = NONE
-      | addvL(v,SOME l) = SOME(SL.enter(v,l))
+      | addvL(v,SOME l) = SOME (LVS.add' (v,l))
 
-    val enter = fn (VAR x,y) => SL.enter(x,y) | (_,y) => y
+    val enter = fn (VAR x,y) => LVS.add' (x,y) | (_,y) => y
     val error = ErrorMsg.impossible
     fun warn s = () (* app say ["WARNING: ",s,"\n"] *)
 
-    fun addL(v,NONE) = NONE
-      | addL(v,SOME l) = SOME(enter(v,l))
+    fun addL (v,NONE) = NONE
+      | addL (v,SOME l) = SOME(enter(v,l))
 
-    fun overL(r,NONE) = NONE
-      | overL(r,SOME l) = SOME (SL.merge(r,l))
+    fun overL (r,NONE) = NONE
+      | overL (r,SOME l) = SOME (LVS.union (r,l))
 
-    fun mergeL(NONE,r) = r
-      | mergeL(l,NONE) = l
-      | mergeL(SOME l,SOME r) = SOME (SL.merge(l,r))
+    fun mergeL (NONE,r) = r
+      | mergeL (l,NONE) = l
+      | mergeL (SOME l,SOME r) = SOME (LVS.union (l,r))
 
-    fun removeL(vl,NONE) = NONE
-      | removeL(vl,SOME r) = SOME (SL.remove(vl,r))
+    (* removeL : LVS.set * LV.lvar list option -> LVS.set option *)
+    (* remove an optional list of lvars from an lvar set. Returns NONE if
+     * the lvar list option argument is NONE *)
+    fun removeL (lvs: LVS.set, NONE: LV.lvar lis option) = NONE
+      | removeL (lvs, SOME r) = SOME (LVS.subtractList(lvs,r))
 
-    fun rmvL(v,NONE) = NONE
-      | rmvL(v,SOME r) = SOME (SL.rmv(v,r))
+    (* rmvL : LVS.set * LV.lvar option -> LVS.set option *)
+    (* remove an optional single lvar from an lvar set. Returns NONE if
+     * the lvar option argument is NONE *)
+    fun rmvL (lvs: LVS.set, NONE: LV.lvar option) = NONE
+      | rmvL (lvs, SOME r) = SOME (LVS.subtract(lvs,r))
 
-    fun clean l =
-      let fun vars(l, (VAR x) :: rest) = vars(x::l, rest)
-	    | vars(l, _::rest) = vars(l,rest)
-	    | vars(l, nil) = SL.uniq l
-       in vars(nil, l)
-      end
+    (* clean : CPS.value list -> LVS.set *)
+    fun clean (l: CPS.value list) : LVS.set =
+	let fun vars(l, (VAR x) :: rest) = vars(x::l, rest)
+	      | vars(l, _::rest) = vars(l,rest)
+	      | vars(l, nil) = LVS.fromList l
+	 in vars(nil, l)
+	end
 
     fun filter p vl =
       let fun f(x::r,l) = if p x then f(r,x::l) else f(r,l)
@@ -132,24 +160,24 @@ structure FreeClose : FREECLOSE = struct
      *                                                                         *
      ***************************************************************************)
 
-    val escapes = Set.new()
-    val escapesP = Set.mem escapes
-    fun escapesM(VAR v) = Set.add escapes v
+    val escapes = SetRef.new()
+    val escapesP = SetRef.mem escapes
+    fun escapesM(VAR v) = SetRef.add escapes v
       | escapesM _ = ()
 
-    val users = Set.new()
-    val usersP = Set.mem users
-    val usersM = Set.add users
+    val users = SetRef.new()
+    val usersP = SetRef.mem users
+    val usersM = SetRef.add users
 
-    val known = Set.new()
-    val knownP = Set.mem known
-    val knownM = Set.add known
+    val known = SetRef.new()
+    val knownP = SetRef.mem known
+    val knownM = SetRef.add known
     fun knownK k = (k <> CONT) andalso (k <> ESCAPE)
     fun frmszK k = (k = CONT) orelse (k = KNOWN_TAIL)
 
-    val contset = Set.new()
-    val contP = Set.mem contset
-    val contM = Set.add contset
+    val contset = SetRef.new()
+    val contP = SetRef.mem contset
+    val contM = SetRef.add contset
     fun contK k = (k = CONT) orelse (k = KNOWN_CONT) (* continuation funs ? *)
     fun econtK k = (k = CONT)                (* escaping continuation funs ? *)
 
@@ -284,18 +312,20 @@ structure FreeClose : FREECLOSE = struct
 
     (* remove a single lvar *)
     fun rmvsV (v, []) = []
-      | rmvsV (v, l as ((u as (x,_,_))::r)) = (case LV.compare(x, v)
+      | rmvsV (v, l as ((u as (x,_,_))::r)) =
+	(case LV.compare(x, v)
 	   of LESS => u :: rmvsV(v,r)
 	    | EQUAL => r
 	    | GREATER => l
-	  (* end case *))
+	(* end case *))
 
     (* remove a list of lvars *)
-    fun removeV (vl, l) = let
-	  fun h (l1 as (x1::r1), l2 as ((u2 as (x2,_,_))::r2)) = (case LV.compare(x1, x2)
-		 of LESS => h(r1,l2)
-		  | EQUAL => h(r1,r2)
-		  | GREATER => u2 :: h(l1,r2)
+    fun removeV (vl, l) =
+	let fun h (l1 as (x1::r1), l2 as ((u2 as (x2,_,_))::r2)) =
+		(case LV.compare(x1, x2)
+		   of LESS => h(r1,l2)
+		    | EQUAL => h(r1,r2)
+		    | GREATER => u2 :: h(l1,r2)
 		(* end case *))
 	    | h ([], l2) = l2
 	    | h (l1, []) = []
@@ -408,19 +438,22 @@ structure FreeClose : FREECLOSE = struct
     fun knownOpt ([],_,_,_,_) = error "knownOpt in closure 4354"
       | knownOpt (flinfo,died,freeb,gszb,fszb) =
 	  let val newflinfo =
-		let val roots = filter (SL.member died) (V2L freeb)
+		let val roots = filter (fn lv => LVS.member (died,lv)) (V2L freeb)
 		    val graph = map (fn ((_,f,_,_,_),free,_,_) =>
-				       (f,filter (SL.member died) (V2L free))) flinfo
+				       (f, filter (fn lv => LVS.member (died, lv)) (V2L free)))
+				    flinfo
 		    fun loop(old) =
-		      let val new =
-			    foldr (fn ((f,free),total) =>
-			       if SL.member old f then SL.merge(free,total) else total)
-			    old graph
-		       in if length(new) = length(old) then new else loop(new)
-		      end
+			let val new =
+			      foldr
+				(fn ((f,free),total) =>
+				   if LVS.member (old, f) then LVS.union(free,total) else total)
+				old
+				graph
+			 in if length(new) = length(old) then new else loop(new)
+			end
 
 		    val nroots = loop(roots)
-		 in filter (fn ((_,f,_,_,_),_,_,_) => SL.member nroots f) flinfo
+		 in filter (fn ((_,f,_,_,_),_,_,_) => LVS.member (nroots, f)) flinfo
 		end
 
 	      val (nfl,freel,gsz,fsz) =
@@ -431,7 +464,7 @@ structure FreeClose : FREECLOSE = struct
 		    val known' =
 		      case known
 		       of u as [((_,v,args,cl,body),free,gsz,fsz)] =>
-			     (if SL.member (V2L free) v then u
+			     (if LVS.member (V2L, free) v then u
 			      else [((KNOWN,v,args,cl,body),free,gsz,fsz)])
 			| z => z
 
@@ -460,20 +493,21 @@ structure FreeClose : FREECLOSE = struct
      ***************************************************************************)
 
     (*** major gross hack here ***)
-    val ekfuns = Set.new()
-    val ekfunsP = Set.mem ekfuns
-    val ekfunsM = Set.add ekfuns
+    val ekfuns = SetRef.new()
+    val ekfunsP = SetRef.mem ekfuns
+    val ekfunsM = SetRef.add ekfuns
 
     fun freefix (sn,freeb) (fk,f,vl,cl,ce) =
 	 let val (ce',ul,wl,gsz,fsz) =
-	       if contK fk then
-		 (let val n = findsn(f,sn,freeb)
-		      val nn = if econtK fk then n+1 else n
-		   in addsn(f,nn); freevars(sccnum f,nn,ce)
-		  end)
-	       else if knownK fk then (addsn(f,sn); freevars(sccnum f,sn,ce))
-		    else (addsn(f,sn+1); freevars(~1,sn+1,ce))
-	     val args = SL.uniq vl
+		   if contK fk
+		   then (let val n = findsn(f,sn,freeb)
+			     val nn = if econtK fk then n+1 else n
+			  in addsn(f,nn); freevars(sccnum f,nn,ce)
+			 end)
+		   else if knownK fk
+		   then (addsn(f,sn); freevars(sccnum f,sn,ce))
+		   else (addsn(f,sn+1); freevars(~1,sn+1,ce))
+	     val args = LVS.fromList vl
 	     val l = removeV(args,ul)
 	     val z = removeL(args,wl)
 
@@ -498,7 +532,7 @@ structure FreeClose : FREECLOSE = struct
     and freevars(n,sn,ce) =
       case ce
        of FIX(fl,body) =>
-	   let val died = SL.uniq(map #2 fl)
+	   let val died = LVS.fromList (map #2 fl)
 	       val (body',freeb,wl,gszb,fszb) = freevars(n,sn,body)
 	       val flinfo = map (freefix (sn,freeb)) fl
 	       val (header,freel,gsz,fsz) = knownOpt(flinfo,died,freeb,gszb,fszb)
@@ -506,9 +540,10 @@ structure FreeClose : FREECLOSE = struct
 	       val nwl = case wl
 		 of NONE => NONE
 		  | SOME l =>
-		      (let fun h(x,l) = if SL.member died x then mergeL(loopV x,l)
+		      (let fun h(x,l) = if LVS.member (died, x)
+					then mergeL(loopV x,l)
 					else addvL(x,l)
-			in removeL(died,foldr h (SOME []) l)
+			in removeL (died, foldr h (SOME []) l)
 		       end)
 	    in (header(body'),free,nwl,gsz,fsz)
 	   end
@@ -636,7 +671,7 @@ structure FreeClose : FREECLOSE = struct
 				    addV(new,sn,overV(sn,free1,free2))
 				 else if bsecond(p) then
 					 addV(new,sn,overV(sn,free2,free1))
-				      else addV(new,sn,mergePV(sn,free1,free2)))
+			      else addV(new,sn,mergePV(sn,free1,free2)))
 			  val gsz = Int.max(gsz1,gsz2)
 			  val fsz = Int.max(fsz1,fsz2)
 		       in (BRANCH(p,vl,c,e1',e2'),free,wl,gsz,fsz)

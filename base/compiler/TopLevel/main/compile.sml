@@ -12,12 +12,6 @@ functor CompileF (
 
   ) : COMPILE0 = struct
 
-    fun mkCompInfo { source, transform } = CompInfo.mkCompInfo {
-	    source = source,
-	    transform = transform,
-	    mkStampGenerator = CC.mkMkStamp
-	  }
-
     type pickle     = CC.pickle		(* pickled format *)
     type hash       = CC.hash		(* environment hash id *)
     type pid        = CC.pid

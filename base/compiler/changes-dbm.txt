@@ -1,0 +1,29 @@
+* ElabData/main/compinfo.sml replaced by Basics/compiler/compinfo.sml
+  - The main reason is to avoid having to pass a compInfo record to various functions.
+    Instead, we "reset" the compInfo references in the CompInfo structure at the beginning
+    of a compilation by resetting the source and resetting the counters for generating
+    stamps and lvars.
+  => TopLevel/main/compile.sml edited
+  => TopLevel/interact/evalloop.sml edited (evalloop function)
+  
+* ElabData/basics/stamps.{sig,sml} modified and renamed
+  - the exported mkgenerator function is replaced by an internal generator variable used
+    for generating new indices for "fresh" stamps. A new reset function can be used to reset
+    the generator ref to 0
+  => Stamps -> Stamp, stamps.sml -> stamp.sml
+  => STAMPS -> STAMP, stamps.sig -> stamp.sig
+  => made corresponding changes in ElabData/elabdata.cm
+
+* ElabData/basics/lambdavar.{sml,sig} (temporarily new-lambdavar.sml) 
+  - lvars are a record with an optional name, an optional prefix string for generic printing,
+    and an index, which is an int used to identify and compare lvars.
+  - A reset function is added for resetting the counter (lvarCount) used to generate new
+    lvar indices 
+  - The "saveLvarNames" flag is eliminated, since the name, if any, is internalized in the
+    lvar record.
+  - LambdaVar.SortedList replaced by LambdaVar.LvarSet that is defined using RedBlackSetFn.
+  - prLvar --> toString; lvarIsNamed --> isNamed; sameName --> X?; dupLvar --> X; namedLvar --> X;
+    lvarSym, lvarName --> lvarName; toId, fromId --> X; SortedList --> LvarSet (w. renaming)
+  - SortedList.foldmerge --> LambdaVar.Set.addlist?
+  - need new Tbl structure, which requires a HashKey 
+  =>

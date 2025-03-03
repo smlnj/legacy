@@ -20,14 +20,16 @@ functor InvokeGC (
 		        where T = C.T
     structure CFG   : CONTROL_FLOW_GRAPH
 		        where P = TS.S.P
-  ) : INVOKE_GC = struct
+  ) : INVOKE_GC =
+
+ struct
 
     structure CB = CellsBasis
     structure S  = CB.SortedCells
     structure T  = C.T
     structure D  = MS.ObjDesc
     structure R  = CPSRegions
-    structure SL = SortedList
+    structure LVS = LambdaVar.Set  (* lambda variable sets *)
     structure Cells = C.C
     structure CFG = CFG
     structure TS = TS
@@ -168,39 +170,39 @@ functor InvokeGC (
    * Auxiliary functions
    *====================================================================*)
 
-  (*
+  (* set : [bindings:]? -> {regs: ?, mem: LVS.set?}
    * Convert a list of rexps into a set of registers and memory offsets.
    * Memory offsets must be relative to the frame pointer.
    *)
-    fun set bindings = let
-	  val theVfp = C.vfp
-	  val theFp = (case C.frameptr false
-		 of T.REG (_, theFp) => theFp
-		  | _ => error "theFp"
-		(* end case *))
-	(* At this point, theVfp will always eventually end up
-	 * being theFp, but mlriscGen might pass in references to theVfp
-	 * anyway (because of some RCC that happens to be in the cluster).
-	 * Therefor, we test for either the real frame pointer (theFp) or
-	 * the virtual frame pointer (theVfp) here. *)
-	  fun isFramePtr fp = CB.sameColor (fp, theFp) orelse
-			      CB.sameColor (fp, theVfp)
-	  fun live (T.REG(_,r)::es, regs, mem) = live(es, r::regs, mem)
-	    | live (T.LOAD(_, T.REG(_, fp), _)::es, regs, mem) = if isFramePtr fp
-		  then live(es, regs, 0::mem)
-	          else error "set:LOAD"
-	    | live (T.LOAD(_, T.ADD(_, T.REG(_, fp), T.LI i), _)::es, regs, mem) = if isFramePtr fp
-	          then live(es, regs, T.I.toInt(pty,i)::mem)
-	          else error "set:LOAD"
-	    | live ([], regs, mem) = (regs, mem)
-	    | live _ = error "live"
-	  val (regs, mem) = live(bindings, [], [])
-	  in
-	    {regs=S.return(S.uniq regs), mem=SL.uniq mem}
-	  end
+    fun set bindings =
+	let val theVfp = C.vfp
+	    val theFp = (case C.frameptr false
+		   of T.REG (_, theFp) => theFp
+		    | _ => error "theFp"
+		  (* end case *))
+	  (* At this point, theVfp will always eventually end up
+	   * being theFp, but mlriscGen might pass in references to theVfp
+	   * anyway (because of some RCC that happens to be in the cluster).
+	   * Therefor, we test for either the real frame pointer (theFp) or
+	   * the virtual frame pointer (theVfp) here. *)
+	    fun isFramePtr fp = CB.sameColor (fp, theFp) orelse
+				CB.sameColor (fp, theVfp)
+	    fun live (T.REG(_,r)::es, regs, mem) = live(es, r::regs, mem)
+	      | live (T.LOAD(_, T.REG(_, fp), _)::es, regs, mem) = if isFramePtr fp
+		    then live(es, regs, 0::mem)
+		    else error "set:LOAD"
+	      | live (T.LOAD(_, T.ADD(_, T.REG(_, fp), T.LI i), _)::es, regs, mem) = if isFramePtr fp
+		    then live(es, regs, T.I.toInt(pty,i)::mem)
+		    else error "set:LOAD"
+	      | live ([], regs, mem) = (regs, mem)
+	      | live _ = error "live"
+	    val (regs, mem) = live(bindings, [], [])
+
+	in {regs=S.return(S.uniq regs), mem=LVS.fromList mem}
+	end (* function set *)
 
     fun difference ({regs=r1, mem=m1}, {regs=r2, mem=m2}) =
-          {regs=S.difference(r1,r2), mem=SL.difference(m1,m2)}
+          {regs=S.difference(r1,r2), mem=LVS.difference(m1,m2)}
 
     fun setToString {regs, mem} = concat[
             "{", String.concatWithMap " " CB.toString regs, " ",

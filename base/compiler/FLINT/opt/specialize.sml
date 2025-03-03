@@ -1,6 +1,6 @@
 (* specialize.sml
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2019 The Fellowship of SL/NJ (http://www.smlnj.org)
  * All rights reserved.
  *
  * minimal type derivation, type specialization,  and lifting of
@@ -15,14 +15,16 @@ signature SPECIALIZE =
 structure Specialize : SPECIALIZE =
 struct
 
-local structure LD = LtyDef
-      structure LT = LtyExtern
-      structure LK = LtyKernel
-      structure DI = DebIndex
-      structure PT = PrimTyc
-      structure PF = PFlatten
-      structure LVMap = LambdaVar.Map
-      open FLINT
+local (* imports *)
+  structure LD = LtyDef
+  structure LT = LtyExtern
+  structure LK = LtyKernel
+  structure DI = DebIndex  (* will go away *)
+  structure PT = PrimTyc
+  structure PF = PFlatten
+  structure LVM = LambdaVar.Map
+
+  open FLINT
 in
 
 val say = Control_Print.say
@@ -244,8 +246,14 @@ fun sumDtable(IENV(kenv, dtable), v, infos) =
               end))
   end
 
-(** find out the set of nvars in a list of tycs *)
-fun tcs_nvars tcs = LambdaVar.SortedList.foldmerge (map LK.tc_nvars tcs)
+(* tcs_nvars :  Lty.tyc list -> Lty.tvar(?) set
+ * construct the set of nvars in a list of tycs
+(*  -- FIX: LVS.union is not appropriate here; we need a union operation for
+ *     _Lty.lvar_ sets.  Need to create an Lty.tvar ORD_KEY structure and
+ *     apply the RedBlackSetFn functor to it to get a new set structure for tvars. *)
+fun tcs_nvars (tcs: Lty.tyc list) = foldl LVS.union (map LK.tc_nvars tcs) LVS.empty
+(* was: LambdaVar.SortedList.foldmerge *)
+(* need to replace LVS.union with a union operations for sets of Lty.tvars *)
 
 (** look and add a new type instance into the itable *)
 fun lookItable (IENV (itabs,dtab), d, v, ts, getlty, nv_depth) =
@@ -373,16 +381,16 @@ fun addsmap (tvks, ts, smap) =
 (***** end of the substitution intmapf hack *********************)
 
 (***** the nvar-depth intmapf: named variable -> DI.depth *********)
-type nmap = DI.depth LVMap.map
-val initnmap = LVMap.empty
+type nmap = DI.depth LVM.map
+val initnmap = LVM.empty
 fun addnmap (tvks, d, nmap) =
   let fun h ((tv,_)::xs, nmap) =
-           h(xs, LVMap.insert(nmap, tv, d))
+           h(xs, LVM.insert(nmap, tv, d))
         | h ([], nmap) = nmap
    in h(tvks, nmap)
   end
 fun looknmap nmap nvar =
-    case LVMap.find(nmap, nvar) of SOME d => d | NONE => DI.top
+    case LVM.find(nmap, nvar) of SOME d => d | NONE => DI.top
      (*  bug "unexpected case in looknmap") *)
 (***** end of the substitution intmapf hack *********************)
 

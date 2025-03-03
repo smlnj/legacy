@@ -50,7 +50,7 @@ type entVar = ST.stamp
 type entPath = entVar list
 (* entPath has entVars in direct order, outer first *)
 
-(* rEntPath -- entPath in reversed order; abstract *)
+(* rEntPath -- entPath in reversed order; abstract export *)
 type rEntPath = entVar list
 
 val eqEntVar = ST.eq

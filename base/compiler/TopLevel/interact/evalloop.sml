@@ -56,20 +56,19 @@ functor EvalLoopF (Compile: TOP_COMPILE) : EVALLOOP =
    * then, if the user "filters" the environment ref, a smaller image
    * can be written.
    *)
-    fun evalLoop source = let
-	  val parser = SmlFile.parseOne source
-	  val cinfo = C.mkCompInfo { source = source, transform = fn x => x }
+    fun evalLoop source =
+	let val parser = SmlFile.parseOne source
+	    val _ = CompInfo.resetCompInfo source
 
 	  fun checkErrors (s: string) =
-		if CompInfo.anyErrors cinfo
-		  then (
-		    if !Control.progressMsgs
+		if !CompInfo.anyErrors ()
+		then (if !Control.progressMsgs
 		      then say (concat["<<< Error stop after ", s, "\n"])
 		      else ();
-		    raise EM.Error)
+		      raise EM.Error)
 		else if !Control.progressMsgs
-		  then say (concat["<<< ", s, " successful\n"])
-		  else ()
+		then say (concat["<<< ", s, " successful\n"])
+		else ()
 
 	  fun oneUnit () = ((* perform one transaction  *)
 		if !Control.progressMsgs
@@ -120,7 +119,6 @@ functor EvalLoopF (Compile: TOP_COMPILE) : EVALLOOP =
 			  C.compile {source=source, ast=ast,
 				     statenv=statenv,
 				     symenv=symenv,
-				     compInfo=cinfo,
 				     checkErr=checkErrors,
 				     splitting=splitting,
 				     guid = () }

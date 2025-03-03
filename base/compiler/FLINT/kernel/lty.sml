@@ -1,13 +1,19 @@
 (* lty.sml
  *
- * COPYRIGHT (c) 2020 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2020,2025 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
 
 structure Lty : LTY =
 struct
 
+local (* imports *)
+
 structure PT = PrimTyc
+structure TV = TyconVar
+  (* LambdaVar replaced by a TyconVar structure that defines
+     and generates and compares type variables, based on a word index.
+     TyconVar contains a Set structure for sets of tycon variables *)
 
 fun bug s = ErrorMsg.impossible ("Lty:" ^ s)
 
@@ -22,9 +28,9 @@ local (* hashconsing *)
 in
 
 (* enc_tvar: encoded type variables = deBruijn indexes * binder arity indexes *)
-(* Type lambda bindings (TC_FN) bind several variables at a time,
- * i.e. they are n-ary for some n, with each type variable given a kind.
- * A type variable is represented by a pair (d,k), where d is a
+(* Tycon lambda bindings (TC_FN) bind several variables at a time,
+ * i.e. they are n-ary for some n, with each tycon variable given a kind.
+ * A tycon variable is represented by a pair (d,k), where d is a
  * 1-based deBruijn index designating a lambda binder by its lambda
  * nesting level, counting inside out, and k is a 0-based index
  * into the list of the type variables bound by that binder.
@@ -47,15 +53,17 @@ fun exitLevel (xs: enc_tvar list) : enc_tvar list =
     in h(xs, [])
     end
 
-(* tvar : "named"(?) tyc variables.
-   For now(?), these share the same "namespace" with lvars. *)
-(* [KM ???] Are these used at all? Yes, they are used after
+(* tvar : "named"(?) tycon variables.
+   They are a parallel "namespace" with lambda varialbes (LambdaVar.lvar).
+ * [KM ???] Are these used at all? Yes, they are used after
  * translation into the flint language(?). Are these the
  * "run-time" type parameters? *)
-type tvar = LambdaVar.lvar (* = int, coincidentally = enc_tvar *)
-val mkTvar = LambdaVar.mkLvar
+type tvar = TV.tvar
+ 
+(* mkTvar : string option -> tvar *)
+val mkTvar = TV.mkTvar
 
-(* aus_info: auxiliary information maintained in hash_cells.
+(* aux_info: auxiliary information maintained in hash_cells.
  * bool records whether the contents is fully normalized,
  * enc_tvar list and tvar list contain free type variables (both sorted) *)
 
@@ -74,22 +82,26 @@ datatype aux_info
             * tvar list      (* free named type vars, sorted? *)
   | AX_NO                    (* no aux_info available *)
 
-(* Functions for merging lists of env_tvars and tvars. *)
+(* Functions for merging lists of enc_tvars and tvars. *)
 local
-  fun mergeLists cmp = let
-	fun merge (l, []) = l
-	  | merge ([], l) = l
-	  | merge (xs as (x :: xr), ys as (y :: yr)) = (case cmp (x, y)
-	       of LESS => x :: merge (xr, ys)
-		| EQUAL => x :: merge (xr, yr)
-		| GREATER => y :: merge (xs, yr)
-	      (* end case *))
-	in
-	  merge
-	end
+
+  fun mergeLists cmp =
+     let fun merge (l, []) = l
+	   | merge ([], l) = l
+	   | merge (xs as (x :: xr), ys as (y :: yr)) =
+	       (case cmp (x, y)
+	          of LESS => x :: merge (xr, ys)
+		   | EQUAL => x :: merge (xr, yr)
+		   | GREATER => y :: merge (xs, yr)
+	       (* end case *))
+      in merge
+     end
+
 in
-val mergeTvs = mergeLists LambdaVar.compare	(* regular type variables *)
+
+val mergeTvs = mergeLists TV.compare    	(* regular type variables *)
 val mergeEncTvs = mergeLists Int.compare	(* deBruijn encoded type variables *)
+
 end
 
 (* fmergeTvs : tvar list list -> tvar list
@@ -327,7 +339,7 @@ local (* hashconsing impl *)
   fun tc_hash tc =
     case tc
      of (TC_VAR(d, i)) => combine [1, (DI.di_key d)*10, i]
-      | (TC_NVAR v) => combine[15, LambdaVar.toId v]
+      | (TC_NVAR v) => combine[15, TypeVar.toId v]
       | (TC_PRIM pt) => combine [2, PT.pt_toint pt]
       | (TC_FN(ks, t)) => combine (3::(getnum t)::(map getnum ks))
       | (TC_APP(t, ts)) => combine (4::(getnum t)::(map getnum ts))
