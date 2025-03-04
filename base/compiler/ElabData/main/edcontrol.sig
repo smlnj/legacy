@@ -6,8 +6,6 @@
 signature ELABDATA_CONTROL =
 sig
 
-  val saveLvarNames : bool ref
-
   val ppabsyndebugging : bool ref
       (* PPAbsyn *)
 

@@ -90,20 +90,22 @@ fun transDec
 	 compInfo as {errorMatch,error,...}: Absyn.dec CompInfo.compInfo } =
 let
 
-(* We take mkLvar from compInfo.  This should answer Zhong's question... *)
-(*
-(*
- * MAJOR CLEANUP REQUIRED ! The function mkv is currently directly taken
- * from the LambdaVar module; I think it should be taken from the
- * "compInfo". Similarly, should we replace all mkLvar in the backend
- * with the mkv in "compInfo" ? (ZHONG)
+(* [DBM, 2025.03.03]
+ * We use the mkLvar function from compInfo, which is reset for each compilation
+ * unit. This was suggested by Zhong. Thus the "significance"? or "validity" of an
+ * lvar is supposedly restricted to a single compilation units, meaning a given
+ * lvar is "valid" only within the compilation unit in which it is created.
+ * But it is unclear what resetting the mkLvar function for each compilation unit
+ * does for us. I know of no datastructures that contain lvars that are used 
+ * across compilation units anyway.
+ * 
+ * Note that CompInfo is now a structure containing resettable references to functions
+ * like mkLvar, rather than a record value that is passed as a parameter to various
+ * compilation phases.
  *)
-val mkv = LambdaVar.mkLvar
-fun mkvN NONE = mkv()
-  | mkvN (SOME s) = LambdaVar.namedLvar s
-*)
 
-val mkvN = #mkLvar compInfo
+(* mkvN : string option -> LambdaVar.lvar *)
+fun mkvN (nameOp: string option)= (!CompInfo.mkLvar) nameOp
 fun mkv () = mkvN NONE
 
 

@@ -278,7 +278,7 @@ struct
        *)
       val () = if DEBUG then
                 H.appi (fn (v, n) =>
-                   if n >= 2 then pr(LV.lvarName v^" uses="^i2s n^"\n") else ())
+                   if n >= 2 then pr(LV.toString v^" uses="^i2s n^"\n") else ())
                    recordSet
                else ()
       val () = H.filter (fn n => n <= 1) recordSet
@@ -508,13 +508,14 @@ struct
        * Generate a new spill record variable
        *)
       fun genSpillRec() =
-          case !currentSpillRecord of
-            SOME x => x
-          | NONE =>
-          let val v = LV.namedLvar (Symbol.varSymbol "spillrec")
-              val e = CPS.VAR v
-          in  currentSpillRecord := SOME(v,e); (v, e)
-          end
+          case !currentSpillRecord
+	    of SOME x => x
+             | NONE =>
+		 let val v = LV.mkLvar (SOME "spillrec")
+		     val e = CPS.VAR v
+		 in  currentSpillRecord := SOME(v,e);
+		     (v, e)
+		 end
 
      (*
       * This function finds up to m good spill candidates from the live set
@@ -533,7 +534,7 @@ struct
                                                 *)
             in  (* okay; it's actually live and hasn't been spilled! *)
                 if !debug_cps_spill then
-                  pr("Spilling "^LV.lvarName lvar^" rank="^i2s rank^"\n")
+                  pr("Spilling "^LV.toString lvar^" rank="^i2s rank^"\n")
                 else ();
                 findGoodSpills(m-1, L, inc(spOff, cty))
             end
@@ -603,7 +604,7 @@ struct
           val _ = if n = 0 then
                     error "CPS Spill: splitting constant record" else ()
           val _ = if !debug_cps_spill_info then
-                     pr("Splitting record "^LV.lvarName w^" len="^i2s n^"\n")
+                     pr("Splitting record "^LV.toString w^" len="^i2s n^"\n")
                   else ()
           val len     = length vl
           val numVars = ref n

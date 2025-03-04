@@ -103,7 +103,6 @@ signature CONTROL =
     val trackExn : bool ref
     val polyEqWarn : bool ref
 
-    val saveit : bool ref
     val saveAbsyn : bool ref
     val saveConvert : bool ref
     val saveCPSopt : bool ref

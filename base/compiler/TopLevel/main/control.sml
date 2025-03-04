@@ -242,7 +242,6 @@ structure Control : CONTROL =
 
     val preserveLvarNames = new ("preserve-names", "?", false)
     (* these are really all the same ref cell: *)
-    val saveit : bool ref = ElabData.saveLvarNames
     val saveAbsyn : bool ref = saveit
     val saveLambda : bool ref = saveit
     val saveConvert : bool ref = saveit

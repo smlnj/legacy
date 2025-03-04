@@ -42,8 +42,8 @@ structure PPCps : PPCPS =
 
     val sayt = say o U.ctyToString
 
-    fun value2str (VAR v) = LV.lvarName v
-      | value2str (LABEL v) = "(L)" ^ LV.lvarName v
+    fun value2str (VAR v) = LV.toString v
+      | value2str (LABEL v) = "(L)" ^ LV.toString v
       | value2str (NUM{ival, ty={sz=0, ...}}) = "(II)" ^ IntInf.toString ival
       | value2str (NUM{ival, ty={sz, tag=true}}) = concat[
 	    "(I", Int.toString sz, "t)", IntInf.toString ival
@@ -263,14 +263,14 @@ structure PPCps : PPCPS =
 	  end (* show0 *)
 
     fun printcps ((fk,f,vl,cl,e),m) = let
-	  fun ptv(v,t) = (say(LV.lvarName v); say " type ===>>>";
+	  fun ptv(v,t) = (say(LV.toString v); say " type ===>>>";
 			  say(LtyExtern.lt_print t); say "\n")
 	  val _ = if (!Control.CG.debugRep)
 		  then (say "************************************************\n";
 			LV.Tbl.appi ptv m;
 			say "************************************************\n")
 		  else ()
-	  fun sayv(v) = say(LV.lvarName v)
+	  fun sayv(v) = say(LV.toString v)
 	  fun sayparam ([v],[ct]) = (sayv v; sayt ct)
 	    | sayparam (nil,nil) = ()
 	    | sayparam (v::vl,ct::cl) = (sayv v; sayt ct; say ","; sayparam(vl,cl))
@@ -286,7 +286,7 @@ structure PPCps : PPCPS =
 	      | ESCAPE => say "std "
 	      | NO_INLINE_INTO => ()
 	    (* end case *);
-	    say(LV.lvarName f); say "("; sayparam(vl,cl); say ") =\n";
+	    say(LV.toString f); say "("; sayparam(vl,cl); say ") =\n";
 	    show0 say 3 e
 	  end
 

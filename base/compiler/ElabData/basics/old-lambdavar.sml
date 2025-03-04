@@ -1,7 +1,15 @@
-(* lambdavar.sml
+(* ElabData/basics/old-lambdavar.sml
  *
  * COPYRIGHT (c) 2020 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
+ *)
+
+(* [DBM, 2025.3.4] This is the old version of LambdaVar. lvars are
+ * abstract, but represented as integers. Names are optionally associated
+ * with lvars via a local hash table (lvarNames) that maps lvars (ints)
+ * to strings. The sameName function is activated by setting the
+ * ElabDataControl.saveLvarNames flag to true (it is false by default).
+ * If not activated, it does nothing.
  *)
 
 structure LambdaVar :> LAMBDA_VAR =
@@ -33,31 +41,32 @@ structure LambdaVar :> LAMBDA_VAR =
 
     fun prLvar (lvar:lvar) = Int.toString lvar
 
-    fun sameName (v, w) = if !saveLvarNames
-	  then (case findName w
-	     of SOME x => giveLvarName(v, x)
-	      | NONE => (case findName v
-		   of SOME x => giveLvarName (w, x)
-		    | NONE => ()
-		  (* end case *))
-	    (* end case *))
-	  else ()
+    fun sameName (v, w) =
+	if !saveLvarNames
+	then (case findName w
+	        of SOME x => giveLvarName(v, x)
+		 | NONE =>
+		     (case findName v
+		        of SOME x => giveLvarName (w, x)
+			 | NONE => ()
+		     (* end case *))
+	     (* end case *))
+	else ()
 
     val mkLvar = newLvar varcount
 
     fun clear () = (varcount := 0; Tbl.clear lvarNames)
 
-    fun dupLvar v = let
-          val nv = mkLvar()
-	  in
-	    if !saveLvarNames
-	      then (case findName v
-		 of SOME x => giveLvarName(nv, x)
-		  | NONE => ()
-		(* end cadse *))
-	      else ();
+    fun dupLvar v =
+	let val nv = mkLvar()
+	 in if !saveLvarNames
+	    then (case findName v
+		    of SOME x => giveLvarName(nv, x)
+		     | NONE => ()
+		 (* end cadse *))
+	    else ();
 	    nv
-	  end
+	end
 
     fun namedLvar (id: S.symbol) = let
 	  val nv = mkLvar()
@@ -71,10 +80,12 @@ structure LambdaVar :> LAMBDA_VAR =
 	    | NONE => NONE
 	  (* end case *))
 
-    fun lvarName (lv : lvar) : string = (case findName lv
+    (* lvarName: lvar -> string *)
+    fun lvarName (lv : lvar) : string =
+	(case findName lv
 	   of SOME x => x ^ Int.toString lv
 	    | NONE => "v" ^ Int.toString lv
-	  (* end case *))
+	(* end case *))
 
     val toId = Fn.id
     val fromId = Fn.id

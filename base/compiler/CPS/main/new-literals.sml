@@ -783,7 +783,7 @@ structure NewLiterals : LITERALS =
 	    if !debugFlg
 	      then let
 		fun prBV (x, LIT{id, ...}) = (
-		      say(concat["LET ", LV.lvarName x, " = "]);
+		      say(concat["LET ", LV.toString x, " = "]);
 		      case WordTbl.find litIdTbl id
 		       of NONE => say "<no slot>\n"
 			| SOME(LitSlot n) => say(concat["literal-", Int.toString n, "\n"])
@@ -853,7 +853,7 @@ handle ex => (say "rewriteFields\n"; raise ex)
 		 of SOME _ => k()
 		  | _ => mkOrig()
 		(* end case *))
-handle ex => (say(concat["rewriteVar (", LV.lvarName x, ", -, -): error\n"]); raise ex)
+handle ex => (say(concat["rewriteVar (", LV.toString x, ", -, -): error\n"]); raise ex)
 	(* process a CPS function *)
 	  fun doFun (fk, f, vl, cl, e) = (fk, f, vl, cl, doExp e)
 	(* process a CPS expression *)

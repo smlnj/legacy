@@ -71,7 +71,7 @@ structure FreeClose : FREECLOSE = struct
      *  Misc and utility functions                                             *
      ***************************************************************************)
     val say = Control.Print.say
-    fun vp v = say(LV.lvarName(v))
+    fun vp v = say(LV.toString(v))
 
     fun addvL(v,NONE) = NONE
       | addvL(v,SOME l) = SOME (LVS.add' (v,l))
@@ -399,11 +399,11 @@ structure FreeClose : FREECLOSE = struct
     val addsn = LV.Tbl.insert snum	(* add the stage number for a fundef *)
     val getsn = LV.Tbl.lookup snum	(* get the stage number of a fundef *)
 
-    fun findsn (v, d, []) = (warn ("Fundef " ^ (LV.lvarName v)
+    fun findsn (v, d, []) = (warn ("Fundef " ^ (LV.toString v)
 				^ " unused in freeClose"); d)
       | findsn (v, d, (x,_,m)::r) = (case LV.compare (v, x)
 	   of LESS => (
-		warn ("Fundef " ^ (LV.lvarName v) ^ " unused in freeClose"); d)
+		warn ("Fundef " ^ (LV.toString v) ^ " unused in freeClose"); d)
 	    | EQUAL => m
 	    | GREATER => findsn(v,d,r)
 	  (* end case *))

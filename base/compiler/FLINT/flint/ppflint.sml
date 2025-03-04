@@ -81,7 +81,7 @@ struct
     val printCon = say o toStringCon
 
     (** simple values, including variables and static constants. *)
-    fun toStringValue (F.VAR v) = LV.lvarName v
+    fun toStringValue (F.VAR v) = LV.toString v
       | toStringValue (F.INT{ival, ty}) =
 	  concat["(I", Int.toString ty, ")", IntInf.toString ival]
       | toStringValue (F.WORD{ival, ty}) =
@@ -91,13 +91,13 @@ struct
       | toStringValue (F.STRING s) = PrintUtil.formatString s
 
     val printSval = say o toStringValue
-    val LVarString = ref LV.lvarName
+    val LVarString = ref LV.toString
 
     fun printVar v = say (!LVarString v)
     val printTyc = say o LT.tc_print
     val printLty = say o LT.lt_print
     fun printTvTk (tv:LT.tvar,tk) =
-	say ((LV.lvarName tv)^":"^(LT.tk_print tk))
+	say ((LV.toString tv)^":"^(LT.tk_print tk))
 
     val parenCommaSep = ("(", ",", ")")
     val printValList = PU.printClosedSequence ("[",",","]") printSval

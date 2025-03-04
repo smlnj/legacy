@@ -198,7 +198,7 @@ fun check phase envs lexp = let
     fun typeof le = let
       fun typeofVar lv = LT.ltLookup (venv,lv,d)
 	  handle ltUnbound =>
-	      errMsg (le, "Unbound Lvar " ^ LV.lvarName lv, LT.ltc_void)
+	      errMsg (le, "Unbound Lvar " ^ LV.toString lv, LT.ltc_void)
       fun typeofVal (VAR lv) = typeofVar lv
 (* REAL64: need more cases *)
 	| typeofVal (INT{ty, ...}) = LT.ltc_num ty
@@ -296,7 +296,7 @@ fun check phase envs lexp = let
 		    val msg =
 		      if isfct then "recursive functor "
 		      else "a non-recursive function "
-		    in errMsg (le, "in FIX: " ^ msg ^ LV.lvarName lv, ve)
+		    in errMsg (le, "in FIX: " ^ msg ^ LV.toString lv, ve)
 		    end
 	    val venv' = foldl extEnv venv fds
 	    fun chkDcl (({isrec = NONE, ...}, _, _, _) : fundec) = ()

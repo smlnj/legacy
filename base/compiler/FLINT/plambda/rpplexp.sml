@@ -26,6 +26,7 @@ struct
 local structure A = Absyn
       structure DA = Access
       structure S = Symbol
+      structure LV = LambdaVar
       structure PP = PrettyPrint
       structure PU = PPUtil
       structure LT = PLambdaType
@@ -35,13 +36,12 @@ in
 fun bug s = ErrorMsg.impossible ("PPLexp: "^s)
 
 fun sayrep rep = say (DA.prRep rep)
-val lvarName = LambdaVar.lvarName
 
 fun app2(f, [], []) = ()
   | app2(f, a::r, b::z) = (f(a, b); app2(f, r, z))
   | app2(f, _, _) = bug "unexpected list arguments in function app2"
 
-fun conToString (DATAcon((sym, _, _), _, v)) = ((S.name sym) ^ "." ^ (lvarName v))
+fun conToString (DATAcon((sym, _, _), _, v)) = ((S.name sym) ^ "." ^ (LV.toString v))
   | conToString (INTcon i) = Int.toString i
   | conToString (INT32con i) = "(I32)" ^ (Int32.toString i)
   | conToString (INTINFcon i) = "(II)" ^ IntInf.toString i
@@ -109,7 +109,7 @@ fun ppLexp (pd:int) ppstrm (l: lexp): unit =
                style = PU.INCONSISTENT}
               elems
 
-        fun ppl (VAR v) = pps (lvarName v)
+        fun ppl (VAR v) = pps (LV.toString v)
           | ppl (INT i) = ppi i
           | ppl (WORD i) = (pps "(W)"; pps (Word.toString i))
           | ppl (INT32 i) = (pps "(I32)"; pps(Int32.toString i))
@@ -169,7 +169,7 @@ fun ppLexp (pd:int) ppstrm (l: lexp): unit =
 
         | ppl (FN(v,t,l)) =
             (openHOVBox 3; pps "FN(";
-              pps(lvarName v); pps ":"; br1 0; prLty' t; pps ",";
+              pps(LV.toString v); pps ":"; br1 0; prLty' t; pps ",";
               if complex l then
                  (newline(); (ppLexp' l; pps ")")
               else (ppl l; pps ")");
@@ -204,7 +204,7 @@ fun ppLexp (pd:int) ppstrm (l: lexp): unit =
         | ppl (LET(v, r, l)) =
             (openHVBox 2;
               openHOVBox 4;
-               pps (lvarName v); br1 0; pps "="; br1 0; ppl r;
+               pps (LV.toString v); br1 0; pps "="; br1 0; ppl r;
               closeBox();
               newline();
               ppl l;
@@ -296,13 +296,13 @@ fun ppLexp (pd:int) ppstrm (l: lexp): unit =
 
         | ppl (FIX(varlist,ltylist,lexplist,lexp)) =
             let fun flist([v],[t],[l]) =
-                      let val lv = lvarName v
+                      let val lv = LV.toString v
                           val len = size lv + 2
                        in pps lv; pps ": "; ppLty' t; pps " :: ";
                           ppl l
                       end
                   | flist(v::vs,t::ts,l::ls) =
-                      let val lv = lvarName v
+                      let val lv = LV.toString v
                           val len = size lv + 2
                        in pps lv; pps ": "; ppLty' t; pps " :: ";
                           ppl l; newline();
@@ -373,7 +373,7 @@ fun ppFun ppstrm l v =
         case le
           of VAR w =>
                if (v=w)
-               then (pps("VAR " ^ lvarName v ^ " is free in <lexp>\n");())
+               then (pps("VAR " ^ LV.toString v ^ " is free in <lexp>\n");())
                else ()
            | l as FN(w,_,b) => if v=w then ppLexp 20 ppstrm l else find b
            | l as FIX(vl,_,ll,b) =>

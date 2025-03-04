@@ -1,53 +1,49 @@
-(* ElabData/basics/new-lambdavar.sig
+(* ElabData/basics/tyconvar.sig
  *  -- replacement for ElabData/basics/lambdavar.sig
  *  -- optionally named and "prefixed" lambda variables
  * COPYRIGHT (c) 2020, 2025 The Fellowship of SML/NJ (https://www.smlnj.org)
  * All rights reserved.
  *)
 
-signature LAMBDA_VAR =
-  sig
+signature TYCON_VAR =
+sig
 
-    (* type lvar will be abstract,
-     * represented by {name : string option, prefix: string option, index: int} *)
-    type lvar  
+  (* type tycvar will be abstract,
+   * represented by {name : string option, prefix: string option, index: int} *)
+  type tycvar  
 
-    val mkLvar : string option (* name *) -> string option (* prefix *) -> lvar
-    (* create a fresh lvar, with an optional name or prefix, but not both! *)
+  val mkTycvar : string option (* name or prefix *) -> tycvar
+  (* create a fresh tycvar, with an optional name/prefix *)
 
-    val index : lvar -> word
+  (* reset the index generator, internal indexCount : word ref.
+   * This should be called (using CompInfo.reset) for each compilation unit. *)
+  val reset : unit -> unit
 
-    val name : lvar -> string option
-    val isNamed : lvar -> bool
+  val index : tycvar -> word
 
-    val toString: lvar-> string
+  val name : tycvar -> string option
 
-    val mkLvar : string option -> string option -> lvar
+  val isNamed : tycvar -> bool
 
-(* following should be removed after any their uses are fixed
-    val dupLvar : lvar -> lvar
-    val namedLvar : Symbol.symbol -> lvar
-    val lvarSym : lvar -> Symbol.symbol option
-    val lvarName : lvar -> string   (* replaced by toString *)
-*)
-						       
-    (* reset the index generator, lvarCount
-     * this should be called (CompInfo.reset) for each compilation unit *)
-    val reset : unit -> unit
+  val toString: tycvar-> string
 
-   (* comparison, equality, ordering of lvars *)
-    val compare : lvar * lvar -> order (* comparison based on index fields *)
-    val same : lvar * lvar -> bool  (* equality based in index fields *)
-    val < : lvar * lvar -> bool
-    val > : lvar * lvar -> bool
+  val mkTycvar : string option -> tycvar
 
-    structure Set : ORD_SET where type Key.ord_key = lvar
-    (* lvar sets; replaces the redundant SortedList substructure *)
+ (* comparison, equality, and ordering of tycvars *)
+  val compare : tycvar * tycvar -> order  (* comparison based on the index fields *)
 
-    structure Map : ORD_MAP where type Key.ord_key = lvar
-    (* lvar finite maps -- used extensively in FLINT optimization phases *)
+  (* equality ("same"), <, and > are derived from compare, and so are redundant *)
+  val same : tycvar * tycvar -> bool
+  val < : tycvar * tycvar -> bool
+  val > : tycvar * tycvar -> bool
 
-    structure Tbl : MONO_HASH_TABLE where type Key.hash_key = lvar
-    (* lvar hash tables -- used extensively in FLINT optimization phases. *)
+  structure Set : ORD_SET where type Key.ord_key = tycvar
+  (* tycvar sets; replaces the redundant SortedList substructure *)
 
-  end (* signature LAMBDA_VAR *)
+  structure Map : ORD_MAP where type Key.ord_key = tycvar
+  (* tycvar finite maps -- used extensively in FLINT optimization phases *)
+
+  structure Tbl : MONO_HASH_TABLE where type Key.hash_key = lvar
+  (* lvar hash tables -- used extensively in FLINT optimization phases. *)
+
+end (* signature TYCON_VAR *)

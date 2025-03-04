@@ -132,9 +132,9 @@ let
  * "compInfo". Similarly, should we replace all mkLvar in the backend
  * with the mkv in "compInfo" ? (ZHONG)
  *)
-val mkv = LambdaVar.mkLvar
-fun mkvN NONE = mkv()
-  | mkvN (SOME s) = LambdaVar.namedLvar s
+val mkv = LambdaVar.mkLvar NONE
+fun mkvN NONE = mkv ()
+  | mkvN (SOME s) = LambdaVar.mkLvar (SOME s)
 *)
 
 val mkvN = #mkLvar compInfo

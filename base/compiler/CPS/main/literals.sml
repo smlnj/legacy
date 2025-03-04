@@ -86,7 +86,7 @@ structure Literals : LITERALS =
 	    | prIndent n = (say "  "; prIndent(n-1))
 	  fun valToStr (LI_INT n) = IntInf.toString n
 	    | valToStr (LI_STRING s) = concat["\"", String.toString s, "\""]
-	    | valToStr (LI_VAR x) = LV.lvarName x
+	    | valToStr (LI_VAR x) = LV.toString x
 	  fun pr indent (le : lit_exp) = (
 		prIndent indent;
 		case le
@@ -96,7 +96,7 @@ structure Literals : LITERALS =
 		      prIndent (indent+1);
 		      say "RETURN")
 		  | LI_BLOCK(rk, lits, x, k) => (
-		      say "LET "; say(LV.lvarName x); say " = ";
+		      say "LET "; say(LV.toString x); say " = ";
 		      case rk
 		       of LI_VECTOR => say "VECTOR("
 			| LI_RECORD => say "RECORD("
@@ -105,12 +105,12 @@ structure Literals : LITERALS =
 		      say ")\n";
 		      pr indent k)
 		  | LI_F64BLOCK(lits, x, k) => (
-		      say "LET "; say(LV.lvarName x); say " = RAW64(";
+		      say "LET "; say(LV.toString x); say " = RAW64(";
 		      say (String.concatWithMap "," RealLit.toString lits);
 		      say ")\n";
 		      pr indent k)
 		  | LI_RAWBLOCK(lits, x, k) => (
-		      say "LET "; say(LV.lvarName x); say " = RAW(";
+		      say "LET "; say(LV.toString x); say " = RAW(";
 		      say (String.concatWithMap "," IntInf.toString lits);
 		      say ")\n";
 		      pr indent k)

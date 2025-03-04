@@ -118,14 +118,14 @@ fun new args lv =
 fun get lv = (M.lookup m lv)
 		  handle x as NotFound =>
 		  ((* say ("Collect: ERROR: get unknown var "^
-			(LV.lvarName lv)^
+			(LV.toString lv)^
 			". Pretending dead...\n"); *)
 		   (*  raise x; *)
 		   new NONE lv)
 
 fun LVarString lv =
     let val Info{uses=ref uses,calls=ref calls,...} = get lv
-    in (LV.lvarName lv)^
+    in (LV.toString lv)^
 	"{"^(Int.toString uses)^
 	(if calls > 0 then ","^(Int.toString calls) else "")^"}"
     end

@@ -6,48 +6,54 @@
  *)
 
 signature LAMBDA_VAR =
-  sig
+sig
 
-    (* type lvar will be abstract,
-     * represented by {name : string option, prefix: string option, index: int} *)
-    type lvar  
+  (* type lvar will be abstract, but its representation is the following record. *)
+  type lvar  (* = {name : string option, index: word} *)
 
-    val mkLvar : string option (* name *) -> string option (* prefix *) -> lvar
-    (* create a fresh lvar, with an optional name or prefix, but not both! *)
+  val mkLvar : string option (* name of prefix string *) -> lvar
+  (* create a fresh lvar, with an optional name or prefix appended to the string for the index *)
 
-    val index : lvar -> word
+  val index : lvar -> word
 
-    val name : lvar -> string option
-    val isNamed : lvar -> bool
+  val name : lvar -> string option
+  val isNamed : lvar -> bool
 
-    val toString: lvar-> string
+  val toString: lvar-> string
 
-    val mkLvar : string option -> string option -> lvar
+  val mkLvar : string option -> string option -> lvar
 
-(* following should be removed after any their uses are fixed
-    val dupLvar : lvar -> lvar
-    val namedLvar : Symbol.symbol -> lvar
-    val lvarSym : lvar -> Symbol.symbol option
-    val lvarName : lvar -> string   (* replaced by toString *)
-*)
-						       
-    (* reset the index generator, lvarCount
-     * this should be called (CompInfo.reset) for each compilation unit *)
-    val reset : unit -> unit
+  val dupLvar : lvar -> lvar
+      (* creates a fresh lvar (new index) but uses the name from the argument, if it exists *)
 
-   (* comparison, equality, ordering of lvars *)
-    val compare : lvar * lvar -> order (* comparison based on index fields *)
-    val same : lvar * lvar -> bool  (* equality based in index fields *)
-    val < : lvar * lvar -> bool
-    val > : lvar * lvar -> bool
+  val sameName : lvar * lvar -> unit
+    (* This is a dummy version of the sameName function in the old LambdaVar
+     * structure that worked by side-effecting the internal name hash table. This dummy
+     * version does nothing, and so it matches the semantics of the old sameName function
+     * when the control flag "saveLvarNames" is false, which it is by default.
 
-    structure Set : ORD_SET where type Key.ord_key = lvar
-    (* lvar sets; replaces the redundant SortedList substructure *)
+  (* reset the index generator, lvarCount
+   * this should be called (CompInfo.reset) for each compilation unit *)
+  val reset : unit -> unit
 
-    structure Map : ORD_MAP where type Key.ord_key = lvar
-    (* lvar finite maps -- used extensively in FLINT optimization phases *)
+  (* following included by request of JHR because they are used in pickling *)
+  val toID : lvar -> int
+  val fromID : int -> lvar
+      (* works even for negative ints, though probably it should not *)
 
-    structure Tbl : MONO_HASH_TABLE where type Key.hash_key = lvar
-    (* lvar hash tables -- used extensively in FLINT optimization phases. *)
+ (* comparison, equality, ordering of lvars *)
+  val compare : lvar * lvar -> order (* comparison based on index fields *)
+  val same : lvar * lvar -> bool  (* equality based in index fields *)
+  val < : lvar * lvar -> bool
+  val > : lvar * lvar -> bool
 
-  end (* signature LAMBDA_VAR *)
+  structure Set : ORD_SET where type Key.ord_key = lvar
+  (* lvar sets; replaces the redundant SortedList substructure *)
+
+  structure Map : ORD_MAP where type Key.ord_key = lvar
+  (* lvar finite maps -- used extensively in FLINT optimization phases *)
+
+  structure Tbl : MONO_HASH_TABLE where type Key.hash_key = lvar
+  (* lvar hash tables -- used extensively in FLINT optimization phases. *)
+
+end (* signature LAMBDA_VAR *)

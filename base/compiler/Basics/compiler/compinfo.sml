@@ -18,7 +18,7 @@ signature COMP_INFO =
 sig
 
   val mkStamp : (unit -> Stamps.stamp) ref
-  val mkLvar : (string option -> string option -> LambdaVar.lvar) ref
+  val mkLvar : (string option -> LambdaVar.lvar) ref
 
   val sourceName: string ref
 
@@ -26,7 +26,7 @@ sig
   val error : ErrorMsg.errorFn ref		      
   val errorMatch: (SourceMap.region -> string) ref
 
-  val resetCompInfo : Source.source -> unit
+  val reset : Source.source -> unit
 				  
 end (* signature COMP_INFO *)  
 
@@ -55,9 +55,9 @@ in
   val errorMatch : (SM.region -> string) ref =
       ref (fn x => raise Fail "CompInfo.errorMatch uninitialized")
 
-  (* resetCompInfo : SR.source -> unit
+  (* reset : SR.source -> unit
    * (re)initializes the compiler info references based on a given input source *)
-  fun resetCompInfo (source as {fileOpened,...}: SR.source) : unit =
+  fun reset (source as {fileOpened,...}: SR.source) : unit =
       let val { error, errorMatch, anyErrors } = ErrorMsg.errors source
        in ST.reset ();
 	  LV.reset ();					

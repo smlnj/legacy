@@ -50,7 +50,7 @@ structure CheckUnused : sig
       end
 
     fun debugPrSet (msg, used) = debugmsg (concat [
-	    msg, "{", String.concatWithMap "," LambdaVar.lvarName (VSet.toList used),
+	    msg, "{", String.concatWithMap "," LambdaVar.toString (VSet.toList used),
 	    "}\n"
 	  ])
 

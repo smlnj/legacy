@@ -397,7 +397,7 @@ fun augEscFun(v,i,CR(off,x),env) =
  ****************************************************************************)
 
 val im : int -> string = Int.toString
-val vp = pr o LambdaVar.lvarName
+val vp = pr o LambdaVar.toString
 fun Vp (v,m,n) = (vp v; pr " fd="; pr (im m); pr " ld=";
                   pr (im n))
 fun ifkind (KNOWN_TAIL) = pr " KNOWN_TAIL "

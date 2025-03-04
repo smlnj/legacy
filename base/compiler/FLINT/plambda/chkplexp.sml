@@ -273,7 +273,7 @@ fun check (kenv, venv, d) =
 		of VAR v =>
 		   (LT.ltLookup(venv, v, d)
 		    handle LT.ltUnbound =>
-			   (say ("** Lvar ** " ^ (LV.lvarName(v))
+			   (say ("** Lvar ** " ^ (LV.toString(v))
 				 ^ " is unbound *** \n");
 			    bug "unexpected lambda code in checkLty"))
 		 | INT{ty = 0, ...} => bug "unexpected IntInf in checkLty"

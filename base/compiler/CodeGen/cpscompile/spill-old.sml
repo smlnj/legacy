@@ -92,10 +92,10 @@ fun sublist test =
    in subl
   end
 
-fun spillLvar() = LV.namedLvar spillname
+fun spillLvar() = LV.mkLvar (SOME spillname)
 
-fun sayv(VAR v) = pr(LV.lvarName v)
-  | sayv(LABEL v) = pr("(L)" ^ LV.lvarName v)
+fun sayv(VAR v) = pr(LV.toString v)
+  | sayv(LABEL v) = pr("(L)" ^ LV.toString v)
   | sayv(INT i) = pr(Int.toString i)
   | sayv(REAL r) = pr r
   | sayv(STRING s) = (pr "\""; pr s; pr "\"")

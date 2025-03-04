@@ -41,7 +41,7 @@ structure CheckCPS : sig
     val say = Control.Print.say
 
     val v2s = PP.value2str
-    val lv2s = LV.lvarName
+    val lv2s = LV.toString
 
     fun app2str (f, args) = String.concat[
             f, "(", String.concatWithMap "," v2s args, ")"

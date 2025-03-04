@@ -35,8 +35,6 @@ struct
 	r
     end
 
-
-    val saveLvarNames = new ("save-lvar-names", "save Lvar names", false)
     val ppabsyndebugging = new ("ppabsyn-debugging", "PPAbsyn debugging", false)
     val eedebugging = new ("ee-debugging", "EntityEnv debugging", false)
     val mudebugging = new ("mu-debugging", "ModuleUtil debugging", false)
