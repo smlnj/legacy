@@ -58,10 +58,10 @@ fun exitLevel (xs: enc_tvar list) : enc_tvar list =
  * [KM ???] Are these used at all? Yes, they are used after
  * translation into the flint language(?). Are these the
  * "run-time" type parameters? *)
-type tvar = TV.tvar
+type tvar = TV.tycvar
  
-(* mkTvar : string option -> tvar *)
-val mkTvar = TV.mkTvar
+(* mkTycvar : string option -> tvar *)
+val mkTycvar = TV.mkTycvar
 
 (* aux_info: auxiliary information maintained in hash_cells.
  * bool records whether the contents is fully normalized,
@@ -72,7 +72,7 @@ val mkTvar = TV.mkTvar
    the tvar as an integer.  The deBruijn-indexed list is kept sorted,
    the named variables are in arbitrary order (for now) --league, 2 July 1998.
 
-   [DBM,8/18/06]: but the mergeTvs function below is used to merge both
+   [DBM,2006.06.18]: but the mergeTvs function below is used to merge both
    enc_tvar (deBruijn) and tvar lists, and it assumes its argument lists
    are sorted.
  *)

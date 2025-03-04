@@ -127,8 +127,12 @@ Basics/
       intermediate representations (from Absyn to CPS).
       defs: RealConst
     compinfo.sml
-      New version of CompInfo structure providing "hooks" for stamp and lvar generation
+      New version of CompInfo structure providing "hooks" for stamp and lvar generation,
       and error management relative to a given "source".
+      The single CompInfo structure is used, rather than generating compInfo records to
+      be passed to various phases of the compiler. CompInfo is meant to be _reset_ between
+      compilation units (which resets the (fresh) stamp and lvar generators and redefines
+      the compilation source.
       defs: COMP_INFO, CompInfo
 
   Basics/util/
@@ -199,7 +203,7 @@ Basic datastructures used in elaboration (including type checking)
     tyconvar.sig/sml
       tycon variables, the abstract representation of variables, generated
       during module elaboration and translated for use in FLINT.
-      [ Should kinds (TKinds) be assigned? ] 
+      [Should kinds (TKinds) be assigned to theses tycon variables? Are they already?] 
       defs: TYCON_VAR, TyconVar
     access.sig/sml
       dynamic access paths
