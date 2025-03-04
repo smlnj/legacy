@@ -213,7 +213,6 @@ FLINT/kernel/ltykernel.sml
 FLINT/kernel/lty.sig
 FLINT/kernel/lty.sml
 FLINT/kernel/ltykindchk.sml
-
 FLINT/kernel/pplty.sml
 
 FLINT/main/flint-opt.sml
