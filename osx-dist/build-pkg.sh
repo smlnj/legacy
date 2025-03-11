@@ -15,7 +15,7 @@ cleanup () {
 }
 
 usage() {
-  echo "usage: build-pkg.sh [-32 | -64] [--no-sign] <version>"
+  echo "usage: build-pkg.sh [-32 | -64] [-no-sign] <version>"
   exit $1
 }
 
@@ -36,7 +36,7 @@ while [ "$#" != "0" ] ; do
     case $arg in
     -32) SIZE=32 ; ARCH="x86" ;;
     -64) SIZE=64 ; ARCH="amd64" ;;
-    --no-sign) SIGNER="none" ;;
+    -no-sign) SIGNER="none" ;;
     -*) usage 1 ;;
     *) VERSION=$arg ; break ;;
     esac
