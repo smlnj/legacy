@@ -85,7 +85,7 @@ structure Absyn : ABSYN =
 
     (*
      * [FLINT] The "argtycs" field in APPstr is used to record the list of instantiated
-     * hotycs passed to the functor during the functor application.
+     * hotycs passed to functor during the functor application.
      *)
     and strexp
       = VARstr of Modules.Structure
@@ -108,7 +108,7 @@ structure Absyn : ABSYN =
       | MARKfct of fctexp * region
 
     (*
-     * Each value binding vb only binds one variable identifier [a FLINT "normalization"].
+     * Each value binding vb only binds one variable identifier [FLINT "normalization"].
      * That is, pat is always a simple VARpat (with type constraints) or it simply
      * does not contain any variable patterns; boundtvs gives the list of
      * type variables that are being generalized at this binding, as determined
@@ -121,7 +121,7 @@ structure Absyn : ABSYN =
      * Like value binding vb, boundtvs gives a list of type variables
      * being generalized at this binding. However, the mutually recursive
      * list of RVBs could share type variables, that is, the boundtvs sets
-     * used in these RVBs could overlap (have nonempty intersections).
+     * used in these RVBs could contain overlapping set of type variables.
      *)
     and rvb = RVB of {var: VarCon.var, exp: exp, boundtvs: Ty.tyvar list,
 		      resultty: Ty.ty option, tyvars: Ty.tyvar list ref}

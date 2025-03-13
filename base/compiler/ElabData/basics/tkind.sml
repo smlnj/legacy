@@ -1,8 +1,7 @@
 (* tkind.sml *)
 
-(* generalized plambda-style "arities"
- * TKind is a front-end version of PLambdaType tkinds for use in module elaboration.
- * These tkind values can be easily translated to PLambdaType tkind when 
+(* front-end version of PLambdaType tkinds for use in module elaboration.
+ * These tkind values can be easily translated to PLambdaType tkind when
  * needed in Translate. *)
 
 structure TKind =

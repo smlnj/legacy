@@ -7,19 +7,14 @@
 structure Modules : MODULES =
 struct
 
-(* imports *)
-local
-
-  structure S  = Symbol
-  structure SP = SymPath
-  structure IP = InvPath
-  structure EP = EntPath
-  structure ST = Stamps
-  structure T = Types
-  structure A = Access
-  structure E = Env
-		    
-
+local structure S  = Symbol
+      structure SP = SymPath
+      structure IP = InvPath
+      structure EP = EntPath
+      structure ST = Stamps
+      structure T = Types
+      structure A = Access
+      structure E = Env
 in
 
 (* -------------------- signature-related definitions -------------------- *)
@@ -30,15 +25,13 @@ datatype Signature
   = SIG of sigrec
   | ERRORsig
 
-(* spec appears in the elements component of a sigrec (i.e. a normal, non-ERRORsig Signature)
- *    spec <- element <- elements <- sigrec <- Signature
- * 1. A RegTycSpec tycon spec should contain GENtyc (tyckind FORMAL or DATATYPE) or DEFtyc.
+(*
+ * 1. tyc spec should only be GENtyc, with FORMAL or DATATYPE tyckinds, or DEFtyc.
  * 2. the stamp and the path for the GENtyc or DEFtyc should be meaningless
- *    (but these stamps are in fact used for relativization of withtype bodies and
+ *    (but the stamps are in fact used for relativization of withtype bodies and
  *     the datacon domains of datatype repl specs)
- * 3. Suggestion (?): if VALspec and CONspec were to use TYCspec instead of T.ty, then
- *    the whole thing can be further cleaned up. [DBM: this does not seem to make sense, since
- *    TYCspec is for a tycon, while the type specified for a val or dcon is a type.]
+ * 3. if VALspec and CONspec are using typspec instead of T.ty, then
+ *    the whole thing can be further cleaned up.
  *)
 and spec
   = TYCspec of {entVar : EP.entVar, info: tycSpecInfo}
@@ -54,8 +47,8 @@ and spec
  * realization is not available with the signature, namely an inferred result
  * signature for a functor. *)
 and tycSpecInfo
-  = RegTycSpec of {spec : T.tycon, repl: bool, scope: int} (* normal signatures *)
-  | InfTycSpec of {name: S.symbol, arity: int}             (* inferred signatures *)
+  = RegTycSpec of {spec : T.tycon, repl: bool, scope: int} (* normal signature *)
+  | InfTycSpec of {name: S.symbol, arity: int} (* inferred signature *)
 
 and fctSig
   = FSIG of {kind     : S.symbol option,
@@ -105,7 +98,7 @@ and stampExp
   | NEW                (* generate a new stamp *)
 
 and tycExp (* expression evaluating to a TYCentity *)
-  = VARtyc of EP.entPath    (* selection from current Entity Environment *)
+  = VARtyc of EP.entPath    (* selection from cur-EE *)
   | CONSTtyc of T.tycon     (* actual tycon *)
   | FORMtyc of T.tycon      (* formal tycon *)
 
@@ -174,7 +167,7 @@ and sigrec =
      closed     : bool,
      fctflag    : bool,
      elements   : elements,
-     properties : PropList.holder, (* for FLINT/trans, try to remove *)
+     properties : PropList.holder, (* FLINT/trans *)
      typsharing : sharespec list,
      strsharing : sharespec list,
      stub       : stubinfo option}
@@ -187,7 +180,7 @@ and envrec =
 and strEntity =
     {stamp    : ST.stamp,
      entities : entityEnv,
-     properties: PropList.holder, (* only relevant to FLINT/trans, try to remove *)
+     properties: PropList.holder, (* FLINT/trans *)
      rpath    : IP.path,
      stub     : stubinfo option}
 
@@ -200,7 +193,7 @@ and strrec =
 and fctEntity =
     {stamp    : ST.stamp,
      closure  : fctClosure,
-     properties: PropList.holder, (* only relevant to FLINT/trans, try to remove *)
+     properties: PropList.holder, (* FLINT/trans *)
      tycpath  : T.tycpath option,
      rpath    : IP.path,
      stub     : stubinfo option}

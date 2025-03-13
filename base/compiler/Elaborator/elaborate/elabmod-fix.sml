@@ -1,13 +1,9 @@
-(* Elaborator/elaborate/elabmod-fix.sml *)
 (* Copyright 1996 by AT&T Bell Laboratories *)
-(* Copyright 2025 by the Fellowship of SML/NJ *)
-
-(* This is a partially _rationalized_ rewrite of elabmod.sml.
+(* elabmod.sml *)
+(* This appears to be a partially _rationalized_ rewrite of elabmod.sml.
  * - "constrStr" function renamed to "constrainStr
  * - constrainStr returns an structure option, with the NONE case leading to construction of
  *   a dummy return value where constrainStr is called -- which probably should be avoided.
- * clarification/documentation
- * simplification -- mainly removing stuff added by FLINT in the 1990s
  *)
 
 signature ELABMOD =
@@ -64,37 +60,32 @@ local
   structure PP = PrettyPrint
   structure A  = Absyn
   structure DA = Access
-  structure DI = DebIndex  (* should eliminate, using int, eventually irrelevant *)
+  structure DI = DebIndex
   structure PPU = PPUtil
   structure ED = ElabDebug
-
-  (* sets of symbols, how/where used? *)
   structure ST = RedBlackSetFn(type ord_key = S.symbol
 			       val compare = S.compare)
-(*  open Ast Modules DELETE AFTER CLEANUP *)
+  open Ast Modules
+  open SpecialSymbols (* special symbols *)
 in
 
 (* debugging *)
-val say: string -> unit = Control.Print.say  (* Control_Print? *)
-val debugging : bool ref = ElabControl.emdebugging (* ref false; == Control.Elab.emdebugging *)
-(* debugmsg: string -> unit *)
+val say = Control_Print.say
+val debugging = ElabControl.emdebugging (* ref false; == Control.Elab.emdebugging *)
 fun debugmsg (msg: string) =
       if !debugging then (say msg; say "\n") else ()
 
-(* bug : string -> unit *)
-fun bug msg = ErrorMsg.impossible ("ElabMod: " ^ msg)
+fun bug msg = ErrorMsg.impossible("ElabMod: "^msg)
 
-(* debugPrint : string -> unit *)
-fun debugPrint (msg:string) = ED.debugPrint debugging msg
+val debugPrint = (fn x => ED.debugPrint debugging x)
 
-(* showStr : string * M.Structure * SE.staticEnv -> unit? *)
 fun showStr(msg,str,env) =
     ED.withInternals(fn () =>
       debugPrint(msg,
 		 (fn pps => fn str =>
 		   PPModules.ppStructure pps (str, env, 100)),
 		 str))
-(* showFct : string * M.Functor * SE.staticEnv -> unit *)
+
 fun showFct(msg,fct,env) =
     ED.withInternals(fn () =>
       debugPrint(msg,
@@ -102,64 +93,49 @@ fun showFct(msg,fct,env) =
 		   PPModules.ppFunctor pps (fct', env, 100)),
 		 fct))
 
-(* showDev : string * A.decl * SE.staticEnv -> unit *)
 fun showDec (msg, dec, env) =
     let fun ppDec ppstrm d =
-	    PPAbsyn.ppDec (env, NONE) ppstrm (d, !Control.Print.printDepth)
+	    PPAbsyn.ppDec (env, NONE) ppstrm (d, !Control_Print.printDepth)
     in
 	ElabDebug.debugPrint ElabControl.printAbsyn (msg, ppDec, dec)
     end
 
-(* nonEmptyEntDec : M.entityDec -> bool
+(*
  * Check if an entity declaration is empty in order to avoid the unnecessary
  * recompilation bug reported by Matthias Blume (ZHONG)
- * DBM: Can we get rid of the ambiguity of having two forms of empty entity decls?
- *   Should be possible; simplest way would be to only keep SEQdec nil as the sole
- *   representation of empty entity decls.
  *)
 fun nonEmptyEntDec (M.EMPTYdec | M.SEQdec []) = false
   | nonEmptyEntDec _ = true
 
-(* seqEntDec: M.entityDec list -> M.entityDec *)
 fun seqEntDec ds =
   let val nds = List.filter nonEmptyEntDec ds
-   in case nds
-        of [] => M.EMPTYdec
-         | _ => M.SEQdec nds
+   in case nds of [] => M.EMPTYdec
+                | _ => M.SEQdec nds
   end
 
-(* localEntDec : M.entityDec * M.entityDec -> M.entityDec
- * pseudo-local entity decl *)
 fun localEntDec(d1, d2) = seqEntDec [d1, d2]
 
-(* stripping marks from various Ast module binding forms *)
-
-(* stripMarkSigb : Ast.sigb * Ast.region -> Ast.sigb *)
 fun stripMarkSigb(MarkSigb(sigb',region'),region) =
       stripMarkSigb(sigb',region')
   | stripMarkSigb x = x
 
-(* stripMarkFSigb : Ast.fsigb * Ast.region -> Ast.fsigb *)
 fun stripMarkFsigb(MarkFsigb(fsigb',region'),region) =
       stripMarkFsigb(fsigb',region')
   | stripMarkFsigb x = x
 
-(* stripMarkFctb : Ast.fctb * Ast.region -> Ast.fctb *)
 fun stripMarkFctb(MarkFctb(fctb',region'),region) =
       stripMarkFctb(fctb',region')
   | stripMarkFctb x = x
 
-(* stripMarkStrb : Ast.strb * Ast.region -> Ast.strb *)
 fun stripMarkStrb(MarkStrb(strb',region'),region) =
       stripMarkStrb(strb',region')
   | stripMarkStrb x = x
 
-(* inStr : EU.context -> EU.context *)
 (* change of context on entering a structure *)
 fun inStr (EU.TOP) = EU.INSTR
   | inStr z = z
 
-(* FLINT stuff?
+(*
  * Add modId to entPath mappings for all appropriate elements of a structure
  * that has just been elaborated.  If epc is the empty context (rigid), then
  * this is an expensive no-op, so we test epc first. But, would this be
@@ -175,24 +151,21 @@ fun inStr (EU.TOP) = EU.INSTR
  * structures and functors can be distributed into the signature matching
  * or the instantiation process. (ZHONG)
  *)
-		  
 (*
 val mapPathsPhase = (Stats.makePhase "Compiler 033 1-mapPaths")
 and mapPaths x = Stats.doPhase mapPathsPhase mapPaths0 x
 *)
 
-(* mapPaths : EPC.context * M.Structure * (Stamp.stamp -> bool) -> unit *)
 fun mapPaths(epc, STR { sign, rlzn, ... }, flex) =
     mapEPC(epc, sign, rlzn, flex)
   | mapPaths _ = ()
 
-(* mapPaths : EPC.context * M.Signature * M.strEntity * (Stamp.stamp -> bool) -> unit *)
 and mapEPC(epc, sign as SIG { elements, ... }, rlzn: M.strEntity, flex) =
       let val { entities, ... } = rlzn
 	  fun doElem(_,TYCspec{entVar=ev, ...}) =
                 (*
-                 * Bind only if tycon is flexible -- have to pass flexibility
-                 * tester  -- but wait! What about a rigid structure with a
+                 * bind only if tycon is flexible -- have to pass flexibility
+                 * tester  -- but wait! what about a rigid structure with a
                  * new signature? Have to record even rigid strs and fcts in
                  * case they have new signatures
                  *)
@@ -206,7 +179,7 @@ and mapEPC(epc, sign as SIG { elements, ... }, rlzn: M.strEntity, flex) =
 				 then EPC.bindTycPath(epc, MI.tycId' tyc, ev)
 				 else ()
 			      end)
-	            | ERRORent => ()  (* ERRORent tolerance *)
+	            | ERRORent => ()
 		    | _ => bug "mapEPC 1")
 
             | doElem(_,STRspec{entVar=ev,sign=s,...}) =
@@ -214,7 +187,7 @@ and mapEPC(epc, sign as SIG { elements, ... }, rlzn: M.strEntity, flex) =
                  * map this structure (unconditionally, because it may
                  * have a different signature)
                  *)
-	       (case s
+	       (case s  (* don't record ERRORsig -- error tolerance *)
 		  of SIG _ =>
 		     (case EE.look(entities,ev)
 			of STRent nr =>
@@ -225,9 +198,9 @@ and mapEPC(epc, sign as SIG { elements, ... }, rlzn: M.strEntity, flex) =
 					  mapEPC(EPC.enterOpen(epc,SOME ev),
 						 s,nr,flex))
 			    end
-		         | ERRORent => () (* ERRORent tolerance *)
+		         | ERRORent => ()
 			 | _ => bug "mapEPC 2")
-		   | ERRORsig => ())  (* ERRORsig tolerance *)
+		   | ERRORsig => ())
 
             | doElem(_,FCTspec{entVar=ev,sign=s,...}) =
                 (* map this functor (unconditionally) *)
@@ -238,16 +211,16 @@ and mapEPC(epc, sign as SIG { elements, ... }, rlzn: M.strEntity, flex) =
 			    let val i = MU.fctId2(s,nr)
 			     in EPC.bindFctPath(epc,i,ev)
 			    end
-		         | ERRORent => ()  (* ERRORent tolerance *)
+		         | ERRORent => ()
 			 | _ => bug "mapEPC 3")
-		   | ERRORfsig => ()) (* ERRORfsig tolerance *)
+		   | ERRORfsig => ())
 
             | doElem _ = ()
 
        in if EPC.isEmpty epc then () else List.app doElem elements
       end
 
-  | mapEPC _ = ()  (* ERRORsig case *)
+  | mapEPC _ = ()
 
 (*
 fun bindReplTyc(EU.INFCT _, epctxt, mkStamp, dtyc) =
@@ -656,7 +629,7 @@ fun constrainStr (transp, sign, str, strDec, strExp, evOp, tdepth, entEnv, rpath
 	    then SOME (A.SEQdec[strDec, resDec], resStr, resExp)
 	    else (* instantiate the signature (opaque match) to define the str part*)
 	      (case resStr
-		 of STR {rlzn=matchedRlzn, access, prim, ...} => 
+		 of STR {rlzn=matchedRlzn, access, prim, ...} =>
 		      let val {rlzn=abstractRlzn, ...} =
 			      INS.instAbstr {sign=sign, entEnv=entEnv, srcRlzn=matchedRlzn,
 					     rpath=rpath, region=region, compInfo=compInfo}
@@ -762,18 +735,14 @@ fun elab (BaseStr decl, env, entEnv, region) =
        in (resDec, resStr, strExp, EE.empty)
       end
 
-(* AppStrI should be eliminated and replaced by AppStr everywhere. *)
   | elab (AppStr(spath,args), env, entEnv, region) =
-    elab (AppStrI (spath,args), end, entEnv, region)
-    (*
-     let val strexp' = LetStr(StrDec[Strb{name=returnId,constraint=NoSig,
+      let val strexp' = LetStr(StrDec[Strb{name=returnId,constraint=NoSig,
 					   def=AppStrI(spath,args)}],
 			       VarStr([returnId,resultId]))
        in elab(strexp', env, entEnv, region)
       end
-    -- getting rid of "returnId" indirection *)
-	 
-  | elab (AppStrI (spath,[(arg,_)]), env, entEnv, region) =
+
+  | elab (AppStrI(spath,[(arg,_)]), env, entEnv, region) =
       let val _ = debugmsg ">>elab[AppStr-one]"
 
           val fct = LU.lookFct(env, SP.SPATH spath, error region)
@@ -947,26 +916,10 @@ val (resDec, resStr, resExp, resDee) = elab(strexp, env, entEnv, region)
 val _ = debugmsg "<<elabStr"
 
 in (resDec, resStr, resExp, resDee)
-end (* end elabStr *)
+end (* end of function elabStr *)
 
 
-(* elabFct:
-    Ast.fctexp *  (* sytax tree of a functor expression *)
-    bool *  (* curried? BOGUS *)
-    S.symbol * (* declared name of the functor ? *)
-    SE.staticEnv * (* context static environment *)
-    M.entityEnv * (* "context entity environment"? *)
-    EU.context (* functor elaboration context: i.e. top-level or inside a structure? *)
-    tdepth * (* abstraction depth for constructing deBruijn indices? probably BOGUS *)
-    epContext * (* entity path context, huh? *)
-    IP.path * (* reverse symbolic path for "binding context" ? *)
-    SourceMap.region * (* source region of functor *)
-    EU.compInfo (* mkv, mkStamp, error *)
-    -> A.dec *
-       M.functor *
-       M.fctExp *
-       EE.entityEnv  (* possibly all BOGUS, or better, an option of this *)
-  elaborate a functor AST declaration(?), possibly including a result signature constraint *)
+(*** elabFct: elaborate the functor, possibly with signature constraint ***)
 and elabFct
       (fctexp: Ast.fctexp,
        curried : bool,
@@ -993,7 +946,7 @@ case fctexp
  of VarFct(spath,constraintExpOp) =>
       let val fct = LU.lookFct(env,SP.SPATH spath,error region)
        in case fct
-	    of ERRORfct =>  (* returning "bogus" result, or should it return NONE? *)
+	    of ERRORfct =>
 		(A.SEQdec [], fct, CONSTfct(M.bogusFctEntity), EE.empty)
 	     | _ =>
 		let val uncoercedExp =
@@ -1056,54 +1009,38 @@ case fctexp
                   rpath, region, compInfo)
       end
 
-  (* the only valid "BaseFct" case, with exactly one parameter. No more curried functors. *)
   | BaseFct{params=[(paramNameOp,paramSigExp)],body,constraint} =>
       let val _ = debugmsg ">>elabFct[BaseFct]"
-
-(* Assuming that curried is always false. This removes the "resultId" indirection.			   
 	  val body = if curried then body
 		     else BaseStr(StrDec[Strb{name=resultId, def=body,
 					      constraint=constraint}])
-
-   Why one would discard the constraint of the BaseFct in this case. Nonintuitive
-   dependence of the curried parameter.  What bug does this line relate to?
-
-	  val constraint = if curried then constraint else NoSig (* BUG! Issue ??? (23.7.18) *)
-*)
+	  val constraint = if curried then constraint else NoSig (* BUG! Issue xxx (23.7.18) ??? *)
           val (flex, depth) =
-	      case context
-		of EU.INFCT {flex,depth} => (flex, depth)  (* already inside a functor *)
-		 | _ => (* Entering a functor for the first time *)
-		    let val base = mkStamp()
-			fun flex stamp =
-			    (case Stamps.compare(base,stamp)
-			       of LESS => true
-				| _ => false)
-		     in (flex, DI.top)
-		    end
+            case context
+             of EU.INFCT {flex=f,depth=d} => (f, d)
+              | _ => (*** Entering functor for first time ***)
+                 let val base = mkStamp()
+                     fun h s = (case Stamps.compare(base,s)
+                                 of LESS => true
+                                  | _ => false)
+                  in (h, DI.top)
+                 end
+          val paramName = case paramNameOp of NONE => paramId
+                                            | SOME n => n
 
-          (* we could require functors to always have a named parameter, which would eliminate
-	     the NONE case here (and we could change the type of Ast.BaseFct accordlingly) *)
-	  val paramName =
-	      case paramNameOp
-	        of NONE => paramId (* introduce a default name for anonymous parameter *)
-                 | SOME n => n
-
-          val paramEntVar = EP.mkEntVar ()  (* was mkStamp () *)
+          val paramEntVar = mkStamp()
 
 	  val _ = debugmsg (">>elabFct[BaseFct]: paramEntVar = "^
 			    EP.entVarToString paramEntVar)
 
-          (* elaborate parameter signature. What does "nameOp=NONE" do? *)
-	  val paramSig =
+          val paramSig =
               ES.elabSig {sigexp=paramSigExp, nameOp=NONE, env=env,
                           entEnv=entEnv, epContext=epContext,
                           region=region, compInfo=compInfo}
-
           val _ = debugmsg "--elabFct[BaseFct]: paramSig defined"
 
 	  val _ = case paramSig
-		    of ERRORsig => raise EM.Error (* parameter signature failed to elaborate *)
+		    of ERRORsig => raise EM.Error
 		        (* bail out -- not attempting to recover *)
 		     | _ => ()
 
@@ -1178,7 +1115,7 @@ case fctexp
               case csigOp
                 of NONE => (bodyDecAbsyn, bodyStr, bodyExp)
                  | SOME csig =>
-		     (case constrainStr(csigTrans, csig, bodyStr, bodyDecAbsyn, bodyExp, entsv, 
+		     (case constrainStr(csigTrans, csig, bodyStr, bodyDecAbsyn, bodyExp, entsv,
 					depth', entEnv', IP.IPATH[], env', region, compInfo)
 		        of SOME x => x
 			 | NONE => (bodyDecAbsyn, bodyStr, bodyExp))
@@ -1215,10 +1152,10 @@ case fctexp
           val _ = debugmsg "--elabFct[BaseFct]: resFct defined"
 
           val resDec =
-	      let val x = A.FCTfct{param=paramStr, argtycs=paramTps,
-				   def=A.LETstr(bodyDecAbsyn',A.VARstr bodyStr')}
-	       in A.FCTdec [A.FCTB {name=name, fct=resFct, def=x}]
-	      end
+            let val x = A.FCTfct{param=paramStr, argtycs=paramTps,
+                                 def=A.LETstr(bodyDecAbsyn',A.VARstr bodyStr')}
+             in A.FCTdec [A.FCTB {name=name, fct=resFct, def=x}]
+            end
 
           val _ = debugmsg "<<elabFct[BaseFct]"
           val _ = showStr("--elabFct[BaseFct]: paramStr: ",paramStr,env)
@@ -1226,12 +1163,12 @@ case fctexp
        in (resDec, resFct, fctExp, EE.empty)
       end
 
-  | BaseFct{params=param0 :: params,body,constraint} =>
+  | BaseFct{params=param :: lparam,body,constraint} =>
       let val fctexp' =
-            BaseFct{params=[param0],
+            BaseFct{params=[param],
 		    body=BaseStr(
                            FctDec[Fctb{name=functorId,
-                                       def=BaseFct{params=params, body=body,
+                                       def=BaseFct{params=lparam, body=body,
                                                    constraint=constraint}}]),
 		    constraint=NoSig}
 
@@ -1239,13 +1176,13 @@ case fctexp
                   rpath, region, compInfo)
       end
 
-  | BaseFct{params=[],...} => bug "elabFct: functor has no parameters"
+  | BaseFct{params=[],...} => bug "elabFct"
 
-  | MarkFct(fctexp',region') => (* recall elabFct with updated region argument *)
+  | MarkFct(fctexp',region') =>
       elabFct(fctexp', curried, name, env, entEnv, context, tdepth, epContext,
               rpath, region', compInfo)
 
-end (* end elabFct *)
+end (* end of function elabFct *)
 
 
 (*** elabStrbs: elaborate structure bindings, with signature constraint ***)
@@ -1327,8 +1264,8 @@ fun loop([], decls, entDecls, env, entEnv) =
            * application, but that functor application may have "failed"
 	   * because the functor is/should be ERRORfct. Perhaps it will
            * suffice to check that str.resultId is a valid structure (since
-           * it is the "actual" functor application result).
-	  val str = if S.eq(name,returnId) then  (* this will always be false *)
+           * it is the "actual" functor application result).*)
+	  val str = if S.eq(name,returnId) then
 	            (* str should be functor application wrapper structure
 		     * with single structure component "resultStr" *)
                        if (case str
@@ -1342,7 +1279,7 @@ fun loop([], decls, entDecls, env, entEnv) =
                               " defined by partially applied functor")
                              EM.nullErrorBody;
                              ERRORstr)
-		    else str *)
+		    else str
 
           val _ = debugmsg "--elabStrbs: elabStr done"
 (*

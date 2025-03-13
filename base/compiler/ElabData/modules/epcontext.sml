@@ -33,18 +33,20 @@ in
 
 type pathmap = EP.rEntPath MI.umap
 
-(* 
- * A structure body (struct decls end) is _closed_ if it is a functor body structure.
- * The idea is that the elements of a closed structure (i.e. a functor body) are not directly
- * referenced from outside the structure, so the pathEnv local to the closed structure can be
- * discarded after the structure body is elaborated.
+(*
+ * A structure body (struct decls end) is "closed" if
+ *    it is a functor body structure
+ * The idea is that the elements of a closed structure are not
+ * directly referenced from outside the structure, so the pathEnv
+ * local to the closed structure can be discarded after the structure
+ * body is elaborated.
  *)
 
 (* pathmap maps stamps to full entPaths relative to current functor context *)
 (* each "closed" structure body pushes a new layer *)
 datatype context
   = EMPTY
-  | LAYER of {locals: pathmap ref, 
+  | LAYER of {locals: pathmap ref,
               lookContext: EP.entPath,
               bindContext: EP.rEntPath,
               outer: context}
@@ -54,11 +56,11 @@ val initContext : context = EMPTY
 fun isEmpty(EMPTY : context) = true
   | isEmpty _ = false
 
-(* 
+(*
  * called on entering a closed structure scope, whose elements will not
- * be accessed from outside (hence the null bindContext) 
+ * be accessed from outside (hence the null bindContext)
  *)
-fun enterClosed epc = 
+fun enterClosed epc =
   LAYER {locals=ref(MI.emptyUmap), lookContext=EP.epnil,
          bindContext=EP.repnil, outer=epc}
 
@@ -69,14 +71,14 @@ fun enterClosed epc =
  *)
 fun enterOpen (EMPTY, _) = EMPTY
   | enterOpen (epc, NONE) = epc
-  | enterOpen (LAYER{locals,lookContext,bindContext,outer}, SOME ev) = 
+  | enterOpen (LAYER{locals,lookContext,bindContext,outer}, SOME ev) =
       LAYER{locals=locals, lookContext=lookContext@[ev],
             bindContext=EP.repcons (ev, bindContext), outer=outer}
 
 (* relative(path,ctx) - subtract common prefix of path and ctx from path *)
 fun relative([],_) = []
   | relative(ep,[]) = ep
-  | relative(p as (x::rest),y::rest') = 
+  | relative(p as (x::rest),y::rest') =
       if EP.eqEntVar(x,y) then relative(rest,rest') else p
 
 fun lookPath find (EMPTY, _) = NONE
@@ -91,7 +93,7 @@ val lookFctPath = lookPath MI.uLookFct
 
 (* probe(ctx,s) checks whether a stamp has already be bound before *)
 fun probe find (EMPTY, s) = false
-  | probe find (LAYER{locals, outer, ...}, s) = 
+  | probe find (LAYER{locals, outer, ...}, s) =
       (case find(!locals, s) of
 	   NONE => probe find (outer, s)
          | _ => true)

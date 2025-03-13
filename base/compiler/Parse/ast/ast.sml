@@ -97,7 +97,6 @@ structure Ast : AST =
       | OrPat of pat list			(* or-pattern *)
 
     (* STRUCTURE EXPRESSION *)
-    (* we don't need the AppStrI, just the single AppStr will do. *)
     and strexp = VarStr of path				(* variable structure *)
 	       | BaseStr of dec				(* basic structure (struct...end) *)
 	       | ConstrainedStr of strexp * sigexp sigConst (* signature constrained *)
