@@ -226,6 +226,16 @@ structure ModuleId : MODULE_ID = struct
 		     m_str: 'a StrM.map,
 		     m_fct: 'a FctM.map,
 		     m_env: 'a StampM.map }
+    local
+	fun look (sel, find) (m as { m_tyc, m_sig, m_str, m_fct, m_env }, k) =
+	    find (sel m, k)
+    in
+        fun lookTyc x = look (#m_tyc, StampM.find) x
+	fun lookSig x = look (#m_sig, StampM.find) x
+	fun lookStr x = look (#m_str, StrM.find) x
+	fun lookFct x = look (#m_fct, FctM.find) x
+	fun lookEnv x = look (#m_env, StampM.find) x
+    end
 
     val emptyUmap = emptyTmap
 
@@ -235,10 +245,31 @@ structure ModuleId : MODULE_ID = struct
     val uLookFct = lookFct
     val uLookEnv = lookEnv
 
+   fun uInsertTyc ({ m_tyc, m_sig, m_str, m_fct, m_env }: 'a umap, k, t) =
+	{ m_tyc = StampM.insert (m_tyc, k, t),
+	  m_sig = m_sig, m_str = m_str, m_fct = m_fct, m_env = m_env }
+	  
+    fun uInsertSig ({ m_tyc, m_sig, m_str, m_fct, m_env }: 'a umap, k, t) =
+	{ m_sig = StampM.insert (m_sig, k, t),
+	  m_tyc = m_tyc, m_str = m_str, m_fct = m_fct, m_env = m_env }
+	  
+    fun uInsertStr ({ m_tyc, m_sig, m_str, m_fct, m_env }: 'a umap, k, t) =
+	{ m_str = StrM.insert (m_str, k, t),
+	  m_tyc = m_tyc, m_sig = m_sig, m_fct = m_fct, m_env = m_env }
+	  
+    fun uInsertFct ({ m_tyc, m_sig, m_str, m_fct, m_env }: 'a umap, k, t) =
+	{ m_fct = FctM.insert (m_fct, k, t),
+	  m_tyc = m_tyc, m_sig = m_sig, m_str = m_str, m_env = m_env }
+	  
+    fun uInsertEnv ({ m_tyc, m_sig, m_str, m_fct, m_env }: 'a umap, k, t) =
+	{ m_env = StampM.insert (m_env, k, t),
+	  m_tyc = m_tyc, m_sig = m_sig, m_str = m_str, m_fct = m_fct }
+
+(*
     val uInsertTyc = insertTyc
     val uInsertSig = insertSig
     val uInsertStr = insertStr
     val uInsertFct = insertFct
     val uInsertEnv = insertEnv
-
+*)
 end (* structure ModuleId *)

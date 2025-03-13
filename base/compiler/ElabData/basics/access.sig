@@ -65,12 +65,11 @@ signature ACCESS = sig
   (** fetching a component out of a structure access *)
     val selAcc  : access * int -> access
   (** duplicating an access variable *)
-    val dupAcc  : lvar * (Symbol.symbol option -> lvar) -> access
+    val dupAcc  : lvar -> access
 
-    val namedAcc : Symbol.symbol * (Symbol.symbol option -> lvar)
-		     -> access
+    val namedAcc : Symbol.symbol -> access
 
-    val newAcc  : (Symbol.symbol option -> lvar) -> access
+    val newAcc  : unit -> access
 
     val extAcc  : PersStamps.persstamp -> access
     val nullAcc : access

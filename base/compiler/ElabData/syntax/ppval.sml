@@ -28,6 +28,8 @@ local
   structure TU = TypesUtil
   structure LU = Lookup
   structure A = Access
+  structure S = Symbol
+
   open PrettyPrint PPUtil VarCon Types
 
 in
@@ -88,19 +90,15 @@ fun ppConBinding ppstrm =
                    (pps " of ";
    		    ppType env ppstrm (BasicTypes.domain typ))
                  else ();
+
 		 closeBox())
-	  | ppCon (con,env) =
-	      let exception Hidden
-		  val visibleDconTyc =
+	  | ppCon (con, env) =
+	      let val visibleDconTyc =
 		      let val tyc = TU.dconTyc con
-		       in
-			  (TypesUtil.equalTycon
-			      (LU.lookTyc
-			         (env,SymPath.SPATH
-				       [InvPath.last(TypesUtil.tycPath tyc, SpecialSymbols.errorTycId)],
-				  fn _ => raise Hidden),
-			       tyc)
-			     handle Hidden => false)
+			  val tycPath = [InvPath.last (TU.tycPath tyc, S.tycSymbol "foo")]
+		       in case LU.lookTyc (env, SymPath.SPATH tycPath)
+			    of SOME tyc' => TypesUtil.equalTycon (tyc, tyc')
+			     | NONE => false
 		      end
 	       in if !internals orelse not visibleDconTyc
 	          then (openHVBox 0;

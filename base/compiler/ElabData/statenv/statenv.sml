@@ -1,36 +1,45 @@
-(* statenv.sml
+(* ElabData/statenv/statenv.sml
  *
  * (C) 2001 Lucent Technologies, Bell Labs
  *)
 structure StaticEnv : STATICENV =
 struct
 
-local structure B  = Bindings
-      structure E = Env
-      structure M = Modules
+local (* imports *)
+
+  structure B = Bindings
+  structure E = Env
+  structure M = Modules
+
 in 
 
-type binding = B.binding
-type real_binding = binding * M.modtree option
+type real_binding = B.binding * M.modtree option
+
 type staticEnv = real_binding E.env
 
 exception Unbound = E.Unbound
 
-fun aug x = (x, NONE)
-fun strip (rb: real_binding) = #1 rb
+(* real_binding -> B.binding *)
+fun strip ((b, _): real_binding) = b
+(* unstrip : B.binding -> real_binding *)
+fun unstrip x = (x, NONE)
 
 val empty = E.empty
 fun look (e, s) = strip (E.look (e, s))
-val bind0 = E.bind
-fun bind (s, b, e) = E.bind (s, aug b, e)
-fun special (mkb, mks) = E.special (aug o mkb, mks)
+
+(* bind0: symbol * real_binding * staticEnv ->  staticEnv *)
+(* bind0 = E.bind with instantiated type *)
+fun bind0 (s: Symbol.symbol, b: real_binding, e: staticEnv) =
+    E.bind (s, b, e)
+
+fun bind (s, b, e) = E.bind (s, unstrip b, e)
+fun special (mkb, mks) = E.special (unstrip o mkb, mks)
 val atop = E.atop
 val consolidate = E.consolidate
 val consolidateLazy = E.consolidateLazy
 fun app f e = E.app (fn (s, b) => f (s, strip b)) e
-fun map f e = E.map (aug o f o strip) e
+fun map f e = E.map (unstrip o f o strip) e
 fun fold f x0 e = E.fold (fn ((s, b), x) => f ((s, strip b), x)) x0 e
-val realfold = E.fold
 val symbols = E.symbols
 
 (* fold but only over the elements in the environment with the keys
@@ -42,7 +51,7 @@ val symbols = E.symbols
  *)
 fun foldOverElems(f, x0, env, []) = x0
   | foldOverElems(f, x0, env, elem::rest) = 
-      foldOverElems(f, f((elem, look(env,elem)), x0), env, rest)  
+      foldOverElems(f, f ((elem, look (env,elem)), x0), env, rest)  
 (* 
  * sort: sort the bindings in an environment.
  *  
@@ -69,7 +78,7 @@ fun sort env = ListMergeSort.sort B.binderGt (fold (op ::) nil env)
 
 fun filter (e, l) =
     let fun add (sy, e') = bind (sy, look (e, sy), e') handle Unbound => e'
-    in foldl add empty l
+     in foldl add empty l
     end
 
 end (* local *)

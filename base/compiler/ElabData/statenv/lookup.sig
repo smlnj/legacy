@@ -5,36 +5,22 @@ signature LOOKUP =
 sig
   val lookFix : StaticEnv.staticEnv * Symbol.symbol -> Fixity.fixity
 
-  val lookSig : StaticEnv.staticEnv * Symbol.symbol * ErrorMsg.complainer
-                -> Modules.Signature
+  val lookSig : StaticEnv.staticEnv * Symbol.symbol -> Modules.Signature option
 
-  val lookFsig : StaticEnv.staticEnv * Symbol.symbol * ErrorMsg.complainer 
-		 -> Modules.fctSig
+  val lookFsig : StaticEnv.staticEnv * Symbol.symbol -> Modules.fctSig option
 
-  val lookStr : StaticEnv.staticEnv * SymPath.path * ErrorMsg.complainer
-                -> Modules.Structure
+  val lookStr : StaticEnv.staticEnv * SymPath.path -> Modules.Structure option
 
-  val lookStrDef : StaticEnv.staticEnv * SymPath.path * ErrorMsg.complainer
-                   -> Modules.strDef
+  val lookStrDef : StaticEnv.staticEnv * SymPath.path -> Modules.strDef option
 
-  val lookFct : StaticEnv.staticEnv * SymPath.path * ErrorMsg.complainer
-                -> Modules.Functor
+  val lookFct : StaticEnv.staticEnv * SymPath.path -> Modules.Functor option
 
-  val lookTyc : StaticEnv.staticEnv * SymPath.path * ErrorMsg.complainer
-                -> Types.tycon
-
-  val lookArTyc : StaticEnv.staticEnv * SymPath.path * int 
-                    * ErrorMsg.complainer -> Types.tycon
+  val lookTyc : StaticEnv.staticEnv * SymPath.path -> Types.tycon option
 
   (* lookValSym and lookSym return value or constructor bindings *)
-  val lookValSym : StaticEnv.staticEnv * Symbol.symbol * ErrorMsg.complainer
-		   -> VarCon.value
+  val lookValSym : StaticEnv.staticEnv * Symbol.symbol -> VarCon.value option
 
-  val lookVal : StaticEnv.staticEnv * SymPath.path * ErrorMsg.complainer
-                -> VarCon.value
-
-  val lookExn : StaticEnv.staticEnv * SymPath.path * ErrorMsg.complainer
-                -> VarCon.datacon
+  val lookVal : StaticEnv.staticEnv * SymPath.path -> VarCon.value option
 
 end (* signature LOOKUP *)
 

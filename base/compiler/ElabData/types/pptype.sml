@@ -154,10 +154,10 @@ fun effectivePath(path,tyc,env) : string =
 	    SOME path
 	  | tycPath _ = NONE
 	fun find(path,tyc) =
-	    (ConvertPaths.findPath(path,
+	    (ConvertPaths.findPath
+	       (path,
 		(fn tyc' => TU.equalTycon(tyc',tyc)),
-		(fn x => SOME(Lookup.lookTyc(env,x,(fn _ => raise StaticEnv.Unbound)))
-		         handle StaticEnv.Unbound => NONE)))
+		(fn x => Lookup.lookTyc (env, x))))
 	fun search(path,tyc) =
 	    let val (suffix,found) = find(path,tyc)
 	     in if found then (suffix,true)

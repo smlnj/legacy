@@ -33,13 +33,11 @@ val getStrs : Modules.Structure -> Modules.Structure list
 val getTycs : Modules.Structure -> Types.tycon list
 val getStrSymbols : Modules.Structure -> Symbol.symbol list
 
-(*** these functions should be called in env/lookup.sml only ***)
+(*** these functions should be called in ElabData/statenv/lookup.sml only ***)
 val getStrPath : Modules.Structure * SymPath.path * SymPath.path
                  -> Modules.Structure
-
-val getStrDef : Modules.Structure * SymPath.path * SymPath.path
-                -> Modules.strDef
-
+val getStrDefPath : Modules.Structure * SymPath.path * SymPath.path
+                    -> Modules.strDef
 val getFctPath : Modules.Structure * SymPath.path * SymPath.path
                  -> Modules.Functor
 val getTycPath : Modules.Structure * SymPath.path * SymPath.path

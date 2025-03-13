@@ -186,7 +186,7 @@ fun strDefToStr(CONSTstrDef str, _) = str
 (*
  * two pieces of essential structure information gathered during
  * the environment lookup. SIGINFO is returned if the structure
- * being searched is a STRSIG; otherwise it return STRINFO.
+ * being searched is a STRSIG; otherwise it returns STRINFO.
  *)
 datatype strInfo = SIGINFO of EP.entPath  (* reverse order! *)
                  | STRINFO of strEntity * A.access * POI.str_prim_info
@@ -303,7 +303,7 @@ fun getPath makeIt (str, SP.SPATH spath, fullsp) =
 
    in case str
        of STR { sign, rlzn, access, prim } =>
-          loop(spath, sign, STRINFO(rlzn, access, prim))
+            loop(spath, sign, STRINFO(rlzn, access, prim))
         | STRSIG{sign, entPath} =>
             loop(spath, sign, SIGINFO (rev entPath))
         | _ => loop(spath, ERRORsig, bogusInfo)
@@ -317,7 +317,7 @@ val getStrPath : M.Structure * SP.path * SP.path -> M.Structure =
       (debugmsg ">>getStrPath"; getPath mkStr)
 val getFctPath : M.Structure * SP.path * SP.path -> M.Functor =
       getPath mkFct
-val getStrDef : M.Structure * SP.path * SP.path -> M.strDef =
+val getStrDefPath : M.Structure * SP.path * SP.path -> M.strDef =
       getPath mkStrDef
 
 fun checkPathSig (sign: M.Signature, spath: SP.path) : S.symbol option =

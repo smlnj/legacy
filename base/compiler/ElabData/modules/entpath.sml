@@ -54,7 +54,7 @@ type entPath = entVar list
 type rEntPath = entVar list
 
 val eqEntVar = ST.eq
-val mkEntVar = ST.mkStamp
+val mkEntVar = ST.fresh
 
 val epnil = []
 val repnil = []

@@ -1,5 +1,6 @@
+(* Elaborator/modules/evalent.sml *)
 (* Copyright 1996 by AT&T Bell Laboratories *)
-(* evalent.sml *)
+(* Copyright 2025 by The Fellowship of SML/NJ (www.smlnj.org) *)
 
 signature EVALENTITY =
 sig
@@ -8,7 +9,7 @@ sig
 
   val evalApp : Modules.fctEntity * Modules.strEntity
                 * DebIndex.depth * EntPathContext.context
-                * InvPath.path * ElabUtil.compInfo
+                * InvPath.path
                 -> Modules.strEntity
 
   val debugging : bool ref
@@ -18,25 +19,28 @@ end (* signature EVALENTITY *)
 structure EvalEntity : EVALENTITY =
 struct
 
-local (* structure DI = DebIndex *)
-      structure SS = SpecialSymbols
-      structure EP = EntPath
-      structure IP = InvPath
-      structure S = SourceMap
-      structure T = Types
-      structure TU = TypesUtil
-      structure EE = EntityEnv
-      structure EPC = EntPathContext
-      structure EU = ElabUtil
-      structure MI = ModuleId
-      structure MU = ModuleUtil
-      structure I = Instantiate
-      open Modules
+local (* imports *)
+
+  structure SS = SpecialSymbols
+  structure EP = EntPath
+  structure IP = InvPath
+  structure S = SourceMap
+ 
+  structure T = Types
+  structure TU = TypesUtil
+ 
+  structure EE = EntityEnv
+  structure EPC = EntPathContext
+  structure EU = ElabUtil
+ 
+  structure M = Modules
+  structure MI = ModuleId
+  structure MU = ModuleUtil
+  structure I = Instantiate
+
 in
 
-(* structure Instantiate = I *)
-
-(* debugging *)
+(* usual debugging stuff *)
 val say = Control_Print.say
 val debugging = ElabDataControl.eedebugging
 fun debugmsg (msg: string) =
@@ -56,17 +60,16 @@ val resultId = SS.resultId
 val returnId = SS.returnId
 
 val defaultError =
-    ErrorMsg.errorNoFile(ErrorMsg.defaultConsumer(),ref false) (0,0)
+    ErrorMsg.errorNoFile (ErrorMsg.defaultConsumer(), ref false) (0,0)
 
-fun evalTyc (entv, tycExp, entEnv, epc, rpath,
-             compInfo as {mkStamp,...}: EU.compInfo) =
+fun evalTyc (entv, tycExp, entEnv, epc, rpath) =
       case tycExp
-       of CONSTtyc tycon => tycon
-        | FORMtyc (T.GENtyc { kind, arity, eq, path, ... }) =>
+       of M.CONSTtyc tycon => tycon
+        | M.FORMtyc (T.GENtyc { kind, arity, eq, path, ... }) =>
 	  (case kind of
 	       T.DATATYPE{index=0, stamps, freetycs, family, root=NONE, stripped} =>
                let val viztyc = MU.transTycon entEnv
-                   val nstamps = Vector.map (fn _ => mkStamp()) stamps
+                   val nstamps = Vector.map (fn _ => CompInfo.mkStamp ()) stamps
                    val nst = Vector.sub(nstamps,0)
                    val nfreetycs = map viztyc freetycs
                    val _ = EPC.bindTycPath (epc, nst, entv)
@@ -98,8 +101,8 @@ fun evalTyc (entv, tycExp, entEnv, epc, rpath,
 			    eq=eq, stub=NONE}
                end
 	     | _ => bug "unexpected GENtyc in evalTyc")
-        | FORMtyc (T.DEFtyc{stamp,tyfun=T.TYFUN{arity, body},strict,path}) =>
-          let val newstamp = mkStamp()
+        | M.FORMtyc (T.DEFtyc{stamp,tyfun=T.TYFUN{arity, body},strict,path}) =>
+          let val newstamp = CompInfo.mkStamp()
 	      (* tycId=stamp (this should perhaps be more abstract some day) *)
 	      val _ = EPC.bindTycPath (epc, newstamp, entv)
 	      val newbody = MU.transType entEnv body
@@ -109,25 +112,24 @@ fun evalTyc (entv, tycExp, entEnv, epc, rpath,
 		       tyfun=T.TYFUN{arity=arity, body=newbody},
 		       strict=newstrict, path=IP.append(rpath,path)}
           end
-        | VARtyc entPath =>
+        | M.VARtyc entPath =>
 	    (debugmsg (">>evalTyc[VARtyc]: "^EP.entPathToString entPath);
 	     EE.lookTycEP(entEnv,entPath))
         | _ => bug "unexpected tycExp in evalTyc"
 
-and evalStr(strExp, depth, epc, entsv, entEnv, rpath,
-            compInfo as {mkStamp,...}: EU.compInfo) =
+and evalStr(strExp, depth, epc, entsv, entEnv, rpath) =
      (debugmsg ("[Inside EvalStr ......");
       case strExp
-       of VARstr entPath =>
+       of M.VARstr entPath =>
 	    (debugmsg (">>evalStr[VARstr]: "^EP.entPathToString entPath);
 	     (EE.lookStrEP(entEnv,entPath), entEnv))
 
-        | CONSTstr strEnt => (strEnt, entEnv)
+        | M.CONSTstr strEnt => (strEnt, entEnv)
 
-        | STRUCTURE {stamp, entDec} =>
+        | M.STRUCTURE {stamp, entDec} =>
             let val epc = EPC.enterOpen(epc, entsv)
-                val stp = evalStp(stamp, depth, epc, entEnv, compInfo)
-                val env = evalDec(entDec, depth, epc, entEnv, rpath, compInfo)
+                val stp = evalStp(stamp, depth, epc, entEnv)
+                val env = evalDec(entDec, depth, epc, entEnv, rpath)
 	    in
 		({stamp = stp, entities=env,
 		  properties = PropList.newHolder (),
@@ -136,34 +138,29 @@ and evalStr(strExp, depth, epc, entsv, entEnv, rpath,
 		 entEnv)
             end
 
-        | APPLY (fctExp, strExp) =>
+        | M.APPLY (fctExp, strExp) =>
 	    let val (fctRlzn, entEnv1) =
-                  evalFct(fctExp, depth, epc, entEnv, compInfo)
+                    evalFct(fctExp, depth, epc, entEnv)
 	        val (argRlzn, entEnv2) =
-                  evalStr(strExp, depth, epc, entsv, entEnv1,
-                          IP.empty, compInfo)
+                    evalStr(strExp, depth, epc, entsv, entEnv1, IP.empty)
                 val epc = EPC.enterOpen(epc, entsv)
-             in (evalApp(fctRlzn, argRlzn, depth, epc, rpath, compInfo),
+             in (evalApp(fctRlzn, argRlzn, depth, epc, rpath),
                  entEnv2)
             end
 
-        | LETstr (entDec, strExp) =>
-            let val entEnv1 = evalDec(entDec, depth, epc,
-                                      entEnv, rpath, compInfo)
+        | M.LETstr (entDec, strExp) =>
+            let val entEnv1 = evalDec(entDec, depth, epc, entEnv, rpath)
                 val (strEnt, entEnv2) =
-                  evalStr(strExp, depth, epc, entsv, entEnv1,
-                          rpath, compInfo)
-
+                  evalStr(strExp, depth, epc, entsv, entEnv1, rpath)
  	     in (strEnt, entEnv2)
             end
 
-        | ABSstr (sign, strExp) =>
+        | M.ABSstr (sign, strExp) =>
 	    let val (srcRlzn, entEnv1) =
-                  evalStr(strExp, depth, epc, entsv, entEnv, rpath, compInfo)
+                  evalStr(strExp, depth, epc, entsv, entEnv, rpath)
                 val {rlzn=rlzn, abstycs=abstycs, tyceps=tyceps} =
                   I.instAbstr{sign=sign, entEnv=entEnv, srcRlzn=srcRlzn,
-                              rpath=rpath,
-                              region=S.nullRegion, compInfo=compInfo}
+                              rpath=rpath, region=S.nullRegion}
 
                 (* because the abstraction creates a bunch of new stamps,
                    we have to bind them to the epcontext.
@@ -176,35 +173,30 @@ and evalStr(strExp, depth, epc, entsv, entEnv, rpath,
 	     in (rlzn, entEnv1)
 	    end
 
-        | CONSTRAINstr {boundvar,raw,coercion} =>
+        | M.CONSTRAINstr {boundvar,raw,coercion} =>
             (* propagage the context rpath into the raw uncoerced structure *)
             let val (rawEnt, entEnv1) =
-                  evalStr(raw, depth, epc, SOME boundvar,
-                          entEnv, rpath, compInfo)
-                val entEnv2 = EE.bind(boundvar, STRent rawEnt, entEnv1)
-            (*  val entEnv' = EE.bind(boundvar, STRent rawEnt, entEnv) *)
+                    evalStr (raw, depth, epc, SOME boundvar, entEnv, rpath)
+                val entEnv2 = EE.bind(boundvar, M.STRent rawEnt, entEnv1)
                 val (strEnt, entEnv3) =
- 	          evalStr(coercion, depth, epc, entsv,
-                          entEnv2, IP.empty, compInfo)
-
+ 	            evalStr(coercion, depth, epc, entsv, entEnv2, IP.empty)
              in (strEnt, entEnv3)
             end
 
-        | FORMstr _ => bug "unexpected FORMstr in evalStr")
+        | M.FORMstr _ => bug "unexpected FORMstr in evalStr")
 
 
-and evalFct (fctExp, depth, epc, entEnv,
-             compInfo as {mkStamp,...}: EU.compInfo) =
+and evalFct (fctExp, depth, epc, entEnv) =
       case fctExp
-       of VARfct entPath =>
+       of M.VARfct entPath =>
 	    (debugmsg (">>evalFct[VARfct]: "^EP.entPathToString entPath);
 	     (EE.lookFctEP(entEnv,entPath), entEnv))
 
-        | CONSTfct fctEntity => (fctEntity, entEnv)
+        | M.CONSTfct fctEntity => (fctEntity, entEnv)
 
-        | LAMBDA{param, body} =>
-            let val clos = CLOSURE{param=param, body=body, env=entEnv}
-	     in ({stamp = mkStamp (),
+        | M.LAMBDA {param, body} =>
+            let val clos = M.CLOSURE{param=param, body=body, env=entEnv}
+	     in ({stamp = CompInfo.mkStamp (),
 		  closure=clos,
 		  properties = PropList.newHolder (),
 		  (*lambdaty=ref NONE,*)
@@ -214,27 +206,24 @@ and evalFct (fctExp, depth, epc, entEnv,
 		 entEnv)
             end
 
-        | LAMBDA_TP{param, body, sign as FSIG{paramsig, bodysig, ...}} =>
-            let val clos = CLOSURE{param=param, body=body, env=entEnv}
+        | M.LAMBDA_TP{param, body, sign as M.FSIG {paramsig, bodysig, ...}} =>
+            let val clos = M.CLOSURE{param=param, body=body, env=entEnv}
                 val tps =
                   let val rpath' = IP.IPATH [paramSym]
                       val {rlzn=paramEnt, tycpaths=paramTps} =
                         I.instParam{sign=paramsig, entEnv=entEnv,
                                     rpath=rpath', tdepth=depth,
-                                    region=S.nullRegion, compInfo=compInfo}
-                      val entEnv' =
-                        EE.mark(mkStamp, EE.bind(param, STRent paramEnt,
+                                    region=S.nullRegion}
+                      val entEnv' = EE.mark(CompInfo.mkStamp, EE.bind(param, M.STRent paramEnt,
                                                  entEnv))
                       val (bodyRlzn,_) =
-                        evalStr(body, DebIndex.next depth, epc, NONE,
-                                entEnv', IP.empty, compInfo)
+                          evalStr(body, DebIndex.next depth, epc, NONE, entEnv', IP.empty)
                       val bodyTps =
-                        I.getTycPaths{sign=bodysig, rlzn=bodyRlzn,
-                                      entEnv=entEnv', compInfo=compInfo}
+                          I.getTycPaths{sign=bodysig, rlzn=bodyRlzn, entEnv=entEnv'}
                    in T.TP_FCT(paramTps, bodyTps)
                   end
 
-             in ({stamp = mkStamp(),
+             in ({stamp = CompInfo.mkStamp (),
 		  closure=clos,
 		  properties = PropList.newHolder (),
 		  (* lambdaty=ref NONE, *)
@@ -243,25 +232,21 @@ and evalFct (fctExp, depth, epc, entEnv,
 		 entEnv)
             end
 
-        | LETfct (entDec, fctExp) =>
-            let val entEnv1 = evalDec(entDec, depth, epc,
-                                      entEnv, IP.empty, compInfo)
-                val (fctEnt, entEnv2) =
-                  evalFct(fctExp, depth, epc, entEnv1, compInfo)
+        | M.LETfct (entDec, fctExp) =>
+            let val entEnv1 = evalDec (entDec, depth, epc, entEnv, IP.empty)
+                val (fctEnt, entEnv2) = evalFct (fctExp, depth, epc, entEnv1)
              in (fctEnt, entEnv2)
             end
 
         | _ => bug "unexpected cases in evalFct"
 
-and evalApp(fctRlzn : Modules.fctEntity, argRlzn, depth, epc, rpath,
-            compInfo as {mkStamp, ...} : EU.compInfo) =
-      let val {closure=CLOSURE{param, body, env}, tycpath, ...} = fctRlzn
-	  val nenv = EE.mark(mkStamp, EE.bind(param, STRent argRlzn, env))
+and evalApp (fctRlzn : Modules.fctEntity, argRlzn, depth, epc, rpath) =
+      let val {closure = M.CLOSURE{param, body, env}, tycpath, ...} = fctRlzn
+	  val nenv = EE.mark(CompInfo.mkStamp, EE.bind(param, M.STRent argRlzn, env))
           val  _ = debugmsg ("[Inside EvalAPP] ......")
        in case (body, tycpath)
-           of (FORMstr(FSIG{paramsig, bodysig, ...}), SOME tp) =>
-               let val argTps = I.getTycPaths{sign=paramsig, rlzn=argRlzn,
-                                              entEnv=env, compInfo=compInfo}
+           of (M.FORMstr (M.FSIG{paramsig, bodysig, ...}), SOME tp) =>
+               let val argTps = I.getTycPaths{sign=paramsig, rlzn=argRlzn, entEnv=env}
                    val resTp = T.TP_APP(tp, argTps)
 
                    (** failing to add the stamps into the epcontext is
@@ -270,8 +255,7 @@ and evalApp(fctRlzn : Modules.fctEntity, argRlzn, depth, epc, rpath,
 
                    val {rlzn=rlzn, abstycs=abstycs, tyceps=tyceps} =
                      I.instFmBody {sign=bodysig, entEnv=nenv, tycpath=resTp,
-                                   rpath=rpath, region=S.nullRegion,
-                                   compInfo=compInfo}
+                                   rpath=rpath, region=S.nullRegion}
 
                    fun h (T.GENtyc gt, ep) =
                        EPC.bindTycLongPath (epc, MI.tycId gt, ep)
@@ -280,8 +264,8 @@ and evalApp(fctRlzn : Modules.fctEntity, argRlzn, depth, epc, rpath,
                 in rlzn
                end
             | _ =>
-               let val (strEnt, deltaEE)
-                     = evalStr(body, depth, epc, NONE, nenv, rpath, compInfo)
+               let val (strEnt, deltaEE) =
+                       evalStr (body, depth, epc, NONE, nenv, rpath)
                    (* invariant: deltaEE should always be same as nenv
                       if the body of an functor is always a BaseStr. Notice
                       functor body is constructed either in the source
@@ -292,56 +276,51 @@ and evalApp(fctRlzn : Modules.fctEntity, argRlzn, depth, epc, rpath,
                end
       end
 
-and evalDec(dec, depth, epc, entEnv, rpath,
-            compInfo as {mkStamp,...}: EU.compInfo) =
+and evalDec(dec, depth, epc, entEnv, rpath) =
      (debugmsg ("[Inside EvalDec ......");
       case dec
-       of TYCdec (entVar, tycExp) =>
+       of M.TYCdec (entVar, tycExp) =>
             let val tycEnt =
-                  evalTyc(entVar, tycExp, entEnv, epc, rpath, compInfo)
-	     in EE.bind(entVar, TYCent tycEnt, entEnv)
+                  evalTyc(entVar, tycExp, entEnv, epc, rpath)
+	     in EE.bind(entVar, M.TYCent tycEnt, entEnv)
             end
-        | STRdec (entVar, strExp, sym) =>
+        | M.STRdec (entVar, strExp, sym) =>
             let val rpath' =
 		    if Symbol.eq(sym, returnId)
 		       orelse Symbol.eq(sym, resultId)
 		    then rpath
 		    else IP.extend(rpath,sym)
 		val (strEnt, entEnv1) =
-                  evalStr(strExp, depth, epc, SOME entVar,
-                          entEnv, rpath', compInfo)
-             in EE.bind(entVar, STRent strEnt, entEnv1)
+                  evalStr(strExp, depth, epc, SOME entVar, entEnv, rpath')
+             in EE.bind(entVar, M.STRent strEnt, entEnv1)
             end
 
-        | FCTdec (entVar, fctExp) =>
+        | M.FCTdec (entVar, fctExp) =>
             let val (fctEnt, entEnv1) =
-                  evalFct(fctExp, depth, epc, entEnv, compInfo)
-             in EE.bind(entVar, FCTent fctEnt, entEnv1)
+                    evalFct(fctExp, depth, epc, entEnv)
+             in EE.bind(entVar, M.FCTent fctEnt, entEnv1)
             end
-        | SEQdec decs =>
+        | M.SEQdec decs =>
             let fun h (dec, entEnv0) =
-                  evalDec(dec, depth, epc, entEnv0, rpath, compInfo)
-             in EE.mark(mkStamp, foldl h entEnv decs)
+                    evalDec(dec, depth, epc, entEnv0, rpath)
+             in EE.mark (CompInfo.mkStamp, foldl h entEnv decs)
             end
         (*
          * The following may be wrong, but since ASSERTION! the bound symbols
          * are all distinct,it would not appear to cause any harm.
          *)
-        | LOCALdec (localDec, bodyDec) =>
-            let val entEnv1 = evalDec(localDec, depth, epc,
-                                      entEnv, IP.empty, compInfo)
-             in evalDec(bodyDec, depth, epc, entEnv1, rpath, compInfo)
+        | M.LOCALdec (localDec, bodyDec) =>
+            let val entEnv1 = evalDec (localDec, depth, epc, entEnv, IP.empty)
+             in evalDec(bodyDec, depth, epc, entEnv1, rpath)
             end
 
         | _  => entEnv)
 
-and evalStp (stpExp, depth, epc, entEnv,
-             compInfo as {mkStamp,...}: EU.compInfo) =
+and evalStp (stpExp, depth, epc, entEnv) =
       case stpExp
-       of (* CONST stamp     => stamp
-        | *) NEW             => mkStamp()
-        | GETSTAMP strExp => #stamp (#1 (evalStr(strExp, depth, epc, NONE,
-						 entEnv, IP.empty, compInfo)))
+        of M.NEW             => CompInfo.mkStamp ()
+         | M.GETSTAMP strExp => #stamp (#1 (evalStr(strExp, depth, epc, NONE,
+						 entEnv, IP.empty)))
 
 (*
 val evalApp = Stats.doPhase(Stats.makePhase "Compiler 044 x-evalApp") evalApp

@@ -21,9 +21,11 @@ struct
     | COMPLAIN (* "recoverable" errors, where static elaboration can continue *)
     | TERMINAL (* "terminal" errors, where we cannot continue elaboration *)
 
-  type complainer = severity -> string -> (PP.stream -> unit) -> unit
+  type bodyPrinter = PrettyPrint.stream -> unit
 
-  type errorFn = SM.region -> complainer
+  type complainer = severity -> string -> bodyPrinter -> unit
+
+  type errorFn = SM.region -> severity -> string -> bodyPrinter -> unit
 
   (* errors: the error record *)
   type errors = {error: SM.region -> complainer,
@@ -33,8 +35,8 @@ struct
   (* val defaultConsumer : unit -> PP.device *)
   fun defaultConsumer () = PP.defaultDevice
 
-  (* val nullErrorBody : PP.stream -> unit *)
-  val nullErrorBody = (fn (ppstrm: PP.stream) => ())
+  (* val nullErrorBody : bodyPrinter *)
+  val nullErrorBody : bodyPrinter = (fn (ppstrm: PP.stream) => ())
 
   (* val ppmsg : PP.device * string * severity * string * (PP.stream -> unit) -> unit *)
   fun ppmsg (errConsumer: PP.device, location, severity, msg, body) =

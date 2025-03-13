@@ -105,9 +105,9 @@ fun sigToEnv(M.SIG {elements,...}) =
                 SE.bind(sym,B.TYCbind spec,env)
              | M.TYCspec{info=M.InfTycSpec{name,arity},...} =>
                 let val tyc =
-                        T.GENtyc{stamp=Stamps.special "x", arity=arity,
-                                 eq=ref(T.UNDEF), kind=T.FORMAL, stub=NONE,
-                                 path=IP.extend(IP.empty,name)}
+                        T.GENtyc {stamp=Stamps.special "x", arity=arity,
+                                  eq=ref(T.UNDEF), kind=T.FORMAL, stub=NONE,
+                                  path=IP.extend(IP.empty,name)}
                 in SE.bind(sym,B.TYCbind tyc,env)
                 end
 	     | M.STRspec{sign,slot,def,entVar=ev} =>
@@ -127,13 +127,9 @@ fun is_ppable_ConBinding (T.DATACON{rep=A.EXN _, ...}, _) = true
       let exception Hidden
 	  val visibleDconTyc =
 	        let val tyc = TU.dconTyc con
-		 in (TU.equalTycon
-		      (LU.lookTyc
-			 (env,
-			  SP.SPATH[IP.last(TU.tycPath tyc, SS.errorId)],
-			  fn _ => raise Hidden),
-		       tyc)
-		       handle Hidden => false)
+		 in case LU.lookTyc (env, SP.SPATH[IP.last(TU.tycPath tyc, SS.errorId)])
+		      of SOME tyc' => TU.equalTycon (tyc, tyc')
+		       | NONE => false
 		end
        in (!internals orelse not visibleDconTyc)
       end
@@ -185,8 +181,7 @@ fun ppStructureName ppstrm (str,env) =
 	     of M.STR { rlzn, ... } => #rpath rlzn
 	      | _ => bug "ppStructureName"
 	fun check str' = MU.eqOrigin(str',str)
-	fun look a = SOME(LU.lookStr(env,a,(fn _ => raise StaticEnv.Unbound)))
-			 handle StaticEnv.Unbound => NONE
+	fun look a = LU.lookStr (env, a)
 	val (syms,found) = ConvertPaths.findPath(rpath, check, look)
      in pps ppstrm (if found then SP.toString(SP.SPATH syms)
 		    else "?"^(SP.toString(SP.SPATH syms)))
@@ -255,16 +250,13 @@ fun ppStructure ppstrm (str,env,depth) =
 		    closeBox())
 		else case sign
 		       of M.SIG { name = SOME sym, ... } =>
-			  ((if MU.eqSign
-				   (sign,
-				    LU.lookSig
-					(env,sym,(fn _ => raise SE.Unbound)))
-			    then ppSym ppstrm sym
-			    else (ppSym ppstrm sym;
-				  PP.string ppstrm "?"))
-			   handle SE.Unbound =>
-				  (ppSym ppstrm sym;
-				   PP.string ppstrm "?"))
+			  (case LU.lookSig (env,sym)
+			     of SOME sign' => 
+				  (if MU.eqSign	(sign, sign')
+				   then ppSym ppstrm sym
+				   else (ppSym ppstrm sym;
+					 PP.string ppstrm "?"))
+			     |  NONE => (ppSym ppstrm sym; PP.string ppstrm "?"))
 			| M.SIG { name = NONE, ... } =>
 			  if depth <= 1 then PP.string ppstrm "<sig>"
 			  else ppSignature0 ppstrm
@@ -611,9 +603,9 @@ and ppTycBind ppstrm (tyc,env) =
 		  | checkCON _ = raise SE.Unbound
 		fun find ((actual as {name,rep,domain}) :: rest) =
 		     (let val found =
-			      checkCON(LU.lookValSym
-					(env,name,
-					 fn _ => raise SE.Unbound))
+			      (case LU.lookValSym (env, name)
+				of SOME value => checkCON value
+				 | NONE => raise SE.Unbound)
 		       in (* test whether the datatypes of actual and
 			     found constructor agree *)
 			  case TU.dconTyc found

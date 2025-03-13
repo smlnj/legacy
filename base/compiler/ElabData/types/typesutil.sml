@@ -313,9 +313,8 @@ structure TypesUtil : TYPESUTIL =
 
     local
       (* making dummy argument lists to be used in equalTycon *)
-	val generator = Stamps.newGenerator()
 	fun makeDummyType() =
-	    CONty(GENtyc{stamp = Stamps.fresh generator,
+	    CONty(GENtyc{stamp = CompInfo.mkStamp (),
 			 path = IP.IPATH[Symbol.tycSymbol "dummy"],
 			 arity = 0, eq = ref YES, stub = NONE,
 			 kind = PRIMITIVE},[])

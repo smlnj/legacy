@@ -8,8 +8,9 @@ signature ERRORMSG =
 sig
 
     datatype severity = WARN | COMPLAIN | TERMINAL
-    type complainer = severity -> string -> (PrettyPrint.stream -> unit) -> unit
-    type errorFn = SourceMap.region -> complainer
+    type bodyPrinter = PrettyPrint.stream -> unit
+    type errorFn = SourceMap.region -> severity -> string -> bodyPrinter -> unit
+    type complainer = severity -> string -> bodyPrinter -> unit
     type errors (* = {error: errorFn,
                       errorMatch: region->string,
                       anyErrors : bool ref} *)
@@ -18,8 +19,8 @@ sig
 
     val anyErrors : errors -> bool
     val defaultConsumer : unit -> PrettyPrint.device
-    val nullErrorBody : PrettyPrint.stream -> unit
-    val error : Source.inputSource -> SourceMap.region -> complainer
+    val nullErrorBody : bodyPrinter
+    val error : Source.inputSource -> errorFn
     (* with a known location string but without access to the actual source: *)
     val errorNoSource :
 	PrettyPrint.device * bool ref -> string -> complainer

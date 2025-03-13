@@ -1,33 +1,34 @@
-(* source.sig
+(* Basics/source/source.sig
  * COPYRIGHT (c) 1996 Bell Laboratories.
+ * COPYRIGHT (c) 2025 The Fellowship of SML/NJ (www.smlnj.org).
  *)
 
 signature SOURCE =
-  sig
-    type inputSource = {
-        sourceMap: SourceMap.sourcemap,
-        fileOpened: string,
-        interactive: bool,
-        sourceStream: TextIO.instream, 
-        content: string option ref,
-        anyErrors: bool ref,
-        errConsumer: PrettyPrint.device
-      }
+sig
+  type inputSource = {
+      sourceMap: SourceMap.sourcemap,
+      fileOpened: string,
+      interactive: bool,
+      sourceStream: TextIO.instream, 
+      content: string option ref,
+      anyErrors: bool ref,
+      errConsumer: PrettyPrint.device
+    }
 
-    val newSource : (string * TextIO.instream * bool * PrettyPrint.device)
-          -> inputSource
+  val newSource : (string * TextIO.instream * bool * PrettyPrint.device)
+	-> inputSource
 
-    val closeSource: inputSource -> unit
+  val closeSource: inputSource -> unit
 
-    val filepos: inputSource -> SourceMap.charpos -> SourceMap.sourceloc
-    (* simply calls SourceMap.filepos on the sourceMap component of inputSource,
-     * provided for convenience. *)
+  val filepos: inputSource -> SourceMap.charpos -> SourceMap.sourceloc
+  (* Simply calls SourceMap.filepos on the sourceMap component of inputSource,
+   * Provided for convenience. *)
 
-    val getContent : inputSource -> string option
+  val getContent : inputSource -> string option
 
-    val regionContent : inputSource * SourceMap.region ->
-			(string * SourceMap.region * int) option
-  end
+  val regionContent : inputSource * SourceMap.region ->
+		      (string * SourceMap.region * int) option
+end (* signature SOURCE *)
 
 (*
 The fileOpened field contains the name of the file that was opened to
@@ -41,11 +42,27 @@ newSource takes as argument a file name, the corresponding instream of the
 opened file, a boolean flag indicating whether the source is interactive
 (i.e. stdIn), and a prettyPrint device. (Note: Formerly newSource also took
 an additional int argument representing the initial line number, but this
-argument was always 1).
+argument was always 1, so it has been dropped). (DBM: the PrettyPrint.device
+argument of newSource should also be dropped. This should be replaced by 
+an error outstream stored within the ErrorMsg structure.)
 
 getContent only works if the source is a single file (no #line directives
-changing the source file), and it won't work for an interactive source.
-[This needs to be fixed.]
+changing the source file), and it obiously won't work for an interactive source,
+i.e., stdIn. The first exception no longer applies, since we do not support #line
+directives [DBM, 2025.03.05].
+
+[DBM: 2025.03.05]
+What file name (for fileOpened) should be provided if the source is interactive, i.e., the
+sourceStream is TextIO.stdIn?  Should it be "stdIn" in that case, or the empty string?
+
+The definition of inputSource should be simplified by dropping anyErrors and errConsumer,
+which are not logically part of or depending on the source. The target for outputting
+error messages should be determined and maintained elsewhere, say in ErrorMsg. Usually it
+would be the outstream for stdOut or stdErr.
+
+The record of the current inputSource should be maintained in either CompInfo or ErrorMsg,
+where it would be set before each compilation to the source correspondiing the the
+compilation unit.
 
 *)
 

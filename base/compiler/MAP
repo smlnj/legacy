@@ -1,4 +1,4 @@
-
+aa
 Front End Map
 -------------
 
@@ -150,7 +150,7 @@ Basics/
       input source datastructure
       defs: Source: SOURCE
     sourcemap.sig/sml
-      map character positions in source to line no/column supporting #line "declaration"
+      map character positions in source to line no/column
       defs: SourceMap: SOURCE_MAP
 
   Basics/print/
@@ -672,7 +672,7 @@ symbolic paths
   ConvertPaths   (ElabData/basics/sympaths.sml)
 
 ast (syntax trees)
-  Ast            (Parse/ast/ast.sig,sml)
+  Ast: AST       (Parse/ast/ast.sig,sml)
   AstUtil        (Parse/ast/astutil.sig,sml)
 
 absyn (abstract syntax)

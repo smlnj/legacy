@@ -12,12 +12,8 @@ sig
              (* predicate recognizing flexible stamps *)
     | INSIG  (* within a signature body *)
 
-  type compInfo = Absyn.dec CompInfo.compInfo
-
   val debugging : bool ref
-  val for : 'a list -> ('a -> unit) -> unit
-  val discard : 'a -> unit
-  val single : 'a -> 'a list
+
   val sort3 : (Symbol.symbol * 'a * 'b) list -> (Symbol.symbol * 'a * 'b) list
 
   val EQUALsym : Symbol.symbol
@@ -40,12 +36,12 @@ sig
   val unitPat : Absyn.pat
   val bogusExp: Absyn.exp
 
-  val bindVARp : Absyn.pat list * ErrorMsg.complainer -> StaticEnv.staticEnv
+  val bindVARp : Absyn.pat list -> StaticEnv.staticEnv
 
-  val checkUniq : ErrorMsg.complainer * string * Symbol.symbol list -> unit
+  val checkUniq : Symbol.symbol list -> bool
   val checkForbiddenCons : Symbol.symbol -> bool
 
-  val clean_pat : ErrorMsg.complainer -> Absyn.pat -> Absyn.pat
+  val clean_pat : Absyn.pat -> Absyn.pat
 
 (*
   val getCoreExn : (StaticEnv.staticEnv * string) -> VarCon.datacon
@@ -55,25 +51,17 @@ sig
 		      -> Absyn.rule list -> Absyn.rule list
   val completeMatch' : Absyn.rule -> Absyn.rule list -> Absyn.rule list
 
-  val makeAPPpat : ErrorMsg.complainer -> Absyn.pat * Absyn.pat -> Absyn.pat
-  val makeHANDLEexp : Absyn.exp * Absyn.rule list * compInfo -> Absyn.exp
-  val makeLAYEREDpat : Absyn.pat * Absyn.pat * ErrorMsg.complainer -> Absyn.pat
-  val makeRECORDexp :
-       (Symbol.symbol * Absyn.exp) list * ErrorMsg.complainer -> Absyn.exp
-  val makeRECORDpat :
-       (Symbol.symbol * Absyn.pat) list * bool * ErrorMsg.complainer
-       -> Absyn.pat
+  val makeAPPpat : Absyn.pat * Absyn.pat -> Absyn.pat
+  val makeHANDLEexp : Absyn.exp * Absyn.rule list -> Absyn.exp
+  val makeLAYEREDpat : Absyn.pat * Absyn.pat -> Absyn.pat
+  val makeRECORDexp : (Symbol.symbol * Absyn.exp) list -> Absyn.exp
+  val makeRECORDpat : (Symbol.symbol * Absyn.pat) list * bool -> Absyn.pat
 
-  val checkBoundTyvars :
-       TyvarSet.tyvarset * Types.tyvar list * ErrorMsg.complainer -> unit
+  val checkBoundTyvars : TyvarSet.tyvarset * Types.tyvar list -> unit
 
-  val pat_id :
-       SymPath.path * StaticEnv.staticEnv * ErrorMsg.complainer * compInfo
-       -> Absyn.pat
+  val pat_id : SymPath.path * StaticEnv.staticEnv -> Absyn.pat
 
-  val sortRecord :
-       (Symbol.symbol * 'a) list * ErrorMsg.complainer
-       -> (Symbol.symbol * 'a) list
+  val sortRecordFields : (Symbol.symbol * 'a) list -> (Symbol.symbol * 'a) list
 
   val FUNdec :
        (Absyn.rule list -> Absyn.rule list)
@@ -83,10 +71,9 @@ sig
                     exp: Absyn.exp} list,
           tyvars: Types.tyvar list ref,
 	  region: Ast.region } list
-       * compInfo -> (Absyn.dec * StaticEnv.staticEnv)
+       -> (Absyn.dec * StaticEnv.staticEnv)
 
-  val wrapRECdec : Absyn.rvb list * compInfo
-                   -> (Absyn.dec * StaticEnv.staticEnv)
+  val wrapRECdec : Absyn.rvb list -> (Absyn.dec * StaticEnv.staticEnv)
 
   val labsym : Absyn.numberedLabel -> Symbol.symbol
 

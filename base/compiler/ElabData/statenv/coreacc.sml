@@ -26,9 +26,10 @@ structure CoreAccess : sig
 end = struct
 
     fun impossible m = ErrorMsg.impossible ("CoreAccess: " ^ m)
-    fun impossibleWithId (m, xs) = ErrorMsg.impossible(concat[
-	    "CoreAccess: ", m, " '", String.concatWith "." xs, "'"
-	  ])
+
+    fun impossibleWithId (m, xs) =
+	ErrorMsg.impossible
+	  (concat ["CoreAccess: ", m, " '", String.concatWith "." xs, "'"])
 
     exception NoCore
 
@@ -40,23 +41,28 @@ end = struct
 
     fun path xs = SymPath.SPATH (CoreSym.coreSym :: mkpath xs)
 
-    fun getCore env xs = Lookup.lookVal (env, path xs, dummyErr)
+    fun getCore (env, xs) =
+        (case Lookup.lookVal (env, path xs)
+	   of SOME x => x
+	    | NONE => raise NoCore)
 
-    fun getVar' err env xs = (case getCore env xs
+    fun getVar' err env xs =
+	(case getCore (env, xs)
 	   of VarCon.VAL r => r
 	    | _ => impossibleWithId("getVar'", xs)
-	  (* end case *))
-	    handle NoCore => err ()
+	(* end case *))
+	handle NoCore => err ()
 
-    fun getVar env xs = getVar' (fn () => impossibleWithId("getVar", xs)) env xs
+    fun getVar env xs = getVar' (fn () => impossibleWithId ("getVar", xs)) env xs
 
-    fun getCon' err env xs = (case getCore env xs
+    fun getCon' err env xs =
+	(case getCore (env, xs)
 	   of VarCon.CON c => c
 	    | _ => err ()
-	  (* end case *))
-	    handle NoCore => err ()
+	(* end case *))
+	handle NoCore => err ()
 
-    fun getCon env xs = getCon' (fn () => impossibleWithId("getCon'", xs)) env xs
+    fun getCon env xs = getCon' (fn () => impossibleWithId ("getCon'", xs)) env xs
 
     fun getExn env xs = getCon' (fn () => VarCon.bogusEXN) env xs
 

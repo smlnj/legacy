@@ -87,10 +87,13 @@ structure Access : ACCESS =
       | selAcc (p, i) = PATH(p, i)
 
   (** duplicating an access variable *)
-    fun dupAcc (v, mkv) = LVAR(mkv(LV.lvarSym(v)))
+    fun dupAcc v = 
+	LVAR (case (LV.lvarSym v)
+	        of NONE => LV.mkLvar ()
+		 | SOME s => LV.namedLvar s)
 
-    fun namedAcc (s, mkv) = LVAR(mkv(SOME s))
-    fun newAcc (mkv) = LVAR (mkv(NONE))
+    fun namedAcc (s: S.symbol) = LVAR (LV.namedLvar s)
+    fun newAcc () = LVAR (LV.mkLvar ())
     fun extAcc pid  = EXTERN pid
     val nullAcc = NO_ACCESS
 

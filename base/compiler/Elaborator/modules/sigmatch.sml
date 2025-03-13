@@ -17,8 +17,7 @@ sig
         entEnv   : Modules.entityEnv,
         statenv  : StaticEnv.staticEnv,
         rpath    : InvPath.path,
-        region   : SourceMap.region,
-        compInfo : ElabUtil.compInfo}
+        region   : SourceMap.region}
     -> {resDec : Absyn.dec,
         resStr : Modules.Structure,
         resExp : Modules.strExp}
@@ -31,8 +30,7 @@ sig
         entEnv   : Modules.entityEnv,
         statenv  : StaticEnv.staticEnv,
         rpath    : InvPath.path,
-        region   : SourceMap.region,
-        compInfo : ElabUtil.compInfo}
+        region   : SourceMap.region}
     -> {resDec : Absyn.dec,
         resFct : Modules.Functor,
         resExp : Modules.fctExp}
@@ -47,8 +45,7 @@ sig
         epc      : EntPathContext.context,                                
         statenv  : StaticEnv.staticEnv,
 	rpath    : InvPath.path,
-        region   : SourceMap.region,
-        compInfo : ElabUtil.compInfo}
+        region   : SourceMap.region}
     -> {resDec : Absyn.dec,
         resStr : Modules.Structure,
         resExp : Modules.strExp}
@@ -149,8 +146,8 @@ val paramSym = S.strSymbol "<FsigParamInst>"
  *
  *  val matchStr1 : Signature * Structure * S.symbol * DI.depth *
  *                  entityEnv * EP.entPath * IP.path * staticEnv *
- *                  region * EU.compInfo
- *                   -> A.dec * M.Structure * M.strExp
+ *                  region
+ *                  -> A.dec * M.Structure * M.strExp
  *
  * WARNING: epath is an inverse entPath, so it has to be reversed to
  *          produce an entPath.
@@ -162,16 +159,16 @@ fun matchStr1(specSig as SIG{stamp=sigStamp,closed,fctflag,
 			   rlzn as {stamp=strStamp,entities=strEntEnv,...},
 			   access = rootAcc, prim = rootPrim },
               strName : S.symbol,
-              tdepth: int,  (* DI.depth *)
+              tdepth: int,  (* was DI.depth *)
               matchEntEnv,
               epath: EP.entVar list,
               rpath: IP.path,
               statenv,
-              region,
-	      compInfo as {mkStamp, mkLvar=mkv, error, ...}: EU.compInfo) =
+              region) =
+
 let
 
-  val err = error region
+  val err = !CompInfo.errorRef region
   val _ = let fun h pps sign =PPModules.ppSignature pps (sign,statenv,6)
               val s = ">>matchStr1 - specSig :"
            in debugPrint debugging (s, h, specSig)
@@ -720,7 +717,7 @@ let
                      val rpath' = IP.extend(rpath, sym)
                      val (thinDec, thinStr, strExp) =
                        matchStr1(thisSpecSig, strStr, sym, tdepth, entEnv, epath',
-                                 rpath', statenv, region, compInfo)
+                                 rpath', statenv, region)
 
                      val entEnv' =
                        let val strEnt =
@@ -749,7 +746,7 @@ let
                      val rpath' = IP.extend(rpath,sym)
                      val (thinDec, thinFct, fctExp) =
                        matchFct1(specSig, strFct, sym, tdepth, entEnv, exp',
-                                 rpath', statenv, region, compInfo)
+                                 rpath', statenv, region)
 
                      val entEnv' =
                        let val fctEnt =
@@ -836,7 +833,7 @@ let
                                        of ([],[]) => (* acttyp & spectyp mono *)
 					  (decs, actvar)
                                         | _ =>
-                                          let val acc = DA.namedAcc(sym, mkv)
+                                          let val acc = DA.namedAcc sym
                                               val specvar =
                                                 VALvar{path=spath, typ=ref spectyp,
                                                        access=acc, prim=prim,
@@ -871,7 +868,7 @@ let
                                       let val con =
                                               DATACON{typ=acttyp, name=name, const=const,
                                                       rep=nrep, sign=sign, lazyp=lazyp}
-                                          val acc = DA.namedAcc(name, mkv)
+                                          val acc = DA.namedAcc name
                                           val specvar =
                                               VALvar{path=SP.SPATH[name], access=acc,
                                                      prim=PrimopId.NonPrim,
@@ -940,7 +937,7 @@ let
             matchElems(sigElements, entEnv, [], [], [], true)
             handle EE.Unbound => (debugmsg "$matchIt 1"; raise EE.Unbound)
      in if succeed then
-          let val resultEntEnv = EE.mark(mkStamp, resultEntEnv)
+          let val resultEntEnv = EE.mark(CompInfo.mkStamp, resultEntEnv)
               val _ = debugmsg "--matchIt: elements matched successfully"
 
               val _ = checkSharing(specSig, resultEntEnv)
@@ -954,7 +951,7 @@ let
                                   (* lambdaty = ref NONE, *)
                                   rpath=rpath,
                                   stub = NONE}
-                    val dacc = DA.newAcc(mkv)
+                    val dacc = DA.newAcc ()
                     val dinfo = MU.strPrimElemInBinds bindings
                 in M.STR {sign=specSig, rlzn=strEnt, access=dacc,
                           prim=dinfo}
@@ -1000,21 +997,19 @@ end
  *      entEnv   : Modules.entityEnv,
  *      rpath    : InvPath.path,
  *      statenv  : StaticEnv.staticEnv,
- *      region   : SourceMap.region,
- *      compInfo : ElabUtil.compInfo}
+ *      region   : SourceMap.region)
  *  -> {resDec : Absyn.dec,
  *      resStr : Modules.Structure,
  *      resExp : Modules.strExp}
  ***************************************************************************)
-and matchStr {sign, str, strExp, evOp, tdepth, entEnv, rpath, statenv, region,
-              compInfo=compInfo as {mkStamp,...}: EU.compInfo} =
+and matchStr {sign, str, strExp, evOp, tdepth, entEnv, rpath, statenv, region} =
 
   let val _ = debugmsg ">>matchStr"
 
-      val uncoerced = case evOp of SOME x => x | NONE => mkStamp()
+      val uncoerced = case evOp of SOME x => x | NONE => CompInfo.mkStamp ()
       val (resDec, resStr, exp) =
         matchStr1 (sign, str, anonSym, tdepth, entEnv, [uncoerced], rpath,
-                   statenv, region, compInfo)
+                   statenv, region)
 
       val resExp = M.CONSTRAINstr{boundvar=uncoerced, raw=strExp, coercion=exp}
       val _ = debugmsg "<<matchStr"
@@ -1029,7 +1024,7 @@ and matchStr {sign, str, strExp, evOp, tdepth, entEnv, rpath, statenv, region,
  *
  *  val matchFct1 : fctSig * Functor * S.symbol * DI.depth *
  *                  entityEnv * M.fctExp * IP.path * staticEnv *
- *                  region * EU.compInfo
+ *                  region
  *                  -> A.dec * M.Functor * M.fctExp
  *
  *  Arguments: funsig  F(fsigParVar : fsigParSig) = fsigBodySig
@@ -1040,13 +1035,12 @@ and matchStr {sign, str, strExp, evOp, tdepth, entEnv, rpath, statenv, region,
 and matchFct1(specSig as FSIG{paramsig=fsigParamSig,paramvar=fsigParamVar,
                               paramsym,bodysig=fsigBodySig,...},
               fct as FCT { rlzn = fctRlzn, ... }, fctName : S.symbol,
-              tdepth, entEnv, uncoercedFct, rpath, statenv, region,
-              compInfo as {mkStamp, mkLvar=mkv,...}: EU.compInfo)
+              tdepth, entEnv, uncoercedFct, rpath, statenv, region)
               : A.dec * M.Functor * M.fctExp =
 (let
 
 (*** the entity var for the source functor "uncoercedFct" *)
-val uncoerced = mkStamp()
+val uncoerced = CompInfo.mkStamp ()
 val srcFctExp = M.VARfct [uncoerced]
 val paramSym = case paramsym of SOME x => x
                               | NONE => paramSym
@@ -1054,11 +1048,11 @@ val paramSym = case paramsym of SOME x => x
 (*** parameter signature instantiation ***)
 val {rlzn=fsigParEnt, tycpaths=paramTps} =
   INS.instParam{sign=fsigParamSig, entEnv=entEnv, tdepth=tdepth,
-                rpath=IP.IPATH[paramSym], region=region, compInfo=compInfo}
+                rpath=IP.IPATH[paramSym], region=region}
 
 val tdepth'= DebIndex.next tdepth
 val fsigParInst =
-  let val fsigParDacc = DA.newAcc(mkv)
+  let val fsigParDacc = DA.newAcc ()
    in M.STR{sign=fsigParamSig, rlzn=fsigParEnt,
             access=fsigParDacc, prim=[]}
   end
@@ -1070,7 +1064,7 @@ val {resDec=resDec1, resStr=resStr1, resExp=resExp1} =
    in applyFct{fct=fct, fctExp=srcFctExp, argStr=fsigParInst,
                argExp=paramExp, evOp=NONE, tdepth=tdepth',
                epc=EPC.initContext (* ? ZHONG *), statenv=statenv,
-               rpath = IP.empty, region=region, compInfo=compInfo}
+               rpath = IP.empty, region=region}
   end
 
 (*** matching the result structure against the body sig ***)
@@ -1079,15 +1073,14 @@ val {resDec=resDec2, resStr=resStr2, resExp=resExp2} =
   let val rp = IP.IPATH[S.strSymbol "<FctResult>"]
    in matchStr{sign=fsigBodySig, str=resStr1, strExp=resExp1, evOp=NONE,
                tdepth=tdepth', entEnv=fsigBodySigEnv, rpath=rp,
-               statenv=statenv, region=region, compInfo=compInfo}
+               statenv=statenv, region=region}
   end
 
 (*** constructing the tycpath for the resulting functor ***)
 val resTps =
   case resStr2
    of M.STR { sign, rlzn, ... } =>
-      INS.getTycPaths{sign=sign, rlzn=rlzn, entEnv=fsigBodySigEnv,
-                      compInfo=compInfo}
+      INS.getTycPaths{sign=sign, rlzn=rlzn, entEnv=fsigBodySigEnv}
     | _ => []
 
 (*** the resulting coerced functor ***)
@@ -1104,8 +1097,7 @@ val resFct =
 		     (* lambdaty=ref NONE, *)
 		     stub = NONE}
 
-   in M.FCT{sign = specSig, rlzn = resRlzn,
-            access = DA.newAcc(mkv), prim = []}
+   in M.FCT{sign = specSig, rlzn = resRlzn, access = DA.newAcc (), prim = []}
   end
 
 (*** the resulting functor absyn ***)
@@ -1143,19 +1135,17 @@ end handle Match => (A.SEQdec [], ERRORfct, bogusFctExp))
  *      entEnv   : Modules.entityEnv,
  *      rpath    : InvPath.path,
  *      statenv  : StaticEnv.staticEnv,
- *      region   : SourceMap.region,
- *      compInfo : ElabUtil.compInfo}
+ *      region   : SourceMap.region}
  *  -> {resDec : Absyn.dec,
  *      resFct : Modules.Functor,
  *      resExp : Modules.fctExp}
  ***************************************************************************)
-and matchFct{sign, fct, fctExp, tdepth, entEnv, rpath,
-             statenv, region, compInfo} =
+and matchFct{sign, fct, fctExp, tdepth, entEnv, rpath, statenv, region} =
   let val _ = debugmsg ">>matchFct"
 
       val (resDec, resFct, resExp) =
         matchFct1 (sign, fct, anonFsym, tdepth, entEnv, fctExp, rpath,
-                   statenv, region, compInfo)
+                   statenv, region)
 
       val _ = debugmsg "<<matchFct"
 
@@ -1175,8 +1165,7 @@ and matchFct{sign, fct, fctExp, tdepth, entEnv, rpath,
  *      epc      : EntPathContext.context,
  *      statenv  : StaticEnv.staticEnv,
  *      rpath    : InvPath.path,
- *      region   : SourceMap.region,
- *      compInfo : ElabUtil.compInfo}
+ *      region   : SourceMap.region)
  *  -> {resDec : Absyn.dec,
  *      resStr : Modules.Structure,
  *      resExp : Modules.strExp}
@@ -1191,8 +1180,7 @@ and matchFct{sign, fct, fctExp, tdepth, entEnv, rpath,
 and applyFct{fct as FCT {sign=FSIG{paramsig, bodysig, ...},
 			 rlzn = fctRlzn, ... },
              fctExp, argStr, argExp, evOp, epc, tdepth,
-             statenv, rpath, region,
-             compInfo as {mkStamp, mkLvar=mkv, ...}} =
+             statenv, rpath, region} =
   let val {closure=CLOSURE {env=fctEntEnv, ... }, ... } = fctRlzn
       val _ = debugmsg ">>applyFct"
 
@@ -1200,22 +1188,21 @@ and applyFct{fct as FCT {sign=FSIG{paramsig, bodysig, ...},
       val {resDec=argDec1, resStr=argStr1, resExp=argExp1} =
         matchStr {sign=paramsig, str=argStr, strExp=argExp, evOp=evOp,
                   tdepth=tdepth, entEnv=fctEntEnv, rpath=IP.IPATH[] (* ?DAVE *),
-                  statenv=statenv, region=region, compInfo=compInfo}
+                  statenv=statenv, region=region}
 
       (*** step #2: do the functor application ***)
       val argRlzn = case argStr1 of M.STR { rlzn, ... } => rlzn
                                   | _ => M.bogusStrEntity
-      val bodyRlzn = EV.evalApp(fctRlzn, argRlzn, tdepth, epc, rpath, compInfo)
+      val bodyRlzn = EV.evalApp(fctRlzn, argRlzn, tdepth, epc, rpath)
 
       val resStr =
-        let val bodyDacc = DA.namedAcc(anonSym,mkv)
+        let val bodyDacc = DA.namedAcc anonSym
          in M.STR {sign=bodysig, rlzn=bodyRlzn,
 		   access=bodyDacc, prim=[]}
         end
 
       val resDec =
-        let val argtycs = INS.getTycPaths{sign=paramsig, rlzn=argRlzn,
-                                          entEnv=fctEntEnv, compInfo=compInfo}
+        let val argtycs = INS.getTycPaths{sign=paramsig, rlzn=argRlzn, entEnv=fctEntEnv}
             val body = A.APPstr{oper=fct, arg=argStr1, argtycs=argtycs}
             val resAbs = A.LETstr(argDec1, body)
 

@@ -16,7 +16,7 @@ Group
 	signature INVPATH
 	signature CONVERTPATHS
 	signature LAMBDA_VAR
-	signature STAMPS
+	signature STAMPS	
 	signature ENT_PATH
 	signature VARCON
 	signature MODULES
@@ -90,7 +90,6 @@ Group
 is
 	main/edcontrol.sig
 	main/edcontrol.sml
-	main/compinfo.sml
 
 	basics/debindex.sig
 	basics/debindex.sml
@@ -98,8 +97,8 @@ is
 	basics/lambdavar.sml
 	basics/env.sig
 	basics/env.sml
-	basics/stamps.sig
-	basics/stamps.sml
+	basics/stamp.sig
+	basics/stamp.sml
 	basics/stampmap.sml
 	basics/coresym.sml
 	basics/access.sig
@@ -108,6 +107,7 @@ is
 	basics/sympaths.sml
 	basics/tkind.sml
 	basics/sig-plist.sml
+	basics/compinfo.sml
 
 	syntax/absyn.sig
 	syntax/absyn.sml
