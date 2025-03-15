@@ -223,6 +223,7 @@ functor CPSopt (MachSpec: MACH_SPEC) : CPSOPT =
 	    | apply ("zeroexpand",f)     = zeroexpand f
 	    | apply ("expand",f)         = expand(f, bodysize, false)
 	    | apply ("print",f)          = (PPCps.printcps0 f; f)
+            | apply ("check",f)          = (CheckCPS.check("during cps-opt", f); f)
 	    | apply (p,f)                = (say["\n!! Unknown cps phase '", p, "' !!\n"]; f)
 	  in
 	    (if rounds < 0
