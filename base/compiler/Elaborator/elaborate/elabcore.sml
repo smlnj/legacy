@@ -544,26 +544,32 @@ end (* elabPat *)
     (* elabExp : Ast.exp * SE.staticEnv * SM.region -> Absyn.exp * TS.tyvarset * tyvarsetUpdater *)
     fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: region)
 		: (Absyn.exp * TS.tyvarset * tyvarsetUpdater) =
-let fun union = checkedUnion (region, "elabExp") in
+        let fun union = checkedUnion (region, "elabExp") in
  	(case exp
 	  of Ast.VarExp path =>
-	       ((case LU.lookVal(env, SP.SPATH path)
-		  of SOME (V.VAL v) => AS.VARexp (ref v,[])
-		   | SOME (V.CON (d as T.DATACON{lazyp,const,...})) =>
-		      if lazyp then  (* LAZY *)
-		        if const then delayExp(CONexp(d,[]))
-			else let val var = newVALvar(S.varSymbol "x")
-			      in AS.FNexp (completeMatch
-				           [RULE(VARpat(var),
-					      delayExp (
-					        APPexp (CONexp(d,[]),
-						        VARexp(ref(var),[]))))],
-				           UNDEFty)  (* DBM: ??? *)
-			     end
-		      else AS.CONexp(d, []),
-		 | NONE =>
-		     (errorRegion (region, "elabExp: unbound path" ^ SymPath.toString path); AS.SEQexp nil))
-		TS.empty, nullUpdater)
+	       (case LU.lookVal (env, SP.SPATH path)
+		  of SOME value =>
+		     (case value
+		        of V.VAL v => AS.VARexp (ref v,[])
+		         | V.CON (d as T.DATACON{lazyp,const,...}) =>
+			     if lazyp
+			     then  (* LAZY *)
+			       if const
+			       then delayExp(CONexp(d,[]))
+			       else
+				 let val var = newVALvar(S.varSymbol "x")
+				  in AS.FNexp (completeMatch
+						   [RULE (AS.VARpat var,
+							  delayExp (AS.APPexp (AS.ONexp (d, []),
+									       AS.VARexp (ref(var), []))))],
+					       T.UNDEFty)  (* DBM: ??? *)
+				  end
+			     else AS.CONexp(d, [])  (* not LAZY *)
+		   | NONE => (* path not found in env *)
+		       (errorRegion (region, "elabExp: unbound path" ^ SymPath.toString path);
+		        AS.SEQexp nil)) (* dummy return value *)
+		TS.empty,
+		nullUpdater)
 (* TODO: propagate the source string to Absyn for error reporting *)
 	   | Ast.IntExp(src, s) =>
 	       (AS.NUMexp(src, {ty = mkIntLiteralTy(s,region), ival = s}), TS.empty, nullUpdater)
@@ -571,23 +577,24 @@ let fun union = checkedUnion (region, "elabExp") in
 	       (AS.NUMexp(src, {ty = mkWordLiteralTy(s,region), ival = s}), TS.empty, nullUpdater)
 	   | Ast.RealExp(src, r) =>
 	        let fun result r =
-			(AS.REALexp(src, {rval = r, ty = mkRealLiteralTy(r, region)}), TS.empty, nullUpdater)
+			(AS.REALex (src, {rval = r, ty = mkRealLiteralTy (r, region)}),
+			 TS.empty,
+			 nullUpdater)
 		 in (* REAL32: this test gets moved to overload resolution *)
 		     case Real64ToBits.classify r
-		      of IEEEReal.INF => (
-			 (* literal would cause overflow when converted to IEEE float format *)
-			   error region EM.COMPLAIN (String.concat[
-			       "real literal '", src, "' is too large"
-			     ]) EM.nullErrorBody;
-			   result r)
-		       | IEEEReal.ZERO => if RealLit.isZero r
+		       of IEEEReal.INF =>
+			    (* literal would cause overflow when converted to IEEE float format *)
+			    (errorRegion (region, concat ["real literal '", src, "' is too large"]);
+			     result r)
+		       | IEEEReal.ZERO =>
+			   if RealLit.isZero r
 			   then result r
-			   else (
-			     error region EM.WARN (String.concat[
-				 "real literal '", src, "' is too small and will be rounded to ",
-				 if (RealLit.isNeg r) then "~0.0" else "0.0"
-			       ]) EM.nullErrorBody;
-			     result (RealLit.zero(RealLit.isNeg r)))
+			   else (EM.error region EM.WARN 
+				  (String.concat
+				     ["real literal '", src, "' is too small and will be rounded to ",
+				      if (RealLit.isNeg r) then "~0.0" else "0.0"])
+				  EM.nullErrorBody;
+		               result (RealLit.zero(RealLit.isNeg r)))
 		       | _ => result r
 		end
 	   | Ast.StringExp s => (AS.STRINGexp s, TS.empty, nullUpdater)
