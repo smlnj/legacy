@@ -14,13 +14,10 @@ structure Access : ACCESS =
 
     fun bug msg = EM.impossible("Bugs in Access: "^msg)
 
-    type lvar = LV.lvar
-    type persstamp = PS.persstamp
-
   (* How to find the dynamic value corresponding to a variable. *)
     datatype access
-      = LVAR of lvar			(* defined in current compilation unit *)
-      | EXTERN of persstamp		(* defined in another compilation unit *)
+      = LVAR of LV.lvar			(* defined in current compilation unit *)
+      | EXTERN of PS.persstamp		(* defined in another compilation unit *)
       | PATH of access * int
       | NO_ACCESS			(* defined in special builtin structure *)
 

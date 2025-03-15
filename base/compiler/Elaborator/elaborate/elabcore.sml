@@ -28,6 +28,8 @@ struct
 
 local (* imports *)
 
+  structure S = Symbol
+  structure A = Access
   structure EM = ErrorMsg
   structure SM = SourceMap
   structure LV = LambdaVar
@@ -35,6 +37,8 @@ local (* imports *)
   structure IP = InvPath
   structure SE = StaticEnv
   structure LU = Lookup
+  structure AS = Absyn
+  structure AU = AbsynUtil
   structure V = VarCon
   structure B  = Bindings
   structure M  = Modules
@@ -42,16 +46,14 @@ local (* imports *)
   structure T  = Types
   structure TU = TypesUtil
   structure BT = BasicTypes
+  structure TS = TyvarSet
   structure EE = EntityEnv
   structure EU = ElabUtil
   structure ED = ElabDebug
-  structure TS = TyvarSet
   structure ET = ElabType
-  structure S = Symbol
-  structure A = Access
   structure Tbl = SymbolHashTable
 
-  open Absyn Ast Access ElabUtil Types (* BasicTypes => BT *)
+  open Absyn Ast Types (* Access => A.; ElabUtil => EU. *)
 
 in
 
@@ -59,19 +61,26 @@ in
 									     
 val say = Control_Print.say
 
-val debugging = ElabControl.ecdebugging  (* flag enabling printing of Elaboration debugging messages *)
+val debugging : bool ref = ElabControl.ecdebugging
+(* a flag enabling printing of Elaboration debugging messages *)
 
+(* debugmsg : string -> unit *)
 fun debugmsg (msg: string) = if !debugging then (say msg; say "\n") else ()
 
+(* bug : string -> 'a *)
 fun bug msg = ErrorMsg.impossible("ElabCore: "^msg)
 
+(* debugPrint : ? *)
 val debugPrint = (fn x => ED.debugPrint debugging x)
 
+
+(* showDec : string * AS.dec * staticEnv.env -> unit (?)
+ * general declaration printer using JHR PP library.
+ * Needs to be revised to use DBM PrettyPrint library. *)
 fun showDec (msg, dec, env) =
-      debugPrint(msg,
-		 (fn pps => fn dec =>
-		   PPAbsyn.ppDec (env,NONE) pps (dec, 100)),
-		 dec)
+    debugPrint(msg,
+	       (fn pps => fn dec => PPAbsyn.ppDec (env,NONE) pps (dec, 100)),
+	       dec)
 
 
 (* some specialized error reporting functions *)
@@ -95,11 +104,19 @@ fun checkedUnion (region: SM.region, Where: string)
       of SOME u => u
        | NONE => (errorRegion (region, "tyvarset union [" ^ Where ^"]"); TS.empty)
 
-(* conditional syntax mark functions *)
+(* checkedDifference : SM.region * string -> (TS.tyvarset * TS.tyvarset, region) -> TS.tyvarset *)
+(* check tyvarset differences for incompatible tyvars, e.g. 'a and ''a in "same scope" *)
+fun checkedDiffernce (region: SM.region, Where: string)
+      (tyvarset1: TS.tyvarset, tyvarset2 : TS.tyvarset) : TS.tyvarset =
+    case TS.difference (tyvarset1, tyvarset2)
+      of SOME u => u
+       | NONE => (errorRegion (region, "tyvarset union [" ^ Where ^"]"); TS.empty)
+
+
+(* conditional syntax marking functions *)
 fun cMARKpat (p, r) = if !ElabControl.markabsyn then MARKpat (p, r) else p
 fun cMARKexp (e, r) = if !ElabControl.markabsyn then MARKexp (e, r) else e
 fun cMARKdec (d, r) = if !ElabControl.markabsyn then MARKdec (d, r) else d
-
 
 (* REAL32: *)
 (* bounds for Real64.real constant values; these will get moved to overload
@@ -109,8 +126,6 @@ val minSubnormalReal64 = RealLit.real{isNeg = false, whole="4", frac="9", exp = 
 val minNormalReal64 = RealLit.real{isNeg = false, whole="2", frac="2250738585072014", exp = ~308}
 val maxReal64 = RealLit.real{isNeg = false, whole="1", frac="7976931348623157", exp = 308}
 
-infix -->
-
 fun mkIntLiteralTy (v : IntInf.int, r : SourceMap.region) : ty =
       VARty(mkTyvar(OVLDI [(v, r)]))
 
@@ -118,18 +133,20 @@ fun mkWordLiteralTy (v : IntInf.int, r : SourceMap.region) : ty =
       VARty(mkTyvar(OVLDW [(v, r)]))
 
 (* REAL32: eventually this will be an overload instance *)
-fun mkRealLiteralTy (v : RealLit.t, r : SourceMap.region) : ty = realTy
+fun mkRealLiteralTy (v : RealLit.t, r : SourceMap.region) : ty = BT.realTy
 
 (* missing type of updater functions *)
 (* what do these updater functions do? *)
 type updater = TS.tyvarset -> unit (* ? *)
 
-(* tyvarset management *)
-type tyvUpdate = TS.tyvarset -> unit
-val --- = TS.diffPure
-fun no_updt (_ : TS.tyvarset) = ()
-fun noTyvars (dec,env) = (dec,env,TS.empty,no_updt)
-infix ++ -- ---
+(* tyvarset management from structure TS = TyvarSet *)
+(* type of updater functions *)
+type tyvarsetUpdater = TS.tyvarset -> unit
+
+fun nullUpdater (_ : TS.tyvarset) = ()
+
+fun noTyvars (dec, env) = (dec, env, TS.empty, nullUpdater)
+
 
 fun stripExpAbs (MARKexp(e,_)) = stripExpAbs e
   | stripExpAbs (CONSTRAINTexp(e,_)) = stripExpAbs e
@@ -248,38 +265,38 @@ let
 
 	    (* Y variable and local variables ri and fi and d *)
 	    val yvar (* as VALvar{path,typ,access,prim} *) =
-		newVALvar(S.varSymbol("Y$"^(Int.toString n)))
-	    fun mkVarSym s i = newVALvar(S.varSymbol(s^(Int.toString i)))
-	    val rvars = repeat(mkVarSym "r$")
-	    val fvars = repeat(mkVarSym "f$")
-	    val dvar  = newVALvar(S.varSymbol "d$")
+		newVALvar (S.varSymbol ("Y$"^(Int.toString n)))
+	    fun mkVarSym s i = newVALvar (S.varSymbol(s^(Int.toString i)))
+	    val rvars = repeat (mkVarSym "r$")
+	    val fvars = repeat (mkVarSym "f$")
+	    val dvar  = newVALvar (S.varSymbol "d$")
 
 	    (* "ref($(raise Match))" *)
-	    fun rdrExp _ = APPexp(CONexp(BT.refDcon,[]),
-				  delayExp(RAISEexp(CONexp(exn,[]),UNDEFty)))
-	    val rpat  = TUPLEpat (map VARpat rvars)
-	    val rexp  = TUPLEexp (repeat rdrExp)
-	    val rdec  = VALdec([VB{pat=rpat, exp=rexp, boundtvs=[], tyvars=ref[]}])
+	    fun rdrExp _ = AS.APPexp (AS.CONexp (BT.refDcon, []),
+				  delayExp (AS.RAISEexp (AS.CONexp (exn,[]), T.UNDEFty)))
+	    val rpat  = AU.TUPLEpat (map AS.VARpat rvars)
+	    val rexp  = AU.TUPLEexp (repeat rdrExp)
+	    val rdec  = AS.VALdec ([AS.VB{pat=rpat, exp=rexp, boundtvs=[], tyvars=ref[]}])
 
 	    (* "$(force(!ri))" *)
 	    fun dfbr rv = hold(APPexp(mkBangExp env,VARexp(ref rv,[])))
-	    val ddec  = VALdec[VB{pat=VARpat dvar, exp=TUPLEexp(map dfbr rvars),
+	    val ddec  = VALdec[VB{pat=VARpat dvar, exp=AU.TUPLEexp(map dfbr rvars),
 				  boundtvs=[],tyvars=ref[]}]
 
 	    fun dexp () = VARexp(ref dvar,[])
 	    fun setrExp (rv,fv) =
 		APPexp(mkAssignExp env,
-		       TUPLEexp([VARexp(ref rv,[]),
-				 hold(APPexp(VARexp(ref fv,[]),dexp()))]))
+		       AU.TUPLEexp([AS.VARexp(ref rv,[]),
+				 hold(AS.APPexp(AS.VARexp(ref fv,[]),dexp()))]))
 	    val updates = ListPair.map setrExp (rvars,fvars)
 
-	    val yexp = FNexp(completeMatch
-			       [RULE(TUPLEpat(map VARpat fvars),
-				     LETexp(SEQdec[rdec,ddec],
-					    SEQexp(updates@[dexp()])))],
-			     UNDEFty)
+	    val yexp = AS.FNexp(completeMatch
+			       [AS.RULE(AU.TUPLEpat(map VARpat fvars),
+				     AS.LETexp(SEQdec[rdec,ddec],
+					    AS.SEQexp(updates@[dexp()])))],
+			     T.UNDEFty)
 
-	 in (yvar,VALdec[VB{pat=VARpat yvar, exp=yexp, boundtvs=[], tyvars=ref[]}])
+	 in (yvar, AS.VALdec[AS.VB{pat=AS.VARpat yvar, exp=yexp, boundtvs=[], tyvars=ref[]}])
 	end (* fun lrvbMakeY *)
 
 
@@ -291,14 +308,14 @@ let
 	  of EbGen{exn=ename,etype} =>
 	       let val (ety, evt, etyOp, const) =
 	       	       case etype
-		         of NONE => (exnTy, TS.empty, NONE, true)
+		         of NONE => (BT.exnTy, TS.empty, NONE, true) (* constant exn constructor *)
 			  | SOME typ =>
 			    let val (ty,vt) = ET.elabType(typ,env,region)
-                             in (ty-->exnTy, vt, SOME ty, false)
+                             in (BT.--> (ty, BT.exnTy), vt, SOME ty, false)
 			    end 
 	           val exn =      
-		       DATACON{name=ename, const=const, typ=ety, lazyp=false,
-			       rep=EXN (LVAR (LV.namedLvar ename)), sign=CNIL}
+		       DATACON{name = ename, const = const, typ = ety, lazyp = false,
+			       rep = A.EXN (A.LVAR (LV.namedLvar ename)), sign = A.CNIL}
 		in (EBgen{exn=exn, etype=etyOp, ident=STRINGexp(S.name ename)},
 		    ename, SE.bind (ename, B.CONbind exn, SE.empty), evt)
 	       end
@@ -316,34 +333,31 @@ let
 			     (region,
 			      "ElabCore.elabEb[EbDef]: found variable instead of exception");
 			    V.bogusEXN))
-                   val nrep = EXN (LVAR (LV.namedLvar ename))
-	           val exn = DATACON {name=ename, const=const, typ=typ, lazyp=false,
-                                      sign=sign, rep=nrep}
+                   val nrep = A.EXN (A.LVAR (LV.namedLvar ename))
+	           val exn = T.DATACON {name=ename, const=const, typ=typ, lazyp=false,
+                                        sign=sign, rep=nrep}
 		in (EBdef{exn=exn,edef=edef},
 		    ename, SE.bind(ename,B.CONbind exn,SE.empty), TS.empty)
 	       end
 	   | MarkEb(eb,region) => elabEb(eb,env,region)
 
     fun elabEXCEPTIONdec (excbinds:Ast.eb list, env: SE.staticEnv, region) =
-	let val (ebs,enames,env,vt) =
-	      foldl
-		(fn (exc,(ebs,enames,env_c,vt_c)) =>
-		   let val (eb,ename,env_i,vt_i) = elabEb(exc,env,region)
-		   in if checkForbiddenCons ename
+	let fun folder (exc,(ebs,enames,env_acc,tyvarset_acc)) =
+		  let val (eb, ename, env_inc, tyvarset_inc) = elabEb (exc, env, region)
+		   in if EU.checkForbiddenCons ename
 		      then errorRegion
-			     (region,
-			      concat["exception name \"", S.name ename, "\" is forbidden"])
+			    (region,
+			     concat["exception name \"", S.name ename, "\" is forbidden"])
 		      else ();
-		      (eb::ebs, ename::enames, SE.atop(env_i,env_c),
-                       TS.union(vt_c,vt_i))
-		   end)
-		([], [], SE.empty, TS.empty)
-		excbinds
+		      (eb::ebs, ename::enames, SE.atop(env_inc,env_acc),
+		       checkedUnion (region, "elabEXCEPTIONdec") (tyvarset_inc,tyvarset_acc))
+		  end
+	    val (ebs,enames,env,tyvarset) = foldl folder ([], [], SE.empty, TS.empty) excbinds
 	 in if EU.checkUniq enames
             then ()
 	    else errorRegion (region, "duplicate exception declaration");
-		 (* FIX: should also print the duplicate exception constructor name(s) *)
-	    (EXCEPTIONdec(rev ebs),env,vt,no_updt)
+		 (* FIX: error message should include the duplicate exception constructor name(s) *)
+	    (EXCEPTIONdec(rev ebs),env,tyvarset,nullUpdater)
 	end
 
 
@@ -368,8 +382,7 @@ let val checkedUnion = checkedUnion (region, "elabPat") in
     case pat
       of WildPat => (WILDpat, TS.empty)
        | VarPat path =>
-	   (clean_pat (error region)
-              (pat_id(SP.SPATH path, env, region)),
+	   (EU.clean_pat (EU.pat_id (SP.SPATH path, env, region)),
 	    TS.empty)
        | IntPat(src, s) =>
 	  (NUMpat(src, {ty = mkIntLiteralTy(s,region), ival = s}), TS.empty)
@@ -379,21 +392,22 @@ let val checkedUnion = checkedUnion (region, "elabPat") in
        | CharPat s => (CHARpat s,TS.empty)
        | RecordPat {def,flexibility} =>
 	    let val (fields,tyvarset) = elabPLabel (def, env, region)
-	     in (makeRECORDpat (fields, flexibility, region), tyvarset)
+	     in (EU.makeRECORDpat (fields, flexibility, region), tyvarset)
 	    end
        | ListPat nil =>
-	      (NILpat, TS.empty)
+	      (EU.NILpat, TS.empty)
        | ListPat (a::rest) =>
 	    let val (p, tyv) = elabPat (TuplePat [a, ListPat rest], env, region)
-	     in (CONSpat p, tyv)
+	     in (EU.CONSpat p, tyv)
 	    end
-       | TuplePat pats =>
+       | Ast.TuplePat pats =>
 	    let val (ps,tyv) = elabPatList(pats, env, region)
-	     in (TUPLEpat ps,tyv)
+	     in (AU.TUPLEpat ps,tyv)
 	    end
        | VectorPat pats =>
 	    let val (ps,tyv) = elabPatList(pats, env, region)
-	    in (VECTORpat(ps,UNDEFty),tyv) end
+	     in (AS.VECTORpat (ps, T.UNDEFty), tyv)
+	    end
        | OrPat pats =>
          (* Check that the sub-patterns of an or-pattern have exactly the same
           * free variables, and rewrite the sub-pattersn so that all instances
@@ -415,9 +429,9 @@ let val checkedUnion = checkedUnion (region, "elabPat") in
 			      ("variable " ^ S.name x ^ " does not occur in all branches of or-pattern"))
 		       fun insFn (id: S.symbol, access, tyref) =
 			   (insert (id, (access, tyref, 1)); (access, tyref))
-		       fun bumpFn (id, access0, tyref0) =
+		       fun bumpFn (id: S.symbol, access0, tyref0) =
 			   (let val (access, tyref, n) = look id
-			     in ins (id, (access, tyref, n+1)); (access,tyref)
+			     in insert (id, (access, tyref, n+1)); (access,tyref)
 			    end
 			    handle FreeOrVars =>
 				     (errorMsg id; (access0, tyref0)))
@@ -427,7 +441,7 @@ let val checkedUnion = checkedUnion (region, "elabPat") in
                             end
 			    handle FreeOrVars =>
 				   (errorMsg id; (access0, tyref0)))
-		       fun doPat (insFn: (S.symbol * access * ty ref) -> access * ty ref) =
+		       fun doPat (insFn: (S.symbol * A.access * T.ty ref) -> A.access * T.ty ref) =
 			   let fun doPat' (VARpat (V.VALvar {access, prim, path, btvs, typ})) =
 				     let val (access,typ) = insFn (SymPath.first path, access, typ)
 				      in VARpat(V.VALvar{access=access,
@@ -474,11 +488,11 @@ let val checkedUnion = checkedUnion (region, "elabPat") in
 	    in (foldOr (pat, pats), tyv)
 	   end
        | AppPat {constr, argument} =>
-	   let fun getVar (MarkPat (p, region), _) = getVar (p, region)
-		 | getVar (VarPat path, region) =
-		      let val dcb = pat_id (SP.SPATH path, env, region)
+	   let fun getVar (Ast.MarkPat (p, region), _) = getVar (p, region)
+		 | getVar (Ast.VarPat path, region) =
+		      let val dcb = EU.pat_id (SP.SPATH path, env, region)
 			  val (p,tv) = elabPat (argument, env, region)
-		       in (makeAPPpat (dcb, p), tv)
+		       in (EU.makeAPPpat (dcb, p), tv)
 		      end
 		 | getVar (_, region) =
 		   (errorRegion (region, "non-constructor applied to argument in pattern");
@@ -488,12 +502,12 @@ let val checkedUnion = checkedUnion (region, "elabPat") in
        | ConstraintPat {pattern=pat,constraint=ty} =>
 	   let val (pat',tyvarset1) = elabPat (pat, env, region)
 	       val (ty',tyvarset2) = ET.elabType (ty, env, region)
-	    in (CONSTRAINTpat(pat',ty'), checkedUnion (tyvarset1,tyvarset2))
+	    in (AS.CONSTRAINTpat(pat',ty'), checkedUnion (tyvarset1,tyvarset2))
 	   end
        | LayeredPat {varPat,expPat} =>
 	   let val (pat1, tyvarset1) = elabPat(varPat, env, region)
 	       val (pat2, tyvarset2) = elabPat(expPat, env, region)
-	    in (makeLAYEREDpat(pat1, pat2), checkedUnion (tyvarset1, tyvarset2))
+	    in (EU.makeLAYEREDpat(pat1, pat2), checkedUnion (tyvarset1, tyvarset2))
 	   end
        | MarkPat (pat,region) =>
 	   let val (pat', tyvarset) = elabPat(pat, env, region)
@@ -527,35 +541,37 @@ end (* elabPat *)
 		     {apply=fn(f,a) => AppExp{function=f,argument=a},
 		      pair=fn (a,b) => TupleExp[a,b]}
 
-    (* elabExp : Ast.exp * SE.staticEnv * SM.region -> Absyn.exp * TS.tyvarset * tyvUpdate *)
+    (* elabExp : Ast.exp * SE.staticEnv * SM.region -> Absyn.exp * TS.tyvarset * tyvarsetUpdater *)
     fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: region)
-		: (Absyn.exp * TS.tyvarset * tyvUpdate) =
-let fun checkedUnion = checkedUnion (region, "elabExp") in
+		: (Absyn.exp * TS.tyvarset * tyvarsetUpdater) =
+let fun union = checkedUnion (region, "elabExp") in
  	(case exp
-	  of VarExp path =>
-	       ((case LU.lookVal(env,SP.SPATH path,error region)
-		  of V.VAL v => VARexp(ref v,[])
-		   | V.CON(d as DATACON{lazyp,const,...}) =>
+	  of Ast.VarExp path =>
+	       ((case LU.lookVal(env, SP.SPATH path)
+		  of SOME (V.VAL v) => AS.VARexp (ref v,[])
+		   | SOME (V.CON (d as T.DATACON{lazyp,const,...})) =>
 		      if lazyp then  (* LAZY *)
 		        if const then delayExp(CONexp(d,[]))
 			else let val var = newVALvar(S.varSymbol "x")
-			      in FNexp(completeMatch
-				        [RULE(VARpat(var),
+			      in AS.FNexp (completeMatch
+				           [RULE(VARpat(var),
 					      delayExp (
 					        APPexp (CONexp(d,[]),
 						        VARexp(ref(var),[]))))],
-				       UNDEFty (* DBM: ? *))
+				           UNDEFty)  (* DBM: ??? *)
 			     end
-		      else CONexp(d, [])),
-		TS.empty, no_updt)
+		      else AS.CONexp(d, []),
+		 | NONE =>
+		     (errorRegion (region, "elabExp: unbound path" ^ SymPath.toString path); AS.SEQexp nil))
+		TS.empty, nullUpdater)
 (* TODO: propagate the source string to Absyn for error reporting *)
-	   | IntExp(src, s) =>
-	       (NUMexp(src, {ty = mkIntLiteralTy(s,region), ival = s}), TS.empty, no_updt)
-	   | WordExp(src, s) =>
-	       (NUMexp(src, {ty = mkWordLiteralTy(s,region), ival = s}), TS.empty, no_updt)
-	   | RealExp(src, r) =>
+	   | Ast.IntExp(src, s) =>
+	       (AS.NUMexp(src, {ty = mkIntLiteralTy(s,region), ival = s}), TS.empty, nullUpdater)
+	   | Ast.WordExp(src, s) =>
+	       (AS.NUMexp(src, {ty = mkWordLiteralTy(s,region), ival = s}), TS.empty, nullUpdater)
+	   | Ast.RealExp(src, r) =>
 	        let fun result r =
-			(REALexp(src, {rval = r, ty = mkRealLiteralTy(r, region)}), TS.empty, no_updt)
+			(AS.REALexp(src, {rval = r, ty = mkRealLiteralTy(r, region)}), TS.empty, nullUpdater)
 		 in (* REAL32: this test gets moved to overload resolution *)
 		     case Real64ToBits.classify r
 		      of IEEEReal.INF => (
@@ -574,116 +590,116 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 			     result (RealLit.zero(RealLit.isNeg r)))
 		       | _ => result r
 		end
-	   | StringExp s => (STRINGexp s,TS.empty,no_updt)
-	   | CharExp s => (CHARexp s,TS.empty,no_updt)
-	   | RecordExp cells =>
-	       let val (les,tyv,updt) = elabELabel(cells,env,region)
-		in (makeRECORDexp (les,error region),tyv,updt)
+	   | Ast.StringExp s => (AS.STRINGexp s, TS.empty, nullUpdater)
+	   | Ast.CharExp s => (AS.CHARexp s, TS.empty, nullUpdater)
+	   | Ast.RecordExp cells =>
+	       let val (les, tyv, updater) = elabELabel (cells, env, region)
+		in (EU.makeRECORDexp les, tyv, updater)
 	       end
-	   | SeqExp exps =>
+	   | Ast.SeqExp exps =>
 	       (case exps
-		  of [e] => elabExp(e,env,region)
+		  of [exp] => elabExp (exp, env, region)
 		   | [] => bug "elabExp(SeqExp[])"
 		   | _ =>
-		     let val (es,tyv,updt) = elabExpList(exps,env,region)
-		      in (SEQexp es,tyv,updt)
-		     end)
-	   | ListExp nil => (NILexp, TS.empty, no_updt)
-	   | ListExp (a::rest) =>
-	       let val (e,tyv,updt) =
-                     elabExp(TupleExp[a,ListExp rest],env,region)
-		in (APPexp(CONSexp,e), tyv, updt)
+		       let val (exps, tyvarset, updater) = elabExpList(exps,env,region)
+		        in (AS.SEQexp exps, tyvarset ,updater)
+		       end)
+	   | Ast.ListExp nil => (NILexp, TS.empty, nullUpdater)
+	   | Ast.ListExp (a::rest) =>
+	       let val (e,tyvarset,updater) =
+                       elabExp (Ast.TupleExp [a, Ast.ListExp rest], env, region)
+		in (AS.APPexp (EU.CONSexp, e), tyvarset, updater)
 	       end
-	   | TupleExp exps =>
+	   | Ast.TupleExp exps =>
 	       let val (es,tyv,updt) = elabExpList(exps,env,region)
-		in (TUPLEexp es,tyv,updt)
+		in (EU.TUPLEexp es,tyv,updt)
 	       end
-	   | VectorExp exps =>
-	       let val (es,tyv,updt) = elabExpList(exps,env,region)
-		in (VECTORexp(es,UNDEFty),tyv,updt)
+	   | Ast.VectorExp exps =>
+	       let val (exps', tyvarset, updater) = elabExpList (exps, env, region)
+		in (AS.VECTORexp (exps', UNDEFty), tyvarset, updater)
 	       end
-	   | AppExp {function,argument} =>
-	       let val (e1,tv1,updt1) = elabExp(function,env,region)
-		   and (e2,tv2,updt2) = elabExp(argument,env,region)
-		   fun updt tv = (updt1 tv;updt2 tv)
-		in (APPexp (e1,e2), expCheckedunion (tv1, tv2), updt)
+	   | Ast.AppExp {function,argument} =>
+	       let val (functionExp, tvarset_fun, updater_fun) = elabExp (function, env, region)
+		   and (argExp, tyvarset_arg, updater_arg) = elabExp(argument,env,region)
+		   fun updater tv = (updater_fun tv; updater_arg tv)
+		in (APPexp (functionExp, argExp), union (tyvarset_fun, tyvarset_arg), updater)
 	       end
-	   | ConstraintExp {expr=exp,constraint=ty} =>
-	       let val (e1  tv1, updt) = elabExp (exp, env, region)
-		   val (t2, tv2) = ET.elabType (ty, env, region)
-		in (CONSTRAINTexp(e1,t2), expCheckedUnion (tv1, tv2), updt)
+	   | Ast.ConstraintExp {expr, constraint} =>
+	       let val (exp', tyvarset_exp, updater) = elabExp (exp, env, region)
+		   val (constraint', tyvarset_constraint) = ET.elabType (constraint, env, region)
+	        in (AS.CONSTRAINTexp (exp', constraint'), union (tyvarset_exp, tyvarset_constraint), updater)
 	       end
-	   | HandleExp {expr,rules} =>
-	       let val (e1, tyvarset1, updt1) = elabExp (expr, env, region)
-		   val (rls2, tyvarset2, updt2) = elabMatch (rules, env, region)
-		   fun updt tv = (updt1 tv; updt2 tv)
-		in (makeHANDLEexp (e1, rls2), expCheckedUnion (tyvarset1, tyvarset2), updt)
+	   | Ast.HandleExp {expr,rules} =>
+	       let val (expr', tyvarset1, updater1) = elabExp (expr, env, region)
+		   val (rls2, tyvarset2, updater2) = elabMatch (rules, env, region)
+		   fun updater tv = (updater1 tv; updater2 tv)
+		in (EU.makeHANDLEexp (e1, rls2), expCheckedUnion (tyvarset1, tyvarset2), updater)
 	       end
-	   | RaiseExp exp =>
-	       let val (e,tyv,updt) = elabExp(exp,env,region)
-		in (RAISEexp(e,UNDEFty),tyv,updt)
+	   | Ast.RaiseExp exp =>
+	       let val (e,tyv,updater) = elabExp(exp,env,region)
+		in (RAISEexp(e,UNDEFty),tyv,updater)
 	       end
-	   | LetExp {dec,expr} =>
-	       let val (d1, e1, tyvarset1, updt1) =
+	   | Ast.LetExp {dec,expr} =>
+	       let val (d1, e1, tyvarset1, updater1) =
 			  elabDec' (dec, env, IP.IPATH[], region)
-		   val (e2, tyvarset2, updt2) = elabExp (expr, SE.atop(e1,env), region)
-		   fun updt tv = (updt1 tv; updt2 tv)
-		in (LETexp (d1, e2), expCheckedUnion (tyvarset1, tyvarset2), updt)
+		   val (e2, tyvarset2, updater2) = elabExp (expr, SE.atop(e1,env), region)
+		   fun updater tv = (updater1 tv; updater2 tv)
+		in (LETexp (d1, e2), expCheckedUnion (tyvarset1, tyvarset2), updater)
 	       end
-	   | CaseExp {expr,rules} =>
-	       let val (e1, tyvarset1, updt1) = elabExp (expr,env,region)
-		   val (rls2, tyvarset2, updt2) = elabMatch (rules,env,region)
-		   fun updt tv = (updt1 tv;updt2 tv)
-	        in (CASEexp (e1,completeMatch rls2, true), expCheckedUnion (tyvarset1, tyvarset2), updt)
+	   | Ast.CaseExp {expr,rules} =>
+	       let val (e1, tyvarset1, updater1) = elabExp (expr,env,region)
+		   val (rls2, tyvarset2, updater2) = elabMatch (rules,env,region)
+		   fun updater tv = (updater1 tv;updater2 tv)
+	        in (CASEexp (e1,completeMatch rls2, true), expCheckedUnion (tyvarset1, tyvarset2), updater)
 	       end
-	   | IfExp {test,thenCase,elseCase} =>
-	       let val (e1,tv1,updt1) = elabExp(test,env,region)
-		   and (e2,tv2,updt2) = elabExp(thenCase,env,region)
-		   and (e3,tv3,updt3) = elabExp(elseCase,env,region)
-		   fun updt tv = (updt1 tv; updt2 tv; updt3 tv)
+	   | Ast.IfExp {test,thenCase,elseCase} =>
+	       let val (e1,tv1,updater1) = elabExp(test,env,region)
+		   and (e2,tv2,updater2) = elabExp(thenCase,env,region)
+		   and (e3,tv3,updater3) = elabExp(elseCase,env,region)
+		   fun updater tv = (updater1 tv; updater2 tv; updater3 tv)
 		in (Absyn.IFexp { test = e1, thenCase = e2, elseCase = e3 },
 		    expCheckedUnion (tv1, expCheckedUnion(tv2,tv3))
-		    updt)
+		    updater)
 	       end
-	   | AndalsoExp (exp1,exp2) =>
-	       let val (e1,tv1,updt1) = elabExp(exp1,env,region)
-		   and (e2,tv2,updt2) = elabExp(exp2,env,region)
-		   fun updt tv = (updt1 tv;updt2 tv)
-		in (ANDALSOexp(e1, e2), union(tv1,tv2,error region),updt)
+	   | Ast.AndalsoExp (exp1,exp2) =>
+	       let val (e1,tv1,updater1) = elabExp(exp1,env,region)
+		   and (e2,tv2,updater2) = elabExp(exp2,env,region)
+		   fun updater tv = (updater1 tv;updater2 tv)
+		in (ANDALSOexp(e1, e2), union(tv1,tv2,error region),updater)
 	       end
-	   | OrelseExp (exp1,exp2) =>
-	       let val (e1,tv1,updt1) = elabExp(exp1,env,region)
-		   and (e2,tv2,updt2) = elabExp(exp2,env,region)
-		   fun updt tv = (updt1 tv; updt2 tv)
-		in (ORELSEexp(e1, e2), expCheckedUnion (tv1,tv2), updt)
+	   | Ast.OrelseExp (exp1,exp2) =>
+	       let val (e1,tv1,updater1) = elabExp(exp1,env,region)
+		   and (e2,tv2,updater2) = elabExp(exp2,env,region)
+		   fun updater tv = (updater1 tv; updater2 tv)
+		in (ORELSEexp(e1, e2), expCheckedUnion (tv1,tv2), updater)
 	       end
-	   | WhileExp {test,expr} =>
-	       let val (e1,tv1,updt1) = elabExp(test,env,region)
-		   and (e2,tv2,updt2) = elabExp(expr,env,region)
-		   fun updt tv = (updt1 tv; updt2 tv)
-		in (Absyn.WHILEexp { test = e1, expr = e2 }, expCheckedUnion (tv1, tv2), updt)
+	   | Ast.WhileExp {test,expr} =>
+	       let val (e1,tv1,updater1) = elabExp(test,env,region)
+		   and (e2,tv2,updater2) = elabExp(expr,env,region)
+		   fun updater tv = (updater1 tv; updater2 tv)
+		in (Absyn.WHILEexp { test = e1, expr = e2 }, expCheckedUnion (tv1, tv2), updater)
 	       end
-	   | FnExp rules =>
-	       let val (rls,tyv,updt) = elabMatch(rules,env,region)
-		in (FNexp (completeMatch rls,UNDEFty),tyv,updt)
+	   | Ast.FnExp rules =>
+	       let val (rls,tyv,updater) = elabMatch(rules,env,region)
+		in (FNexp (completeMatch rls,UNDEFty),tyv,updater)
 	       end
-	   | MarkExp (exp,region) =>
+	   | Ast.MarkExp (exp,region) =>
 	       let val (exp', tyvarset, update) = elabExp(exp,env,region)
 		in (cMARKexp (exp',region), tyvarset, update)
 	       end
-	   | SelectorExp s =>
+	   | Ast.SelectorExp s =>
 	       (let val v = newVALvar s
-		 in FNexp(completeMatch
-			  [RULE(RECORDpat{fields=[(s,VARpat v)], flex=true,
-					  typ= ref UNDEFty},
-				cMARKexp(VARexp(ref v,[]),region))],UNDEFty)
+		 in FNexp (completeMatch
+			   [RULE (AS.RECORDpat {fields=[(s, AS.VARpat v)], flex=true,
+					        typ= ref UNDEFty},
+				  cMARKexp (VARexp (ref v,[]),region))],UNDEFty)
 		end,
-		TS.empty, no_updt)
-	   | FlatAppExp items => elabExp(expParse(items,env),env,region))
+		TS.empty, no_updater)
+	   | Ast.FlatAppExp items => elabExp (expParse (items,env), env, region))
     end (* elabExp *)
 
     (* elabELabel : (S.symbol * Ast.exp) list * SE.staticEnv * SM.region
-                    -> (S.symbol * Absyn.exp) list * TS.tyvarset * <updt>
+                    -> (S.symbol * Absyn.exp) list * TS.tyvarset * tyvarsetUpdater
     * should be called "elabFields" *)
     and elabELabel (ast_fields, env, region) =
 	  let fun folder ((lb2,e2),(les2,lvt2,updts2)) =
@@ -691,9 +707,9 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 		   in ((lb2,e3) :: les2, checkedUnion (region, "elabELabel") (lvt3,lvt2),
 		       updt3 :: updts2)
 		  end
-	      val (les1,lvt1,updt1) = foldr folder ([], TS.empty, []) ast_fields
-	      fun updt tv : unit = app (fn f => f tv) updt1
-	   in (les1, lvt1, updt)
+	      val (les1,tyvarset,updaters) = foldr folder ([], TS.empty, []) ast_fields
+	      fun updater tv : unit = app (fn f => f tv) updaters
+	   in (les1, tyvarset, updater)
 	  end
 
     and elabExpList (ast_exps, env, region) =
@@ -717,19 +733,21 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 	 in (rs, lvt, updt)
 	end
 
-    and elabRule(Rule{pat,exp},env,region)  =
+    and elabRule (Ast.Rule{pat,exp}, env, region)  =
 	let val region' = case pat of MarkPat (p,reg) => reg | _ => region
-	    val (p,tv1) = elabPat(pat, env, region)
-	    val env' = SE.atop(bindVARp ([p],error region'), env)
-	    val (e,tv2,updt) = elabExp(exp,env',region)
-	 in (RULE(p,e),union(tv1,tv2,error region),updt)
+	    val (p,tv1) = elabPat (pat, env, region)
+	    val env' = SE.atop (EU.bindVARp [p], env)
+	    val (e,tv2,updt) = elabExp (exp, env', region)
+	 in (RULE(p,e), checkedUnion (region, "elabBule") (tv1,tv2), updt)
 	end
 
 
     (**** SIMPLE DECLARATIONS ****)
 
-    and elabDec'(dec,env,rpath,region)
-		: (Absyn.dec * SE.staticEnv * TS.tyvarset * tyvUpdate) =
+    (* elabDec' : AS.dec * SE.staticEnv * IP.path * SM.region
+		  ->  Absyn.dec * SE.staticEnv * TS.tyvarset * tyvarsetUpdater *) =
+    and elabDec' (dec: AS.dec, env: SE.staticEnv, rpath: IP.path, region: SM.region)
+		: (Absyn.dec * SE.staticEnv * TS.tyvarset * tyvarsetUpdater) =
 	(case dec
 	  of TypeDec tbs =>
 	      let val (dec', env') =
@@ -755,9 +773,7 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 				  dcons
                         (* types of new datacon bindings same as the old *)
 			val env = SE.bind(name,B.TYCbind dtyc,envDcons)
-		     in noTyvars(DATATYPEdec{datatycs=[dtyc],
-					     withtycs=[]},
-				 env)
+		     in noTyvars (DATATYPEdec {datatycs=[dtyc], withtycs=[]}, env)
 		    end
 		  | _ => (* error if not a datatype (bug 1578.1) *)
 		    ((error region EM.COMPLAIN
@@ -766,8 +782,7 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 		     noTyvars(SEQdec[], SE.empty)))
 	   | AbstypeDec x =>
 	      let val (dec', env') =
-  		    elabABSTYPEdec(x,env,EU.TOP,isFree,
-                                   rpath,region)
+  		      ET.elabABSTYPEdec (x,env, EU.TOP, isFree, rpath, region)
 	       in noTyvars(dec', env')
 	      end
 	   | ExceptionDec ebs => elabEXCEPTIONdec(ebs,env,region)
@@ -785,7 +800,7 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 	       let val env =
 		 foldr (fn (id,env) => SE.bind(id,B.FIXbind fixity,env))
 			SE.empty ops
-		in (FIXdec ds,env,TS.empty,no_updt)
+		in (FIXdec ds,env,TS.empty,nullUpdater)
 	       end
 	   | OvldDec dec  => elabOVERLOADdec(dec,env,rpath,region)
 	   | MarkDec(dec,region') =>
@@ -800,56 +815,60 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 
     (**** OVERLOADING ****)
 
-    and elabOVERLOADdec((id,exps),env,rpath,region) =
+    (* elabOVERLOADdec : (S.symbol * Ast.exp list) * StaticEnv.env * IP.path * SM.region 
+                         -> AS.dec * StaticEnv.env * TS.tyvarset * updaterTy *)
+    and elabOVERLOADdec ((id,exps),env,rpath,region) =
 	(* exps are simple variable paths, with monomorphic types that
 	 * are ground instances of the known typeScheme for id *)
 	let fun getVar exp =
 		(case exp
-		   of VARexp(ref(v),_) => v
-		    | MARKexp(e,_) => getVar e
+		   of AS.VARexp (ref(v), _) => v
+		    | AS.MARKexp (e, _) => getVar e
 		    | _ => bug "evalOVERLOADdec.getVar")
-	    val val_vars = map (fn exp => getVar(#1(elabExp(exp,env,region)))) exps
-	    val ovldvar = OVLDvar{name = id, variants = val_vars}
+	    val val_vars = map (fn exp => getVar (#1 (elabExp (exp, env, region)))) exps
+	    val ovldvar = V.OVLDvar{name = id, variants = val_vars}
 	in
-	    (OVLDdec ovldvar, SE.bind(id, B.VALbind ovldvar, SE.empty),
-             TS.empty, no_updt)
+	    (AS.OVLDdec ovldvar, SE.bind(id, B.VALbind ovldvar, SE.empty),
+             TS.empty, nullUpdater)
 	end
 
     (**** LOCAL ****)
 
-    and elabLOCALdec((ldecs1,ldecs2),env,rpath:IP.path,region) =
+    and elabLOCALdec ((ldecs1,ldecs2), env, rpath:IP.path, region) =
 	let val (ld1,env1,tv1,updt1) = elabDec'(ldecs1,env,IP.IPATH[],region)
 	    val (ld2,env2,tv2,updt2) =
 		  elabDec'(ldecs2,SE.atop(env1,env),rpath,region)
-	    fun updt tv = (updt1 tv;updt2 tv)
-	 in (LOCALdec(ld1,ld2), env2,union(tv1,tv2,error region),updt)
+	    fun updt tv = (updt1 tv; updt2 tv)
+	 in (AS.LOCALdec (ld1,ld2), env2, checkedUnionregion, "elabLOCALdec") (tv1,tv2), updt)
 	end
 
     (**** OPEN ****)
 
-    and elabOPENdec(spaths, env, region) =
+    and elabOPENdec (spaths, env, region) =
         let val err = error region
 	    val strs = map (fn s => let val sp = SP.SPATH s
                                      in (sp, LU.lookStr(env, sp, err))
                                     end) spaths
 
-            fun loop([], env) = (OPENdec strs, env, TS.empty, no_updt)
+            fun loop([], env) = (AS.OPENdec strs, env, TS.empty, nullUpdater)
               | loop((_, s)::r, env) = loop(r, MU.openStructure(env, s))
 
          in loop(strs, SE.empty)
         end
 
     (****  VALUE DECLARATIONS ****)
-    (* elabVB : Ast.vb * tyvar list * staticEnv * region
+    (* elabVB : Ast.vb * tyvar list * SE.staticEnv * SM.region
                 ->  ... *)
-    and elabVB (MarkVb(vb,region),etvs,env,_) =
+    and elabVB (Ast.MarkVb (vb, region), etvs, env,_) =
           (* pass through MarkVb, updating region parameter *)
-          let val (d, tvs, u) = elabVB(vb,etvs,env,region)
+          let val (d, tvs, u) = elabVB (vb, etvs, env, region)
               val d' = cMARKdec (d, region)
            in (d', tvs, u)
           end
-      | elabVB (Vb{pat,exp,lazyp},etvs,env,region) =
-	  let val (pat,pv) = elabPat(pat, env, region)
+      | elabVB (Ast.Vb{pat,exp,lazyp},etvs,env,region) =
+	  let val union = checkedUnion (region, "elabVB")
+              val diff = checkedDiffernce (region, "elabVB")
+	      val (pat,pv) = elabPat(pat, env, region)
 	      val (exp,ev,updtExp) = elabExp(exp,env,region)
 	      val exp = if lazyp  (* LAZY *)
 		        then delayExp(forceExp exp)
@@ -857,14 +876,12 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 
               (* tracking user (or "explicit") type variables *)
 	      val tvref = ref []
-	      fun updt tv: unit =
-		let fun a++b = union(a,b,error region)
-                    fun a--b = diff(a,b,error region)
-		    val localtyvars = (ev++pv++etvs) -- (tv---etvs)
+	      fun updt (tyvarset: TS.tyvarset): unit =
+		let val localtyvars = diff ((union (ev, union (pv,tvs)), (TS.diffPure (tyvarset, etvs)))
 			 (* etvs should be the second argument to union
 			  * to avoid having the explicit type variables
 			  * instantiated by the union operation. *)
-		    val downtyvars = localtyvars ++ (tv---etvs)
+		    val downtyvars = union (localtyvars, diff (tv, etvs))
 		 in tvref := TS.elements localtyvars; updtExp downtyvars
 	        end
 
@@ -913,7 +930,7 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 		   let val (newpat,oldvars,newvars) = aconvertPat(pat)
 		         (* this is the only call of aconvertPat *)
                        val newVarExps = map (fn v => VARexp(ref v,[])) newvars
-		       val r = RULE(newpat, TUPLEexp(newVarExps))
+		       val r = RULE(newpat, AU.TUPLEexp(newVarExps))
                        val newexp = CASEexp(exp, completeBind[r], false)
 
                     in case oldvars
@@ -949,24 +966,21 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 
     and elabVALdec(vb,etvs,env,rpath,region) =
        let val etvs = ET.elabTyvarList(etvs,error,region)
-	   val (ds,pats,updt1) =
-	      foldr
-		(fn (vdec,(ds1,pats1,updt1)) =>
+	   fun folder (vdec,(ds1,pats1,updt1)) =
 		   let val etvs = TS.mkTyvarset(map T.copyTyvar etvs)
 		       val (d2,pats2,updt2) = elabVB(vdec,etvs,env,region)
 		    in (d2::ds1,pats2@pats1,updt2::updt1)
-                   end)
-		([],[],[]) vb
-	    fun updt tv : unit = app (fn f => f tv) updt1
-	in (SEQdec ds, bindVARp (pats,error region), TS.empty, updt)
+                   end
+	   val (ds,pats,updt1) = foldr folder ([],[],[]) vb
+	   fun updater tv : unit = app (fn f => f tv) updt1
+	in (SEQdec ds, EU.bindVARp pats, TS.empty, updater)
        end
 
     and elabRVB(MarkRvb(rvb,region),env,_) =
-	let val ({ match, ty, name }, tvs, u) = elabRVB(rvb,env,region)
-	    val match' = cMARKexp (match, region)
-	in
-	    ({ match = match', ty = ty, name = name }, tvs, u)
-	end
+	  let val ({ match, ty, name }, tvs, u) = elabRVB(rvb,env,region)
+	      val match' = cMARKexp (match, region)
+	   in ({match = match', ty = ty, name = name}, tvs, u)
+	  end
       | elabRVB(Rvb{var,fixity,exp,resultty,lazyp},env,region) =
          (case stripExpAst(exp,region)
 	    of (FnExp _,region')=>
@@ -988,16 +1002,12 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 			        ("infix symbol \""^ S.name f ^
 				 "\" used where a nonfix identifier was expected")
 				EM.nullErrorBody);
-		    ({match = e , ty = t, name=var},
-		     union(ev,tv,error region),updt)
+		    ({match = e, ty = t, name=var}, union (ev, tv), updater)
 		end
-	     | _ =>
-		(error region EM.COMPLAIN
-		  "fn expression required on rhs of val rec"
-		  EM.nullErrorBody;
-		 ({match = dummyFNexp, ty = NONE, name = var},TS.empty,no_updt)))
+	     | _ => (errorRegion (region, "fn expression required on rhs of val rec");
+		     ({match = dummyFNexp, ty = NONE, name = var}, TS.empty, nullUpdater))
 
-    and elabVALRECstrict(rvbs,etvs,env,region) =
+    and elabVALRECstrict (rvbs, etvs, env, region) =
 	let val env' = ref(SE.empty: SE.staticEnv)
 	    fun makevar region (p as Rvb{var,...}) =
 		  let val v = newVALvar var
@@ -1011,39 +1021,33 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 
 	    val rvbs' = map (makevar region) rvbs
 	    val env'' = SE.atop(!env', env)
-	    val (rvbs,tyvars,updts)=
-		foldl (fn((v,rvb1),(rvbs1,tvs1,updt1)) =>
-			   let val (rvb2,tv2,updt2) =
-				   elabRVB(rvb1,env'',region)
-			    in ((v,rvb2)::rvbs1,
-				union(tv2,tvs1,error region),
-				updt2::updt1)
-			   end)
-			([],TS.empty,[]) rvbs'
-	    val tvref = ref []
-	    fun updt tvs : unit =
-		let fun a++b = union(a,b,error region)
-		    fun a--b = diff(a,b,error region)
-		    val localtyvars = (tyvars ++ etvs) -- (tvs --- etvs)
-		    val downtyvars = localtyvars ++ (tvs --- etvs)
-		 in tvref := TS.elements localtyvars;
-		    app (fn f => f downtyvars) updts
+	    fun folder ((v, rvb1), (rvbs1, tvs1, updt1)) =
+		let val (rvb2, tv2, updt2) = elabRVB (rvb1, env'', region)
+		 in ((v,rvb2)::rvbs1,
+		     union(tv2,tvs1,error region),
+		     updt2::updt1)
 		end
-	    val _ = EU.checkUniq(error region,
-                        "duplicate function name in val rec dec",
-  		        (map (fn (v,{name,...}) => name) rvbs))
-
+	    val (rvbs, tyvarset, updaters) = foldl folder ([], TS.empty, []) rvbs'
+	    val tvref = ref []
+	    fun updater (tvs: TS.tyvarset) : unit =
+		let val localtyvars = diff (union (tyvarset, etvs), TS.pureDiff (tvs, etvs))
+		    val downtyvars = union (localtyvars, TS.pureDiff (tvs, etvs))
+		 in tvref := TS.elements localtyvars;
+		    app (fn f => f downtyvars) updaters
+		end
+	    val _ = if EU.checkUniq (map (fn (v,{name,...}) => S.name name) rvbs)
+		    then ()
+		    else errorRegion (region, "duplicate function name in val rec dec")
             val (ndec, nenv) =
   	        wrapRECdec (map (fn (v,{ty,match,name}) =>
 				    RVB{var=v,resultty=ty,tyvars=tvref, exp=match,
 					boundtvs=[]})
 			        rvbs)
-
-         in (ndec, nenv, TS.empty, updt)
+         in (ndec, nenv, TS.empty, updater)
 	end (* fun elabVALRECstrict *)
 
     (* LAZY: "val rec lazy ..." *)
-    and elabVALREClazy (rvbs,etvs,env,region) =
+    and elabVALREClazy (rvbs, etvs, env, region) =
 	let fun split [] = ([],[])
 	      | split ((Rvb {var,exp,resultty,lazyp,...})::xs) =
 		 let val (a,b) = split xs in ((var,resultty)::a,(exp,lazyp)::b) end
@@ -1060,7 +1064,7 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 
 	    fun elabFn ((exp, lazyp), (fexps, tvs, updts)) =
 		let val (p,tv1) = elabPat(argpat, env, region)
-		    val env' = SE.atop(bindVARp ([p],error region), env)
+		    val env' = SE.atop (EU.bindVARp ([p],error region), env)
 		    val (e,tv2,updt) = elabExp (exp, env', region)
 		in (FNexp(completeMatch[RULE(p,if lazyp then e else delayExp e)],
 			  UNDEFty)::fexps,
@@ -1075,18 +1079,16 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 
 	    (* copied from original elabVALRECdec *)
 	    val tvref = ref []
-	    fun updt tvs : unit =
-		let fun a++b = union(a,b,error region)
-		    fun a--b = diff(a,b,error region)
-		    val localtyvars = (tyvars ++ etvs) -- (tvs --- etvs)
-		    val downtyvars = localtyvars ++ (tvs --- etvs)
+	    fun updt (tyvarset: TS.tyvarset) : unit =
+		let val localtyvars = diff (union (tyvars, etvs), TS.pureDiff (tyvarset, etvs)))
+		    val downtyvars = union (localtyvars, TS.pureDiff (tyvarset, etvs))
 		 in tvref := TS.elements localtyvars;
 		    app (fn f => f downtyvars) updts
 		end
 
 	    val declAppY =
-		VALdec[VB{pat=TUPLEpat(map VARpat lhsVars),
-			  exp=APPexp(VARexp(ref yvar,[]),TUPLEexp fns),
+		VALdec[VB{pat=AU.TUPLEpat(map VARpat lhsVars),
+			  exp=AS.APPexp (AS.VARexp (ref yvar,[]), AU.TUPLEexp fns),
 			  tyvars=tvref,boundtvs=[]}]
 
 	    fun forceStrict ((sym,var1,lazyp),(vbs,vars)) =
@@ -1119,7 +1121,7 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 	end (* fun elabVALREClazy *)
 
     and elabVALRECdec(rvbs: rvb list,etvs,env,rpath:IP.path,region) =
-	let val etvs = TS.mkTyvarset(ET.elabTyvList(etvs,error,region))
+	let val etvs = TS.mkTyvarset(ET.elabTyvarList(etvs,error,region))
 	    fun isLazy(Rvb{lazyp,...}) = lazyp
 	      | isLazy(MarkRvb(rvb,_)) = isLazy rvb
          in if List.exists isLazy rvbs
@@ -1139,8 +1141,10 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 	    (DOdec exp, SE.empty, TS.empty, updt)
 	  end
 
-    and elabFUNdec(fb,etvs,env,rpath,region) =
-	let val etvs = TS.mkTyvarset(ET.elabTyvList(etvs,error,region))
+    and elabFUNdec (fb, etvs, env, rpath, region) =
+	let val etvs: TS.tyvarset = TS.mkTyvarset (ET.elabTyvarList (etvs, error, region))
+            val union = checkedUnion (region, "elabFUNdec")
+            val diff = checkDifference (region, "elabFUNdec")
             (* makevar: parse the function header to determine the function name *)
 	    fun makevar _ (MarkFb(fb,fbregion),ctx) = makevar fbregion (fb,ctx)
 	      | makevar fbregion (Fb(clauses,lazyp),(lcl,env')) =
@@ -1170,10 +1174,8 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 		     fun getname(MarkPat(p,region),_) = getname(p,region)
 		       | getname(VarPat[v], _) = v
 		       | getname(_, region) =
-                           (error region EM.COMPLAIN
-			      "illegal function symbol in clause"
-			      EM.nullErrorBody;
-			    bogusID)
+                           (errorRegion (region, "illegal function symbol in clause");
+			    EU.bogusID)
 
    	             fun parse'({item=FlatAppPat[a,b as {region,...},c],...}
                                 ::rest) =
@@ -1279,74 +1281,73 @@ let fun checkedUnion = checkedUnion (region, "elabExp") in
 	    val (fundecs,env') = foldl (makevar region) ([],SE.empty) fb
 	    val env'' = SE.atop(env',env)
 	    fun elabClause(region,({kind,argpats,resultty,exp,funsym})) =
-		let val (pats,tv1) = elabPatList(argpats, env, region)
-                    val nenv = SE.atop(bindVARp(pats,error region), env'')
-		    val (exp,tv2,updt) = elabExp(exp, nenv,region)
+		let val (pats,tyvarset1) = elabPatList(argpats, env, region)
+                    val nenv = SE.atop (EU.bindVARp pats, env'')
+		    val (exp,tyvarset2,updater) = elabExp(exp, nenv,region)
 		    (* LAZY: wrap delay or force around rhs as appropriate*)
 		    val exp =
 			case kind
 			  of STRICT => exp
 			   | LZouter => delayExp exp
 			   | LZinner => forceExp exp
-		    val (ty,tv3) =
+		    val (ty,tyvarset3) =
 		      case resultty
 		       of NONE => (NONE,TS.empty)
 			| SOME t =>
-			    let val (t4,tv4) = ET.elabType(t,env,error,region)
+			    let val (t4,tv4) = ET.elabType (t,env,error,region)
 			     in (SOME t4,tv4)
 			    end
-		 in ({pats=pats,resultty=ty,exp=exp},
-		     union(tv1,union(tv2,tv3,error region),error region),updt)
+		 in ({pats = pats, resultty = ty,exp = exp},
+		     union(tyvarset1,union(tyvarset2,tyvarset3)), updater)
 		end
-	    fun elabFundec ((var,clauses,region),(fs,tvs,updt)) =
-		let val (cs1,tvs1,updt1) =
-		      foldl (fn (c2,(cs2,tvs2,updt2)) =>
-			     let val (c3,tvs3,updt3) = elabClause(region,c2)
-			      in (c3::cs2,union(tvs3,tvs2,error region),
-				  updt3::updt2)
-			     end)
-			  ([],TS.empty,[]) clauses
-		 in ((var,rev cs1,region)::fs, union(tvs1,tvs,error region),
-                     updt1 @ updt)
+	    fun elabFundec ((var,clauses,region), (fs, tyvars, updaters)) =
+		let fun folder (clause_ast, (clauses_acc, tyvarset_acc, updaters_acc)) =
+			  let val (clause, tyvarset_inc, updater_inc) = elabClause (region,clause)
+			   in (clause::clauses_acc, union(tyvarset_inc, tyvarset_acc), updater_inc::updaters_acc)
+			  end
+		    val (clauses', tyvarset_full, updaters_full) = foldl folder ([],TS.empty,[]) clauses
+ 		 in ((var, rev clauses', region) :: fs, union (tyvarset_full,tyvars), updaters_full @ updaters)
 		end
-	    val (fbs1,ftyvars,updts) = foldl elabFundec ([],TS.empty,[]) fundecs
-	    val tvref = ref [] (* common tvref cell for all bindings! *)
-	    fun updt tvs : unit =
-		let fun a++b = union(a,b,error region)
-		    fun a--b = diff(a,b,error region)
-		    val localtyvars = (ftyvars ++ etvs) -- (tvs --- etvs)
-		    val downtyvars = localtyvars ++ (tvs --- etvs)
-		 in tvref := TS.elements localtyvars;
+	    val (fbs1, ftyvars, updts) = foldl elabFundec ([],TS.empty,[]) fundecs
+	    val tyvarlistref = ref [] (* single common ref cell for all bindings! Potential bug? *)
+	    fun updater (tyvarset: TS.tyvarset) : unit =
+		let val d = TS.pureDiff (tyvarset, etvs)
+		    val localtyvars = diff (union (ftyvars, etvs), d)
+		    val downtyvars = union (localtyvars, d)
+		 in tyvarlistref := TS.elements localtyvars;
 		    app (fn f => f downtyvars) updts
 		end
 	    fun makefb (v as V.VALvar{path=SymPath.SPATH[_],...},cs,r) =
-		  ({var=v,clauses=cs, tyvars=tvref,region=r})
+		  ({var=v,clauses=cs, tyvars=tyvarlistref,region=r})
 	      | makefb _ = bug "makeFUNdec.makefb"
-	 in EU.checkUniq(error region, "duplicate function names in fun dec",
-		      (map (fn (V.VALvar{path=SymPath.SPATH[x],...},_,_) => x
-			     | _ => bug "makeFUNdec:checkuniq")
-			   fbs1));
+	 in if EU.checkUniq (map (fn (V.VALvar{path=SymPath.SPATH[x],...},_,_) => x
+			           | _ => bug "makeFUNdec:checkuniq")
+			         fbs1)
+	    then ()
+	    else errorRegion (region, "duplicate function names in fun dec");
 	    let val (ndec, nenv) =
-                   FUNdec(completeMatch,map makefb fbs1)
+                    EU.FUNdec (completeMatch, map makefb fbs1)
              in showDec ("elabFUNdec: ", ndec, nenv);
-		 (ndec, nenv, TS.empty, updt)
+		(ndec, nenv, TS.empty, updater)
             end
-	end
+	end (* function elabFUNdec *)
 
-    (* elabSEQdec:  [ast_decls:]Ast.decl list * [env_base:]SE.staticEnv * [rpath:]IP.path * [region:]SM.region)
-                    -> Absyn.decl * SE.staticEnv * TS.tyvarset * updater (?) *)
+    (* elabSEQdec:  [ast_decs:]Ast.decl list * [env_base:]SE.staticEnv * [rpath:]IP.path
+                    * [region:]SM.region)
+                    -> Absyn.decl * SE.staticEnv * TS.tyvarset * updaterTy (?) *)
     and elabSEQdec (ast_decs: Ast.dec list, env_base: SE.staticEnv, rpath: IP.path, region: SM.region) =
 	let fun folder (ast_dec,(decs_acc,env_acc,tyvarset_acc,updaters_acc)) =
 		  let val (dec, env_inc, tyvarset_inc, updater_inc) =
 			   elabDec' (ast_dec, SE.atop(env_acc,env_base), rpath, region)
-		   in (decl::decls_acc, SE.atop (env_acc, env_base),
+		   in (dec::decs_acc, SE.atop (env_acc, env_base),
                        checkedUnion (region, "elabSEQdec") (tyvarset_inc,tyvarset_acc),
 		       updater_inc :: updaters_acc)
 		  end
             (* need to use foldl to nest the local, incremental environments properly *)
-	    val (decls, env_loc, tyvarset_full, updaters_full) = foldl ([], SE.empty, TS.empty, []) ast_decls
-	    fun updater' tv : unit = app (fn f => f tv) updaters_full
-	 in (SEQdec (rev decs), env_loc, tyvarset_full, updater')
+	    val (decs, env_loc, tyvarset_full, updaters_full) =
+		foldl folder ([], SE.empty, TS.empty, []) ast_decs
+	    fun updater_fin tv : unit = app (fn f => f tv) updaters_full
+	 in (SEQdec (rev decs), env_loc, tyvarset_full, updater_fin)
 	end
 
     val _ = debugmsg ("EC.elabDec calling elabDec' - foo")
