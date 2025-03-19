@@ -86,6 +86,9 @@ gforge bug tracker.
 | [.bugid]#341#
 | {issue-base}/341[Incorrect constant folding of word equality]
 | n.a.
+| [.bugid]#347#
+| {issue-base}/347[`Unsafe.cast` causes Compiler bug]
+| n.a.
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]

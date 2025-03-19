@@ -108,6 +108,16 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
+[2025-02-19]::
+Fixed {issue-base}/347[Issue #347 (`Unsafe.cast` causes Compiler bug)
+by removing code that treated the `CAST` operator as a transparent
+identify function.  This change may cost us some optimization
+opportunities.  It may be possible to regain these in the contractor,
+but we need to think carefully about potential down-stream breakage.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2025-02-23]::
 Made the translation of built-in numeric types to FLINT primitive
 types more consistent.  Previously, numeric types with fewer bits

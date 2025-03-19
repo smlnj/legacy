@@ -538,6 +538,13 @@ structure ContractPrim : sig
                        else bug "unwrap(wrap float) size conflict"
                    | _ => None
                  (* end case *))
+(* TODO: in some cases it may be useful to delete the CAST (i.e., treat it as
+ * an identity), but does that cause downstream problems?
+            | (P.CAST, [x as VAR v]) => (case #info(get v)
+                  of MISCinfo _ => None
+                   | _ => ??
+                 (* end case *))
+*)
             | _ => None
           (* end case *))
 
