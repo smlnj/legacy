@@ -4,7 +4,7 @@
  * All rights reserved.
  *)
 
-structure PackReal64Big =
+structure PackReal64Big : PACK_REAL where type real = Real64Imp.real =
   struct
 
     structure BV = InlineT.Word8Vector
