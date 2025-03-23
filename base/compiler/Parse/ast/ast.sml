@@ -12,8 +12,10 @@
  ****************************************************************************)
 
 structure Ast : AST =
-  struct
+struct
 
+    structure S = Symbol
+    structure SM = SourceMap
     open Symbol Fixity
 
   (* to mark positions in files *)
@@ -22,7 +24,8 @@ structure Ast : AST =
 
   (* symbolic path (Modules.spath) *)
     type path = symbol list
-    type 'a fixitem = {item: 'a, fixity: symbol option, region: region}
+    type 'a fixitem = {item: 'a, fixity: S.symbol option, region: SM.region}
+      (* FIX: "fixity" is bad name for this field. When is it NONE? *)
 
   (* integer/word literal; the string is the literal as it appeared in the source
    * and the int is the value of the literal.
@@ -225,4 +228,4 @@ structure Ast : AST =
       | TupleTy of ty list		(* tuple *)
       | MarkTy of ty * region	        (* mark type *)
 
-  end (* structure Ast *)
+end (* structure Ast *)

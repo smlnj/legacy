@@ -1,15 +1,19 @@
 (* elabdata.cm
  *
  * (C) 2001 Lucent Technologies, Bell Labs
+ * (C) 2025 The Fellowship of SML/NJ (www.smlnj.org)
  *
  * A library defining data structures used by the SML/NJ elaborator.
  *)
-Group
+
+Group  (* exports *)
+
 	signature ELABDATA_CONTROL
 	signature ACCESS
 	signature DEB_INDEX
 	signature TYPES
 	signature TYPESUTIL
+        signature TYVARSET
 	signature TUPLES
 	signature ABSYN
 	signature SYMPATH
@@ -43,6 +47,7 @@ Group
 	structure Types
 	structure PPType
 	structure TypesUtil
+        structure TyvarSet
 	structure Tuples
 	structure Absyn
 	structure PPAbsyn
@@ -87,7 +92,8 @@ Group
 	structure PPVal
 	structure ConRep
 
-is
+is (* "members": source files *)
+
 	main/edcontrol.sig
 	main/edcontrol.sml
 
@@ -126,6 +132,7 @@ is
 	types/typesutil.sig
 	types/typesutil.sml
 	types/conrep.sml
+        types/tyvarset.sml  (* <- TYVARSET, TyvarSet *)
 
 	modules/modules.sig
 	modules/modules.sml

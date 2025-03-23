@@ -69,8 +69,8 @@ sig
           clauses: {pats: Absyn.pat list,
                     resultty: Types.ty option,
                     exp: Absyn.exp} list,
-          tyvars: Types.tyvar list ref,
-	  region: Ast.region } list
+          tyvars: TyvarSet.tyvarset ref,
+	  region: SourceMap.region } list
        -> (Absyn.dec * StaticEnv.staticEnv)
 
   val wrapRECdec : Absyn.rvb list -> (Absyn.dec * StaticEnv.staticEnv)

@@ -9,7 +9,7 @@ signature BINDINGS =
 
     datatype binding
       = VALbind of VarCon.var
-      | CONbind of VarCon.datacon
+      | CONbind of Types.datacon
       | TYCbind of Types.tycon
       | SIGbind of Modules.Signature
       | STRbind of Modules.Structure

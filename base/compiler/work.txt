@@ -1,0 +1,26 @@
+Working notes for branch dbm2
+
+Revising
+
+* defn and use (and possibly the name) of CompInfo
+* Source (inputSource type) and ErrorMsg
+   - source could be (partially) absorbed into CompInfo or its successor.
+     But what about the sourceMap component of source.
+   - ErrorMsg can be simplified by having it depend on CompInfo for the source.
+
+* added TyvarSet
+  When used in absyn (VB constructor arg) in place of tyvar list,
+  needs to be defined in a library prior to absyn (Parser/parser.cm).
+  Where does it belong. Note that TyvarSet depends on Types.
+  So we need
+
+      Types --> TyvarSet --> absyn
+
+  We already have
+
+      Types --> absyn
+
+  It should suffice to move TyvarSet from Elaborator/elaborate to ElabData/types.
+
+  >> Elaborator/elaborate/tyvarset.sml moved to ElabData/types/tyvarset.sml
+  and Elaborator/elaborate.cm and ElabData/elabdata.cm edited accordingly.

@@ -12,16 +12,16 @@ structure CoreAccess : sig
 
     val getVar : StaticEnv.staticEnv -> string list -> VarCon.var
 
-    val getCon : StaticEnv.staticEnv -> string list -> VarCon.datacon
+    val getCon : StaticEnv.staticEnv -> string list -> Types.datacon
 
     val getVar' : (unit -> VarCon.var) ->
 		  StaticEnv.staticEnv -> string list -> VarCon.var
 
-    val getCon' : (unit -> VarCon.datacon) ->
-		  StaticEnv.staticEnv -> string list -> VarCon.datacon
+    val getCon' : (unit -> Types.datacon) ->
+		  StaticEnv.staticEnv -> string list -> Types.datacon
 
   (* like getCon, but returns a bogus exn instead of failing *)
-    val getExn : StaticEnv.staticEnv -> string list -> VarCon.datacon
+    val getExn : StaticEnv.staticEnv -> string list -> Types.datacon
 
 end = struct
 

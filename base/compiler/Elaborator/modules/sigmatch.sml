@@ -56,6 +56,7 @@ structure SigMatch : SIGMATCH =
 struct
 
 local
+
    structure A  = Absyn
    structure B  = Bindings
    structure DA = Access
@@ -65,6 +66,7 @@ local
    structure EPC = EntPathContext
    structure EU = ElabUtil
    structure EV = EvalEntity
+   structure ED = ElabDebug
    structure INS = Instantiate
    structure IP = InvPath
    structure M  = Modules
@@ -77,6 +79,7 @@ local
    structure ST = Stamps
    structure T  = Types
    structure TU = TypesUtil
+   structure TS = TyvarSet
    structure V  = VarCon
 
    open Types Modules VarCon ElabDebug
@@ -838,10 +841,10 @@ let
                                                 VALvar{path=spath, typ=ref spectyp,
                                                        access=acc, prim=prim,
 						       btvs = ref []}
-                                              val vb =
-                                                A.VB {pat=A.VARpat specvar,
-                                                      exp=A.VARexp(ref actvar, ptvs),
-                                                      boundtvs=btvs, tyvars=ref []}
+                                              val vb = A.VB {pat = A.VARpat specvar,
+                                                             exp = A.VARexp(ref actvar, ptvs),
+                                                             boundtvs = btvs,
+							     tyvars = ref TS.empty}
                                            in ((A.VALdec [vb])::decs, specvar)
                                           end
 
@@ -875,9 +878,10 @@ let
 						     btvs = ref [],
                                                      typ=ref spectyp}
                                           val vb =
-                                              A.VB {pat=A.VARpat specvar,
-                                                    exp=A.CONexp(con, paramtvs),
-                                                    boundtvs=boundtvs, tyvars=ref []}
+                                              A.VB {pat = A.VARpat specvar,
+                                                    exp = A.CONexp(con, paramtvs),
+                                                    boundtvs = boundtvs,
+						    tyvars = ref TS.empty}
                                       in ((A.VALdec [vb])::decs,
                                           (B.VALbind specvar)::bindings)
                                       end

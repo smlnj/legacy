@@ -142,18 +142,14 @@ val minSubnormalReal64 = RealLit.real{isNeg = false, whole="4", frac="9", exp = 
 val minNormalReal64 = RealLit.real{isNeg = false, whole="2", frac="2250738585072014", exp = ~308}
 val maxReal64 = RealLit.real{isNeg = false, whole="1", frac="7976931348623157", exp = 308}
 
-(* substituted inline
-
 fun mkIntLiteralTy (v : IntInf.int, r : SM.region) : ty =
-      T.VARty (T.mkTyvar (T.OVLDI [(v, r)]))
+      VARty(mkTyvar(OVLDI [(v, r)]))
 
 fun mkWordLiteralTy (v : IntInf.int, r : SM.region) : ty =
-      T.VARt (T.mkTyvar (OVLDW [(v, r)]))
+      VARty(mkTyvar(OVLDW [(v, r)]))
 
 (* REAL32: eventually this will be an overload instance *)
 fun mkRealLiteralTy (v : RealLit.t, r : SM.region) : ty = BT.realTy
-
-*)
 
 
 (* ========================================================================================== *)
@@ -187,26 +183,6 @@ type clauseTy_ast = {kind: clauseKind, argpats: Ast.pat Ast.fixitem list,
 
 type clauseTy_absyn = {pats : AS.pat list, resultty: T.ty option, exp : AS.exp}
 
-(* Defn of fixitem tycon from structure Ast:
-
-   tyvar is a symbol, optionally marked
-
-   type 'a fixitem = {item: 'a,  ('a -> pat or 'a -> exp)
-                      fixity: S.symbol option, (* FIX: Bad label. When is it NONE? *)
-		      region: SM.region} 
-   The lhs of an Ast fundec clause is a list of (par or exp?) fixitems. The name
-   of the declared function must be extracted from the head of this lhs list of fixitems.
-
-   -- 'a will be instantiated to either Ast.pat (for pat reparsing) or Ast.exp (for exp reparsing
-  
-   type ast_clauseTy:= {pats: Ast.pat Ast.fixitem list,
-   		        resultty: T.ty option,
-			exp: Ast.exp}
-   -- argument type of the Ast.Clause datacon (elements of an Ast clause).
-      The partially parsed list of (curried) parameters is represented as a pat fixitem list (pats).
-      The function name (the subject of the parent fb) is extracted
-      by the elabFUNdec#makevar#parse' function at line 1317.
-*)
 
 (* ========================================================================================== *)
 (* some utility functions not defined in ElabUtil *)
@@ -222,7 +198,7 @@ fun stripExpAst(MarkExp(e,r'),r) = stripExpAst(e,r')
   | stripExpAst x = x
 
 val dummyFNexp: AS.exp =
-    FNexp([RULE(WILDpat,RAISEexp(CONexp(V.bogusEXN,[]),T.UNDEFty))],T.UNDEFty)
+    FNexp([RULE(WILDpat,RAISEexp(CONexp(V.bogusEXN,[]),UNDEFty))],UNDEFty)
 
 (* LAZY *)
 
@@ -284,10 +260,10 @@ let
 	let val v = newVALvar (S.varSymbol "x")
 	 in AS.APPexp (AS.FNexp(completeMatch
 				  [AS.RULE (AS.APPpat (BT.dollarDcon, nil, AS.VARpat v), AS.VARexp (ref v, nil))],
-				T.UNDEFty),
+				UNDEFty),
 		       exp)
 	     (* DBM: second arg of APPpat and VARexp = nil and
-	      * of FNexp = T.UNDEFty ok? *)
+	      * of FNexp = UNDEFty ok? *)
 	end
 
     (* delayExp : AS.exp -> AS.exp *)
@@ -295,7 +271,7 @@ let
 	AS.APPexp (AS.CONexp (BT.dollarDcon, nil), exp)
 
     (* lrvbMakeY : int -> V.var * AS.dec
-     * lrvbMakeY n: build Absyn declaration of n-ary Y combinator for lazy val rec *)
+     * lrvbMakeY n: build Absyn  declaration of n-ary Y combinator for lazy val rec *)
     fun lrvbMakeY n =
 	let fun upto 0 = nil
 	      | upto n = n :: (upto (n-1))
@@ -365,13 +341,13 @@ let
                              in (BT.--> (ty, BT.exnTy), vt, SOME ty, false)
 			    end 
 	           val exn =      
-		       T.DATACON{name = ename, const = const, typ = ety, lazyp = false,
+		       DATACON{name = ename, const = const, typ = ety, lazyp = false,
 			       rep = A.EXN (A.LVAR (LV.namedLvar ename)), sign = A.CNIL}
 		in (AS.EBgen {exn = exn, etype=etyOp, ident=STRINGexp(S.name ename)},
 		    ename, SE.bind (ename, B.CONbind exn, SE.empty), evt)
 	       end
 	   | Ast.EbDef{exn = ename, edef = qid} =>
-	       let val edef as T.DATACON {const, typ, sign, ...} =
+	       let val edef as DATACON {const, typ, sign, ...} =
 		       (case LU.lookVal (env, SP.SPATH qid)
 			  of SOME (V.CON (dcon as T.DATACON{rep=(A.EXN _), ...})) => dcon
 			   | SOME (V.CON _) => 
@@ -422,21 +398,15 @@ let
 
     (**** PATTERNS ****)
 
-    (* apply_pat : Ast.pat * Ast.pat -> Ast.pat
-     * Returned pat is always an AppPat (marked if both arguments were marked) *)
-    fun apply_pat (c as MarkPat(_,(l1,r1)), p as MarkPat(_,(l2,r2))) =
-	  MarkPat (AppPat {constr=c, argument=p}, (Int.min(l1,l2),Int.max(r1,r2)))
-      | apply_pat (c, p) = AppPat {constr=c, argument=p}
+    fun apply_pat (c as MarkPat(_,(l1,r1)),p as MarkPat(_,(l2,r2))) =
+	  MarkPat(AppPat{constr=c, argument=p},(Int.min(l1,l2),Int.max(r1,r2)))
+      | apply_pat (c ,p) = AppPat{constr=c, argument=p}
 
-    (* tuple_pat : Ast.pat * Ast.pat -> Ast.pat
-     * Returned pat is always a TuplePat (marked if both args were marked).
-     * Actually a pattern pairing function, taking 2 pats and producing a 2 element TuplePat. *)
-    fun tuple_pat (a as Ast.MarkPat(_,(l,_)), b as Ast.MarkPat(_,(_,r))) =
-	  Ast.MarkPat (Ast.TuplePat[a,b],(l,r))
-      | tuple_pat (a,b) = Ast.TuplePat[a,b]
+    fun tuple_pat (a as MarkPat(_,(l,_)),b as MarkPat(_,(_,r))) =
+	  MarkPat(TuplePat[a,b],(l,r))
+      | tuple_pat (a,b) = TuplePat[a,b]
 
-    (* patParse : Ast.pat Ast.fixitem list * SE.staticEnv * EM.errorFun -> Ast.pat *)
-    val patParse = Precedence.parse {apply=apply_pat, pair=tuple_pat}
+    val patParse = Precedence.parse{apply=apply_pat, pair=tuple_pat}
 
     exception FreeOrVars (* used when creating a hash table in the OrPat case *)
 
@@ -449,12 +419,10 @@ let
       of Ast.WildPat => (WILDpat, TS.empty)
        | Ast.VarPat path =>
 	   (EU.clean_pat (EU.pat_id (SP.SPATH path, env)), TS.empty)
-       | Ast.IntPat (src: string, s: IntInf.int) =>
-	   (AS.NUMpat (src, {ty = T.VARty (T.mkTyvar (T.OVLDI [(s, region)])), ival = s}: AS.num_lit),
-	    TS.empty)
-       | Ast.WordPat (src: string, s: IntInf.int) =>
-	   (AS.NUMpat (src, {ty = T.VARty (T.mkTyvar (T.OVLDW [(s, region)])), ival = s}: AS.num_lit),
-	    TS.empty)
+       | Ast.IntPat (src, s) =>
+	   (NUMpat(src, {ty = mkIntLiteralTy (s,region), ival = s}), TS.empty)
+       | Ast.WordPat (src, s) =>
+	   (AS.NUMpat(src, {ty = mkWordLiteralTy (s,region), ival = s}), TS.empty)
        | Ast.StringPat s => (STRINGpat s, TS.empty)
        | Ast.CharPat s => (CHARpat s, TS.empty)
        | Ast.RecordPat {def,flexibility} =>
@@ -608,8 +576,7 @@ let
     and elabPatList(pats: Ast.pat list, env:SE.staticEnv, region:region) =
 	let fun folder (ast_pat, (pats_acc, tyvarset_acc)) =
 		let val (pat', tyvarset_inc) = elabPat (ast_pat, env, region)
-		 in (pat' :: pats_acc,
-		     checkedUnion (region, "elabPatList") (tyvarset_inc, tyvarset_acc))
+		 in (pat' :: pats, checkedUnion (region, "elabPatList") (tyvarset_inc, tyvarset_acc))
 		end
 	 in foldr folder ([],TS.empty) pats  (* foldr to maintain order *)
 	end
@@ -652,15 +619,13 @@ let
 		  nullUpdater)
 	       end (* [Ast.VarExp] *)
 (* TODO: propagate the source string to Absyn for error reporting *)
-	   | Ast.IntExp (src: string, s: IntInf.int) =>
-	       (AS.NUMexp (src, {ty = T.VARty (T.mkTyvar (T.OVLDI [(s, region)])), ival = s}: AS.num_lit),
-	        TS.empty, nullUpdater)
-	   | Ast.WordExp (src: string, s: IntInf.int) =>
-	       (AS.NUMexp (src, {ty = T.VARty (T.mkTyvar (T.OVLDW [(s, region)])), ival = s}: AS.num_lit),
-	        TS.empty, nullUpdater)
+	   | Ast.IntExp(src, s) =>
+	       (AS.NUMexp(src, {ty = mkIntLiteralTy(s,region), ival = s}), TS.empty, nullUpdater)
+	   | Ast.WordExp(src, s) =>
+	       (AS.NUMexp(src, {ty = mkWordLiteralTy(s,region), ival = s}), TS.empty, nullUpdater)
 	   | Ast.RealExp (src: string, r: RealLit.t) =>
 	        let fun result r =
-			(AS.REALexp (src, {rval = r, ty = BT.realTy}: AS.real_lit),
+			(AS.REALexp (src, {rval = r, ty = mkRealLiteralTy (r, region)}),
 			 TS.empty,
 			 nullUpdater)
 		 in (* REAL32: this test gets moved to overload resolution *)
@@ -683,13 +648,13 @@ let
 	   | Ast.StringExp s => (AS.STRINGexp s, TS.empty, nullUpdater)
 	   | Ast.CharExp s => (AS.CHARexp s, TS.empty, nullUpdater)
 	   | Ast.RecordExp cells =>
-	       let val (les, tyv, updater) = elabExpFields (cells, env, region)
+	       let val (les, tyv, updater) = elabELabel (cells, env, region)
 		in (EU.makeRECORDexp les, tyv, updater)
 	       end
 	   | Ast.SeqExp exps =>
 	       (case exps
 		  of [exp] => elabExp (exp, env, region)
-		   | nil => bug "elabExp(SeqExp[])"
+		   | [] => bug "elabExp(SeqExp[])"
 		   | _ =>
 		       let val (exps, tyvarset, updater) = elabExpList(exps,env,region)
 		        in (AS.SEQexp exps, tyvarset ,updater)
@@ -706,7 +671,7 @@ let
 	       end
 	   | Ast.VectorExp exps =>
 	       let val (exps', tyvarset, updater) = elabExpList (exps, env, region)
-		in (AS.VECTORexp (exps', T.UNDEFty), tyvarset, updater)
+		in (AS.VECTORexp (exps', UNDEFty), tyvarset, updater)
 	       end
 	   | Ast.AppExp {function,argument} =>
 	       let val (functionExp, tyvarset_fun, updater_fun) = elabExp (function, env, region)
@@ -731,7 +696,7 @@ let
 	       end
 	   | Ast.RaiseExp exp =>
 	       let val (e,tyv,updater) = elabExp(exp,env,region)
-		in (RAISEexp (e, T.UNDEFty), tyv, updater)
+		in (RAISEexp(e,UNDEFty),tyv,updater)
 	       end
 	   | Ast.LetExp {dec,expr} =>
 	       let val (d1, e1, tyvarset1, updater1) =
@@ -777,7 +742,7 @@ let
 	       end
 	   | Ast.FnExp rules =>
 	       let val (rls,tyv,updater) = elabMatch(rules,env,region)
-		in (FNexp (completeMatch rls, T.UNDEFty), tyv, updater)
+		in (FNexp (completeMatch rls,UNDEFty),tyv,updater)
 	       end
 	   | Ast.MarkExp (exp,region) =>
 	       let val (exp', tyvarset, updater) = elabExp(exp,env,region)
@@ -787,8 +752,8 @@ let
 	       (let val v = newVALvar s
 		 in AS.FNexp (completeMatch
 			       [AS.RULE (AS.RECORDpat {fields=[(s, AS.VARpat v)], flex=true,
-					               typ= ref T.UNDEFty},
-					 cMARKexp (VARexp (ref v,[]),region))], T.UNDEFty)
+					               typ= ref UNDEFty},
+					 cMARKexp (VARexp (ref v,[]),region))],UNDEFty)
 		end,
 		TS.empty, nullUpdater)
 	   | Ast.FlatAppExp items => elabExp (expParse (items,env), env, region))
@@ -797,7 +762,7 @@ let
     (* elabELabel : (S.symbol * Ast.exp) list * SE.staticEnv * SM.region
                     -> (S.symbol * AS.exp) list * TS.tyvarset * tyvarsetUpdater
     * should be called "elabFields" *)
-    and elabExpFields (ast_fields, env, region) =
+    and elabELabel (ast_fields, env, region) =
 	  let fun folder ((lb2,e2),(les2,lvt2,updts2)) =
 		  let val (e3, lvt3, updt3) = elabExp (e2, env, region)
 		   in ((lb2,e3) :: les2, checkedUnion (region, "elabELabel") (lvt3,lvt2),
@@ -1190,7 +1155,7 @@ let
 		    val env' = SE.atop (EU.bindVARp [pat'], env)
 		    val (exp', tyvarset_exp, updater) = elabExp (exp, env', region)
 		 in (FNexp (completeMatch [RULE (pat', if lazyp then exp' else delayExp exp')],
-			    T.UNDEFty) :: fexps_acc,
+			    UNDEFty) :: fexps_acc,
 		     union (union (tyvarset_pat, tyvarset_exp), tyvarset_acc),
 		     updater::updaters_acc)
 		end
@@ -1272,13 +1237,9 @@ let
 
     (* elabFUNdec : Ast.fb list * tyvar list * SE.staticEnv * IP.path * SM.region
                     -> AS.dec * SE.staticEnv * TS.tyvarset * tyvarsetUpdater *)
-    (* The fbs and etvs are the arguments of an Ast.FunDec constructor (function dec),
-     *   while env, rpath, region provide the context. *)
     and elabFUNdec (fbs: Ast.fb list, etvs: Ast.tyvar list, env: SE.staticEnv, rpath: IP.path,
 		    region: SM.region) =
 	let val etvs: TS.tyvarset = TS.mkTyvarset (ET.elabTyvarList (etvs, region))
-
-            (* specialized checking (for incompatible tyvars) versions of TS.union and TS.diff *)
             val union = checkedUnion (region, "elabFUNdec")  (* checked union of tyvarsets *)
             val diff = checkedDiff (region, "elabFUNdec")  (* checked diff of tyvarsets *)
 
@@ -1292,21 +1253,16 @@ let
 		     fun getfix (SOME f) = LU.lookFix (env, f)
 		       | getfix NONE = F.NONfix
 
-                     (* ensureNonfix : Ast.pat Ast.fixitem -> Ast.pat *)
-		     (* check that the "fixity" symbol is not NONfix and return the item of the fixitem;
-                      * otherwise report an error. That is, enforce that it is an INfix symbol.*)
-		     fun ensureInfix ({item: 'a, fixity: S.symbol option, region: SM.region} : 'a Ast.fixitem)
-			              : 'a =
-			 (case getfix fixity  (* fixity: symbol option *)
+                     (* ensureNonfix : 'a Ast.fixitem -> unit *)
+		     fun ensureInfix {item, fixity: S.symbol option, region: SM.region} =
+			 (case getfix fixity  (* symbol option *)
 			   of F.NONfix =>
 			        errorRegion (region, "infix operator required, or delete parentheses")
 			    | _ => ();
 			  item)
 
-                     (* ensureNonfix : Ast.pat Ast.fixitem -> Ast.pat *)
-		     fun ensureNonfix ({item: 'a, 
-					fixity: S.symbol option,
-					region: SM.region}: 'a Ast.fixitem) : 'a =
+                     (* ensureNonfix : 'a Ast.fixitem -> unit *)
+		     fun ensureNonfix {item, fixity: S.symbol option, region: SM.region} =
 			 (case (getfix fixity, fixity)
 			   of (F.NONfix, _) => ()
 			    | (_, SOME sym) =>
@@ -1316,51 +1272,40 @@ let
 			    | _ => bug "ensureNonfix";
 			  item)
 
-		     (* getname : Ast.pat * SM.region -> S.symbol
-	              * Get the "name" of a pat; fails and reports error if the argument
-		      * is not a (optionally Marked) VarPat. *)
-		     fun getname (MarkPat (pat, region),_) = getname (pat,region)
+		     (* getname : Ast.pat * SM.region -> S.symbol *)
+		     fun getname (MarkPat(p,region),_) = getname(p,region)
 		       | getname (VarPat [v], _) = v
 		       | getname (_, region) =
                            (errorRegion (region, "illegal function symbol in clause");
 			    EU.bogusID)
 
-		     (* parse' : Ast.pat Ast.fixitem list -> (S.symbol * Ast.pat list *)
-		     (* the symbol returned is the name of the function being declared, and
-		      * an error is reported if we can't find it. *)
-   	             fun parse' ({item=FlatAppPat [a,b as {region,...},c],...}
+   	             fun parse' ({item=FlatAppPat[a,b as {region,...},c],...}
                                 ::rest) =
-			   (* first item is a FlatAppPat triple of patterns, the middle one must
-			    * be the infix function name. *)
 			   (getname (ensureInfix b, region),
 			    tuple_pat(ensureNonfix a, ensureNonfix c)
 			     :: map ensureNonfix rest)
-		       | parse' [{item,region,...}] =  (* only one fixitem on lhs of the clause! *)
-			   (* only one fixitem -- no argument patterns! *)
+		       | parse' [{item,region,...}] =
 			   (errorRegion (region, "can't find function arguments in clause");
-			    (getname(item,region), [WildPat]))  (* dummy returned value for error recovery *)
+			    (getname(item,region), [WildPat]))
 		       | parse' ((a as {region,...}) :: rest) =
-			   (* first item is not a FlatAppPat triple, so it must be the NONfix function name *)
 			   (getname(ensureNonfix a, region),
 			    map ensureNonfix rest)
 		       | parse' nil = bug "parse'[nil]"
 
-		     (* parse : Ast.pat Ast.fixitem list ->  S.symbol * Ast.pat list *)
-		     fun parse ({item=MarkPat(p,_), region, fixity}::rest) =
+		     fun parse ({item=MarkPat(p,_),region,fixity}::rest) =
 			   parse ({item=p,region=region,fixity=fixity}::rest)
 		       | parse (pats as [a as {region=ra,...},
-					 b as {item,fixity,region}, c]) =
+					 b as {item,fixity,region},c]) =
 			   (case getfix fixity
 			      of F.NONfix => parse' pats
 			       | _ => (getname(item,region),
-				       [tuple_pat(ensureNonfix a, ensureNonfix c)]))
+				  [tuple_pat(ensureNonfix a, ensureNonfix c)]))
 		       | parse pats = parse' pats
 
-		     (* parseClause : Ast.clause -> clauseTy_ast *)
 		     fun parseClause (Clause {pats, resultty, exp}) =
 			 let val (funsym,argpats) = parse pats
-			  in {kind = STRICT, funsym = funsym, argpats = argpats,  (* kind is STRICT by default *)
-			      resultty = resultty, exp = exp}
+			  in {kind=STRICT,funsym=funsym,argpats=argpats,
+			      resultty=resultty,exp=exp}
 			 end
 
 		     val (clauses, var) =
@@ -1480,7 +1425,7 @@ let
 	    val (fbs', fbsTyvarset, updaters) = foldl fundecFolder ([], TS.empty, []) fundecs
 
 	    val tyvarsetRef : TS.tyvarset ref = ref TS.empty
-	      (* single common ref cell for the tyvarset for all bindings? *)
+	      (* single common ref cell for all bindings! Potential bug? *)
 	    fun fbsUpdater (tyvarset: TS.tyvarset) : unit =
 		let val tyvarset' = TS.diffPure (tyvarset, etvs)  (* subtract "external"? tyvars *)
 		    val local_tyvarset = diff (union (fbsTyvarset, etvs), tyvarset')

@@ -13,6 +13,7 @@
 
 signature TYVARSET = 
 sig 
+
   type tyvarset
   val empty : tyvarset
   val singleton : Types.tyvar -> tyvarset
@@ -22,33 +23,37 @@ sig
   val diff : tyvarset * tyvarset -> tyvarset option
   val diffPure : tyvarset * tyvarset -> tyvarset
   val elements: tyvarset -> Types.tyvar list
+
 end (* signature TYVARSET *)
 
 (* DBM: add, union, and diff can fail, returning NONE, because of incompatible tyvars
  * in the tyvarsets that share names.
  * 
- * It is assumed that:
- * (1)  all tyvars in a tyvars are UBOUND, and 
+ * INVARIANTS: It is assumed that:
+ * (1) all tyvars in a tyvars are UBOUND, and 
  * (2) names of tyvars are unique in a given tyvarset.
  * 
  * Two tyvars sharing the same name are _incompatible_ if they have different
  * equality properties or different (deBruijn) depths.
  *
  * The type TyvarSet.tvarset is abstract, and the only operations for constructing
- * tyvarsets are singleton, union, diff, and diffPure.
+ * tyvarsets are singleton, union, diff, and diffPure
  *
  *)
 
 structure TyvarSet :> TYVARSET =
 struct
 
-local 
+local (* imports *)
+
   structure EM = ErrorMsg
-  open Types 
-  fun bug msg = ErrorMsg.impossible("TyvarSet: "^ msg)
+  structure T = Types
+
 in
 
-type tyvarset = tyvar list
+fun bug msg = ErrorMsg.impossible("TyvarSet: "^ msg)
+
+type tyvarset = tyvar list  (* exported abstract *)
 (* INVARIANT 1: all tyvars in a tyvar set should be of kind UBOUND
  * INVARIANT 2: (Uniqueness of names) different tyvars in a tyvar set should have different names. *)
 
@@ -57,8 +62,8 @@ fun singleton t = [t]
 fun mkTyvarset l = l (* no checking for incompatibilities *)
 fun elements s = s
 
-(* compatible : tvar * tvar -> bool *)
-(* Test whether a and b have the same name.  If they do not, they are compatiable.
+(* compatible : tvar * tvar -> bool
+ * Test whether a and b have the same name.  If they do not, they are compatiable.
  * Otherwise, if they have the same name, check that their eqprop and depth properties are
  * the same, and if so, instantiate a to be b and return true. Otherwise, return false. *)
 fun compatible (a as ref(UBOUND{name=name_a,eq=eq_a,depth=depth_a}), 
@@ -71,25 +76,28 @@ fun compatible (a as ref(UBOUND{name=name_a,eq=eq_a,depth=depth_a}),
                      * a has become b by instantiation. *)
 	  else false) (* a and b have same name but are "incompatible" *)
     else true (* a and b have different names, so they are compatible *)
+  | compatible _ = bug "compatible"
 
-
-(* add : tyvarset * tyvar -> tyvarset option *)
-fun add (tyvarset as (b as ref(UBOUND{name=name_b,eq=eq_b,depth=depth_b}))::rest,
-         a as ref(UBOUND{name=name_a,eq=eq_a,depth=depth_a})) =
-
-      if a = b
-      then SOME tyvarset (* a is already a member of tyvarset *)
-      else if Symbol.eq (name_a, name_b)
-	   then (if compatible (a, b) (* a and b have the same name *)
-	         then SOME tyvarset  (* a has been instantiated to b by the compatible function *)
-                 else NONE) (* a and b were incompatible -- fail *)
-      else (* a and b have different names *)
-	(case add (rest, a)
-  	   of SOME s => SOME (b :: s)
-	    | NONE => NONE)
+(* add : tyvarset * tyvar -> tyvarset option
+ * returns NONE if the tuvar argument is incompatible with a tyvar in the tyvarset argument. *)
+fun add (tyvarset as ((b as ref (UBOUND {name=name_b,eq=eq_b,depth=depth_b})) :: rest),
+         a as ref (UBOUND {name=name_a,eq=eq_a,depth=depth_a})) =
+	if a = b  (* same tyvars, pointer equality of refs *)
+	then SOME tyvarset (* a is already a member of tyvarset, a is not instantiated here *)
+	else (if Symbol.eq (name_a, name_b)
+	      then (if compatible (a, b) (* a and b are different tyvars but have the same name *)
+		    then SOME tyvarset   (* a has been instantiated to b by the compatible function *)
+		    else NONE) (* a and b were incompatible -- fail *)
+	      else (* a and b have different names *)
+		(case add (rest, a)
+		   of SOME rest' => SOME (b :: rest')
+		    | NONE => NONE))  (* incompatibility failure *)
   | add (nil, a) = SOME (singleton a)
+  | add _ = bug "add"
 
-(* mem : tvar * tvarset -> bool option *)
+(* mem : tvar * tvarset -> bool option
+ * set member ship based on ref equality or compatible equality, which can instantiate the tyvar
+ * argument to an "compatible-equal" element of the tyvarset. *)
 fun mem (a as ref(UBOUND{name=name_a,eq=eq_a,depth=depth_a}): tyvar, 
 	(b as ref(UBOUND{name=name_b,eq=eq_b,depth=depth_b}))::rest: tyvarset) =
       if a = b
@@ -97,17 +105,18 @@ fun mem (a as ref(UBOUND{name=name_a,eq=eq_a,depth=depth_a}): tyvar,
       else (if Symbol.eq (name_a, name_b)
 	    then (if compatible (a, b)
 		  then SOME true (* a and b have same name and are compatible *)
-		  else NONE)
+		  else NONE)     (* a is incompatible with a member of the tyvarset with same name *)
 	    else mem (a, rest)) (* a and b have different names, keep looking in rest *)
   | mem _ = SOME false  (* the tyvarset is empty, or the first tyvar in the tyvarset is non-UBOUND,
                          * which should not happen by INVARIANT 2 *)
 
 (* memP : tyvar * tyvarset -> bool *)
-(* tyvarset membership without checking for tyvar compatibility, i.e., just based on the tyvar name *)
+(* "pure" tyvarset membership without checking for tyvar compatibility,
+   i.e., just based on the tyvar name *)
 fun memP (a as ref(UBOUND{name=name_a,...}), 
 	 (b as ref(UBOUND{name=name_b,...}))::rest) =
       if a=b then true
-      else if Symbol.eq(name_a,name_b) then true
+      else if Symbol.eq (name_a,name_b) then true
       else memP(a,rest)
   | memP _ = false
 
@@ -139,6 +148,8 @@ fun diff(s, []) = SOME s
 		 | NONE => NONE)  (* incompatible overlap between r and s *)
 	 | NONE => NONE) (* ERROR: a was incompatible with a tvar in s with the same name *)
 
+(* diffPure: tyvarset * tyvarset -> tyvarset
+ * Set difference based on tyvar equality (pointer equality); no side-effects, no failures *)
 fun diffPure(s,[]) = s
   | diffPure([],_) = []
   | diffPure(a::r,s) =

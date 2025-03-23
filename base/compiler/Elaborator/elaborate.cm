@@ -4,31 +4,37 @@
  * All rights reserved.
  *)
 
-Group
+Group  (* exports *)
         signature ELAB_CONTROL
 	structure ElabControl
 
 	signature BASICTYPES
-	signature INSTANTIATE
-	signature EVALENTITY
-	signature ELABTOP
 	signature UNIFY
 	signature TYPECHECK
+
+	signature EVALENTITY
+	signature ELABTOP
+
 	signature SIGMATCH
+	signature INSTANTIATE
+
+	structure Unify
+	structure BasicTypes
+	structure Typecheck
+	structure TyvarSet
 
 	structure Instantiate
-	structure EvalEntity
 	structure SigMatch
+
+	structure ElabUtil
+	structure ElabDebug
+	structure EvalEntity
 	structure ElabMod
 	structure ElabTop
 
-	structure BasicTypes
-	structure ElabUtil
-	structure ElabDebug
-	structure Unify
-	structure Typecheck
+is (* "members" -- source files *)
 
-is
+(* "members" -- the source files where the exports are defined *)
 
 	control/elabcontrol.sig
 	control/elabcontrol.sml
@@ -43,27 +49,24 @@ is
 	modules/instantiate.sml
 	modules/evalent.sml
 
-	elaborate/tyvarset.sml
 	elaborate/elabutil.sig
 	elaborate/elabutil.sml
+	elaborate/elabdebug.sml
+	elaborate/precedence.sml
 	elaborate/elabtype.sig
 	elaborate/elabtype.sml
-	elaborate/precedence.sml
 	elaborate/elabcore.sml
-	elaborate/include.sml
 	elaborate/elabsig.sml
-	elaborate/elabdebug.sml
 	elaborate/elabmod.sml
+	elaborate/include.sml
 	elaborate/elabtop.sml
 	elaborate/check-unused.sml
 
-	$smlnj/viscomp/elabdata.cm
-	$smlnj/viscomp/basics.cm
-	$smlnj/viscomp/parser.cm
+(* imported libraries *)
 
-(*
-	$smlnj/MLRISC/MLRISC.cm
-*)
+	$smlnj/viscomp/elabdata.cm  (* == ElabData/elabdata.cm? *)
+	$smlnj/viscomp/basics.cm    (* == Basics/basics.cm? *)
+	$smlnj/viscomp/parser.cm    (* == Parser/parser.cm? <- Ast *)
 
 	$smlnj/smlnj-lib/smlnj-lib.cm
 	$smlnj/smlnj-lib/controls-lib.cm

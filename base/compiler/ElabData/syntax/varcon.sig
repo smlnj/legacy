@@ -9,30 +9,29 @@ signature VARCON =
 
     datatype var
       = VALvar of	                (* ordinary variables *)
-	  {path : SymPath.path,
+	  {path : SymPath.path,         (* for "local" variables, path will be a singleton *)
 	   typ : Types.ty ref,
 	   btvs : Types.tyvar list ref,
 	   access : Access.access,
 	   prim   : PrimopId.prim_id}
       | OVLDvar of       	        (* overloaded identifier *)
 	{name : Symbol.symbol,          (* name of the overloaded operator *)
-	 variants : var list}           (* variant variables (VALvars) *)
-      | ERRORvar
+	 variants : var list}           (* variant variables (always VALvars) *)
+      | ERRORvar                        (* supporting error recovery *)
 
-    type datacon = Types.datacon
-
+    (* to move to Absyn: VarCon.value -> Absyn.value *)
     datatype value
-      = VAL of var
-      | CON of datacon
+      = VAL of var      (* should the dataconstructor be "VAR" instead? *)
+      | CON of Types.datacon
 
-    val mkVALvar : Symbol.symbol * Access.access ->  var
-
+    val mkVALvar : Symbol.symbol * Access.access ->  var  (* rename to "mkVar"? Why the "VAL" part? *)
     val varName : var -> Symbol.symbol
 
     val varToLvar : var -> LambdaVar.lvar
     val varToType : var -> Types.ty
 
-    val bogusCON : datacon
-    val bogusEXN : datacon
+    (* to move to TypesUtil *)
+    val bogusCON : Types.datacon
+    val bogusEXN : Types.datacon
 
   end (* signature VARCON *)

@@ -16,11 +16,11 @@ local
   structure B  = Bindings
   structure SE = StaticEnv
   structure EE = EntityEnv
-  structure TS = TyvarSet
   structure S = Symbol
   structure V = VarCon
   structure T = Types
   structure BT = BasicTypes
+  structure TS = TyvarSet
 
   open Absyn Ast AstUtil Types BasicTypes
        EqTypes ModuleUtil TypesUtil VarCon
@@ -243,8 +243,8 @@ fun wrapRECdecGen rvbs =
                fun h([], _, d) =
                      LOCALdec(nvdec, SEQdec(rev d))
                  | h((_,nv,_)::r, i, d) =
-                     let val nvb = VB{pat=VARpat nv, boundtvs=[],
-                                      exp=TPSELexp(rvexp,i),tyvars=ref []}
+                     let val nvb = VB {pat= VARpat nv, boundtvs=[],
+                                       exp= TPSELexp(rvexp,i), tyvars=ref TS.empty}
                       in h(r, i+1, VALdec([nvb])::d)
                      end
             in h(vars, 1, [])
@@ -370,6 +370,8 @@ fun pat_to_string WILDpat = "_"
   | pat_to_string _ = "<illegal pattern>"
 
 (* makeAPPpat : Absyn.pat * Absyn.pat -> Absyn.pat *)
+(* DBM: should be makeAPPpat : T.datacon * Absyn.pat -> Absyn.pat
+ * and the "MARKpat (rator, region)" case should be deleted. *)
 fun makeAPPpat (CONpat(dcon as DATACON{const=false,lazyp,...},tvs), pat) =
       let val pat' = APPpat(dcon, tvs, pat)
        in if lazyp (* LAZY *)

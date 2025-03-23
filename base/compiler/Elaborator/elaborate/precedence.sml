@@ -5,7 +5,7 @@ signature PRECEDENCE =
 sig
   val parse: {apply: 'a * 'a -> 'a, pair: 'a * 'a -> 'a} -> 
                 'a Ast.fixitem list * StaticEnv.staticEnv * 
-                (Ast.region->ErrorMsg.complainer) -> 'a
+                (SourceMap.region->ErrorMsg.complainer) -> 'a
 
 end (* signature PRECEDENCE *)
 

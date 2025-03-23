@@ -10,10 +10,10 @@ signature PPVAL =
 sig
   val ppAccess: PrettyPrint.stream -> Access.access -> unit
   val ppRep: PrettyPrint.stream -> Access.conrep -> unit
-  val ppDcon: PrettyPrint.stream -> VarCon.datacon -> unit
+  val ppDcon: PrettyPrint.stream -> Types.datacon -> unit
   val ppVar: PrettyPrint.stream -> VarCon.var -> unit
   val ppDebugDcon : PrettyPrint.stream
-		    -> StaticEnv.staticEnv -> VarCon.datacon -> unit
+		    -> StaticEnv.staticEnv -> Types.datacon -> unit
   val ppDebugVar: (PrimopId.prim_id -> string) ->
 		  PrettyPrint.stream
 		  -> StaticEnv.staticEnv -> VarCon.var -> unit
@@ -29,8 +29,10 @@ local
   structure LU = Lookup
   structure A = Access
   structure S = Symbol
+  structure T = Types
+  structure V = VarCon		    
 
-  open PrettyPrint PPUtil VarCon Types
+  open PrettyPrint PPUtil
 
 in
 
@@ -52,14 +54,14 @@ fun ppRep ppstrm rep = PP.string ppstrm (A.prRep rep)
 fun ppCsig ppstrm csig = PP.string ppstrm (A.prCsig csig)
 
 fun ppDcon ppstrm =
-    let fun ppD(DATACON{name, rep=A.EXN acc, ...}) =
+    let fun ppD(T.DATACON{name, rep=A.EXN acc, ...}) =
 	       (ppSym ppstrm name;
 		if !internals then ppAccess ppstrm acc else ())
-	  | ppD(DATACON{name,...}) = ppSym ppstrm name
+	  | ppD(T.DATACON{name,...}) = ppSym ppstrm name
      in ppD
     end
 
-fun ppDebugDcon ppstrm env (DATACON{name,rep,const,typ,sign,lazyp}) =
+fun ppDebugDcon ppstrm env (T.DATACON{name,rep,const,typ,sign,lazyp}) =
     let val {openHVBox, openHOVBox,closeBox,pps,break,...} = en_pp ppstrm
 	val ppSym = ppSym ppstrm
      in openHVBox 3;
@@ -74,7 +76,7 @@ fun ppDebugDcon ppstrm env (DATACON{name,rep,const,typ,sign,lazyp}) =
         closeBox()
     end
 
-fun ppDatacon (env:StaticEnv.staticEnv,DATACON{name,typ,...}) ppstrm =
+fun ppDatacon (env:StaticEnv.staticEnv,T.DATACON{name,typ,...}) ppstrm =
     let val {openHVBox, openHOVBox,closeBox,pps,...} = en_pp ppstrm
      in openHOVBox 0;
 	ppSym ppstrm name; pps " : "; ppType env ppstrm typ;
@@ -83,7 +85,7 @@ fun ppDatacon (env:StaticEnv.staticEnv,DATACON{name,typ,...}) ppstrm =
 
 fun ppConBinding ppstrm =
     let val {openHVBox, openHOVBox,closeBox,pps,...} = en_pp ppstrm
-	fun ppCon (DATACON{name, typ, rep=A.EXN _, ...}, env) =
+	fun ppCon (T.DATACON{name, typ, rep=A.EXN _, ...}, env) =
 		(openHVBox 0;
 		 pps "exception "; ppSym ppstrm name;
                  if BasicTypes.isArrowType typ then
@@ -110,17 +112,17 @@ fun ppConBinding ppstrm =
      in ppCon
     end
 
-fun ppVar ppstrm (VALvar {access,path,...}) =
+fun ppVar ppstrm (V.VALvar {access,path,...}) =
       (pps ppstrm (SymPath.toString path);
        if !internals then ppAccess ppstrm access else ())
-  | ppVar ppstrm (OVLDvar {name,...}) = ppSym ppstrm (name)
+  | ppVar ppstrm (V.OVLDvar {name,...}) = ppSym ppstrm (name)
   | ppVar ppstrm (ERRORvar) = PP.string ppstrm "<errorvar>"
 
 fun ppDebugVar ii2string ppstrm env  =
     let val {openHVBox, openHOVBox,closeBox,pps,...} = en_pp ppstrm
 	val ppAccess = ppAccess ppstrm
         val ppInfo = ppInfo ii2string ppstrm
-	fun ppDV(VALvar {access,path, btvs, typ,prim}) =
+	fun ppDV(V.VALvar {access,path, btvs, typ,prim}) =
 	     (openHVBox 0;
 	      pps "VALvar";
 	      openHVBox 3;
@@ -130,7 +132,7 @@ fun ppDebugVar ii2string ppstrm env  =
 	      pps "typ=ref "; ppType env ppstrm (!typ);
 	      pps "})";
 	      closeBox(); closeBox())
-	  | ppDV (OVLDvar {name,variants}) =
+	  | ppDV (V.OVLDvar {name,variants}) =
 	     (openHVBox 0;
 	      pps "OVLDvar";
 	      openHVBox 3;
@@ -144,13 +146,13 @@ fun ppDebugVar ii2string ppstrm env  =
 
 fun ppVariable ppstrm  =
     let val {openHVBox, openHOVBox,closeBox,pps,...} = en_pp ppstrm
-	fun ppV(env:StaticEnv.staticEnv,VALvar{btvs,path,access,typ,prim}) =
+	fun ppV(env:StaticEnv.staticEnv,V.VALvar{btvs,path,access,typ,prim}) =
 	      (openHVBox 0;
 	       pps(SymPath.toString path);
 	       if !internals then ppAccess ppstrm access else ();
 	       pps " : "; ppType env ppstrm (!typ);
 	       closeBox())
-	  | ppV (env,OVLDvar {name,variants}) =
+	  | ppV (env,V.OVLDvar {name,variants}) =
 	      (openHVBox 0;
 	       ppSym ppstrm (name);
 	       closeBox())
