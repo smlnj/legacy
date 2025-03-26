@@ -29,31 +29,37 @@ struct
 
 local (* imports *)
 
+  structure Tbl = SymbolHashTable
+
+  structure EM = ErrorMsg
+  structure SM = SourceMap
+
   structure S = Symbol
   structure F = Fixity
   structure A = Access
-  structure EM = ErrorMsg
-  structure SM = SourceMap
   structure LV = LambdaVar
   structure SP = SymPath
   structure IP = InvPath
   structure SE = StaticEnv
-  structure LU = Lookup
   structure B  = Bindings
-  structure V = VarCon
+  structure LU = Lookup
+
+  structure V = VarCon  (* -> Variable *)
   structure AS = Absyn
   structure AU = AbsynUtil
+
   structure T  = Types
   structure TU = TypesUtil
   structure BT = BasicTypes
   structure TS = TyvarSet
+
   structure M  = Modules
   structure MU = ModuleUtil
   structure EE = EntityEnv
+
   structure EU = ElabUtil
   structure ED = ElabDebug
   structure ET = ElabType
-  structure Tbl = SymbolHashTable
 
   open Absyn Ast (* Types => t; Access => A.; ElabUtil => EU. *)
 
@@ -182,9 +188,22 @@ fun noTyvars (dec, env) = (dec, env, TS.empty, nullUpdater)
  *  between preprocessing phase (makevar) and the main part of elabFUNdec. *)
 datatype clauseKind = STRICT | LZouter | LZinner
 
+(* argTyClause: the argument type of the Ast.Clause data constructor.
+   An Ast.Fb (function binding) contains a list of these clauses, and a boolean flag for lazy.
+   The pats field contains a list of "partially parsed" patterns of type Ast.pat Ast.fixitem --
+   these constitute the LHS of a clause, while th exp field contains the Ast.exp RHS.
+   The partially parsed list of (curried) parameters is represented as a pat fixitem list (pats).
+   The function name (the subject of the parent fb) is extracted
+   by the elabFUNdec#makevar#parse' function at line ~1317.
+   The LHS of an Ast fundec clause is a list of par fixitems. The name
+   of the declared function must be extracted from the head of this lhs list of fixitems. *)
+type argTyClause =  {pats: pat fixitem list, resultty: ty option, exp:exp}
+
+(* clauseTy_ast: the Ast clause record produced by parseClause *)
 type clauseTy_ast = {kind: clauseKind, argpats: Ast.pat Ast.fixitem list,
 	             resultty: Ast.ty option, exp: Ast.exp, funsym: S.symbol}
 
+(* clauseTy_absyn: the Absyn record for a clause, produced by ??? *)
 type clauseTy_absyn = {pats : AS.pat list, resultty: T.ty option, exp : AS.exp}
 
 (* Defn of fixitem tycon from structure Ast:
@@ -194,43 +213,41 @@ type clauseTy_absyn = {pats : AS.pat list, resultty: T.ty option, exp : AS.exp}
    type 'a fixitem = {item: 'a,  ('a -> pat or 'a -> exp)
                       fixity: S.symbol option, (* FIX: Bad label. When is it NONE? *)
 		      region: SM.region} 
-   The lhs of an Ast fundec clause is a list of (par or exp?) fixitems. The name
-   of the declared function must be extracted from the head of this lhs list of fixitems.
 
-   -- 'a will be instantiated to either Ast.pat (for pat reparsing) or Ast.exp (for exp reparsing
-  
-   type ast_clauseTy:= {pats: Ast.pat Ast.fixitem list,
-   		        resultty: T.ty option,
-			exp: Ast.exp}
-   -- argument type of the Ast.Clause datacon (elements of an Ast clause).
-      The partially parsed list of (curried) parameters is represented as a pat fixitem list (pats).
-      The function name (the subject of the parent fb) is extracted
-      by the elabFUNdec#makevar#parse' function at line 1317.
+   Where 'a will be instantiated to either Ast.pat (for pat reparsing) or Ast.exp (for exp reparsing).
 *)
-
+  
 (* ========================================================================================== *)
 (* some utility functions not defined in ElabUtil *)
 
+
+(* stripExpAbs: AS.exp -> AS.exp
+ * strip MARKexp and CONSTRAINTexp wrappers around an expression *)
 fun stripExpAbs (MARKexp(e,_)) = stripExpAbs e
   | stripExpAbs (CONSTRAINTexp(e,_)) = stripExpAbs e
   | stripExpAbs e = e
 
+(* stripExpAst : Ast.exp -> Ast.exp
+ * Like stripExpAbs except operating on the Ast representtion. *)
 fun stripExpAst(MarkExp(e,r'),r) = stripExpAst(e,r')
   | stripExpAst(ConstraintExp{expr=e,...},r) = stripExpAst(e,r)
   | stripExpAst(SeqExp[e],r) = stripExpAst(e,r)
   | stripExpAst(FlatAppExp[{item,region,...}],r) = stripExpAst(item,region)
   | stripExpAst x = x
 
+(* dummyFNexp : AS.exp : As.exp
+ * A dummy function expression representing "fn _ => raise <bogusExn>". *)
 val dummyFNexp: AS.exp =
     FNexp([RULE(WILDpat,RAISEexp(CONexp(V.bogusEXN,[]),T.UNDEFty))],T.UNDEFty)
 
 (* LAZY *)
 
 local
-    fun mkCoreExp name env = VARexp (ref (CoreAccess.getVar env [name]), [])
+    (* mkCoreExp : [name:]string -> [env:]SE.staticEnv -> AS.exp *)
+    fun mkCoreExp name env = AS.VARexp (ref (CoreAccess.getVar env [name]), [])
 in
-    val mkAssignExp = mkCoreExp "assign"
-    val mkBangExp = mkCoreExp "deref"
+    val mkAssignExp : AS.exp = mkCoreExp "assign"  (* AS.exp for ":=" operator *)
+    val mkBangExp : AS.exp   = mkCoreExp "deref"   (* AS.exp for "!" operator *) 
 end
 
 
@@ -245,7 +262,7 @@ fun elabABSTYPEdec({abstycs: Ast.db list, withtycs: Ast.tb list, body: Ast.dec},
           ET.elabDATATYPEdec({datatycs=abstycs,withtycs=withtycs}, env,
                              [], EE.empty, isFree, rpath, region)
 
-      val (body,env2) =
+      val (body, env2) =
           elabDec(body,SE.atop(env1,env),isFree,rpath,region)
 
       (* datatycs will be changed to abstycs during type checking
@@ -271,7 +288,7 @@ let
     val _ = debugmsg "--ElabCore.elabDec << completeBind Bind"
 
     (* newVALvar : S.symbol -> V.var *)
-    fun newVALvar s = V.mkVALvar (s, A.namedAcc s)
+    fun newVALvar (sym: S.symbol) = V.mkVALvar (sym, A.namedAcc sym)
 
 
     (* LAZY: utilities for lazy sml translation *)
@@ -420,7 +437,7 @@ let
 	end
 
 
-    (**** PATTERNS ****)
+    (**** PATTERN parsing and elaboration ****)
 
     (* apply_pat : Ast.pat * Ast.pat -> Ast.pat
      * Returned pat is always an AppPat (marked if both arguments were marked) *)
@@ -435,7 +452,7 @@ let
 	  Ast.MarkPat (Ast.TuplePat[a,b],(l,r))
       | tuple_pat (a,b) = Ast.TuplePat[a,b]
 
-    (* patParse : Ast.pat Ast.fixitem list * SE.staticEnv * EM.errorFun -> Ast.pat *)
+    (* patParse : Ast.pat Ast.fixitem list * SE.staticEnv * SM.region -> Ast.pat *)
     val patParse = Precedence.parse {apply=apply_pat, pair=tuple_pat}
 
     exception FreeOrVars (* used when creating a hash table in the OrPat case *)
@@ -581,15 +598,18 @@ let
 	       val (ty', tyvarset_ty) = ET.elabType (ty, env, region)
 	    in (AS.CONSTRAINTpat (pat', ty'), union(tyvarset_pat, tyvarset_ty))
 	   end
-       | Ast.LayeredPat {varPat,expPat} =>
-	   let val (pat1, tyvarset1) = elabPat(varPat, env, region)
-	       val (pat2, tyvarset2) = elabPat(expPat, env, region)
+
+       | Ast.LayeredPat {varPat, expPat} =>
+	   let val (pat1, tyvarset1) = elabPat (varPat, env, region)
+	       val (pat2, tyvarset2) = elabPat (expPat, env, region)
 	    in (EU.makeLAYEREDpat(pat1, pat2), union (tyvarset1, tyvarset2))
 	   end
+
        | Ast.MarkPat (pat,region) =>
 	   let val (pat', tyvarset) = elabPat(pat, env, region)
 	    in (cMARKpat (pat', region), tyvarset)
 	   end
+
        | Ast.FlatAppPat pats => elabPat (patParse (pats, env), env, region)
 
     end (* fun elabPat *)
@@ -616,9 +636,10 @@ let
 
     (**** EXPRESSIONS ****)
 
+    (* expParse : Ast.exp Ast.fixitem list * SE.staticEnv * SM.region -> Ast.exp *)
     val expParse = Precedence.parse
-		     {apply=fn(f,a) => AppExp{function=f,argument=a},
-		      pair=fn (a,b) => TupleExp[a,b]}
+		     {apply = (fn(f,a) => AppExp{function=f,argument=a}),
+		      pair = (fn (a,b) => TupleExp[a,b])}
 
     (* elabExp : Ast.exp * SE.staticEnv * SM.region -> Absyn.exp * TS.tyvarset * tyvarsetUpdater *)
     fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: region)
@@ -1284,19 +1305,24 @@ let
 
             (* makevar: SM.region
 	                -> (Ast.fb * <ctx?>)
-	                -> <<((v, clauses, fbregion)::lcl, SE.bind (var, B.VALbind v, env'))>>
+	                -> <<((v, clauses, fbregion)::lcl, SE.bind (funSym, B.VALbind funVar, env'))>>
 	       parse the function header to determine the function name *)
 	    fun makevar _ (MarkFb (fb, fbregion), ctx) = makevar fbregion (fb,ctx)
-	      | makevar fbregion (Fb (clauses,lazyp), (lcl,env')) =
-		 let (* getfix : S.symbol option -> F.fixity *)
-		     fun getfix (SOME f) = LU.lookFix (env, f)
+	      | makevar fbregion (Fb (clauses_fb, lazyp: bool), (lcl, env')) =
+		 let 
+		     (* getfix : S.symbol option -> F.fixity *)
+		     (* returns NONfix for NONE, other wise, the sym, which is produced by the
+			Symbol.var'n'fix function, should be in the fixity name space *)
+		     fun getfix (SOME sym) = LU.lookFix (env, sym)
 		       | getfix NONE = F.NONfix
 
                      (* ensureNonfix : Ast.pat Ast.fixitem -> Ast.pat *)
 		     (* check that the "fixity" symbol is not NONfix and return the item of the fixitem;
-                      * otherwise report an error. That is, enforce that it is an INfix symbol.*)
-		     fun ensureInfix ({item: 'a, fixity: S.symbol option, region: SM.region} : 'a Ast.fixitem)
-			              : 'a =
+                      * otherwise report an error. That is, enforce that it is an INfix symbol.
+		      * For non-variable patterns, fixity is NONE and getfix will return NONfix, 
+		      * so an error will be reported. *)
+		     fun ensureInfix ({item: Ast.pat, fixity: S.symbol option, region: SM.region} : 'a Ast.fixitem)
+			              : Ast.pat =
 			 (case getfix fixity  (* fixity: symbol option *)
 			   of F.NONfix =>
 			        errorRegion (region, "infix operator required, or delete parentheses")
@@ -1304,9 +1330,11 @@ let
 			  item)
 
                      (* ensureNonfix : Ast.pat Ast.fixitem -> Ast.pat *)
-		     fun ensureNonfix ({item: 'a, 
+		     (* For non-variable patterns, fixity is NONE and getfix will return NONfix. For
+                      * variable patterns, where the variable is an infix, an error is reported *)
+		     fun ensureNonfix ({item: Ast.pat, 
 					fixity: S.symbol option,
-					region: SM.region}: 'a Ast.fixitem) : 'a =
+					region: SM.region}: Ast.pat Ast.fixitem) : Ast.pat =
 			 (case (getfix fixity, fixity)
 			   of (F.NONfix, _) => ()
 			    | (_, SOME sym) =>
@@ -1317,69 +1345,85 @@ let
 			  item)
 
 		     (* getname : Ast.pat * SM.region -> S.symbol
-	              * Get the "name" of a pat; fails and reports error if the argument
-		      * is not a (optionally Marked) VarPat. *)
+	              * Get the "name" of a simple VARpat (optionally MARKed; fails and reports error
+                      * if applied to other pats *)
 		     fun getname (MarkPat (pat, region),_) = getname (pat,region)
 		       | getname (VarPat [v], _) = v
 		       | getname (_, region) =
                            (errorRegion (region, "illegal function symbol in clause");
 			    EU.bogusID)
 
-		     (* parse' : Ast.pat Ast.fixitem list -> (S.symbol * Ast.pat list *)
-		     (* the symbol returned is the name of the function being declared, and
-		      * an error is reported if we can't find it. *)
-   	             fun parse' ({item=FlatAppPat [a,b as {region,...},c],...}
-                                ::rest) =
+	    (* Two pass "parsing" of Fb-clause LHS patterns (presented as pat fixitem list),
+	    where the first pass, parsePatFixitems, checks for the case where
+	    the lhs is an infix function application. The second pass is
+	    parsePatFixitems0 and it checks that there are more than one fixitems
+	    (need both a function variable.  The problem being solved is that the LHS
+	    of a Fb clause is a list of pattern fixitems that needs to be analyzed to 
+	    find the name (funSym) of the function being declared and bound. *)
+
+		     (* parsePats0 : Ast.pat Ast.fixitem list -> (S.symbol * Ast.pat list *)
+		        (* The argument is the LHS of a clause (the "pats" field). The symbol returned
+		         * is the name of the function being declared, and an error is reported if we
+		         * can't find it. *)
+   	             fun parsePatFixitems0 ({item=FlatAppPat [a,b as {region,...},c],...} :: rest) =
 			   (* first item is a FlatAppPat triple of patterns, the middle one must
 			    * be the infix function name. *)
 			   (getname (ensureInfix b, region),
-			    tuple_pat(ensureNonfix a, ensureNonfix c)
+			    tuple_pat (ensureNonfix a, ensureNonfix c)
 			     :: map ensureNonfix rest)
-		       | parse' [{item,region,...}] =  (* only one fixitem on lhs of the clause! *)
-			   (* only one fixitem -- no argument patterns! *)
+		       | parsePatFixitems0 [{item,region,...}] = 
+			   (* only one fixitem on LHS of the clause! no argument patterns! *)
 			   (errorRegion (region, "can't find function arguments in clause");
 			    (getname(item,region), [WildPat]))  (* dummy returned value for error recovery *)
-		       | parse' ((a as {region,...}) :: rest) =
+		       | parsePatFixitems0 ((a as {region,...}) :: rest) =
 			   (* first item is not a FlatAppPat triple, so it must be the NONfix function name *)
-			   (getname(ensureNonfix a, region),
+			   (getname (ensureNonfix a, region),
 			    map ensureNonfix rest)
-		       | parse' nil = bug "parse'[nil]"
+		       | parsePatFixitems0 nil = bug "parsePatFixitems0: no fixitems"
 
-		     (* parse : Ast.pat Ast.fixitem list ->  S.symbol * Ast.pat list *)
-		     fun parse ({item=MarkPat(p,_), region, fixity}::rest) =
-			   parse ({item=p,region=region,fixity=fixity}::rest)
-		       | parse (pats as [a as {region=ra,...},
-					 b as {item,fixity,region}, c]) =
+		     (* parsePatFixitems : Ast.pat Ast.fixitem list ->  S.symbol * Ast.pat list *)
+			(* parse a list of pattern fixitems using parsePatFixitems0, after first checking
+			 * whether a 3 element pattern list should be parsed as an infix
+			 * constructor application. *)
+		     fun parsePatFixitems ({item=MarkPat(pat,_), region, fixity}::rest) =
+			   (* strip off a MarkPat from the first pattern while updating region,
+			      then recurse on the pat wrapped in a new fixitem *)
+			   parsePatFixitems ({item=pat,region=region,fixity=fixity}::rest)
+		       | parsePatFixitems (pats as [a as {region=ra,...}, b as {item, fixity, region}, c]) =
+			   (* pats contains exactly three fixitems, which may represent an infix application *)
 			   (case getfix fixity
-			      of F.NONfix => parse' pats
-			       | _ => (getname(item,region),
+			      of F.NONfix => parsePatFixitems0 pats  (* not an infix application *)
+			       | _ => (getname (item,region),
 				       [tuple_pat(ensureNonfix a, ensureNonfix c)]))
-		       | parse pats = parse' pats
+		       | parsePatFixitems pats = parsePatFixitems0 pats
 
 		     (* parseClause : Ast.clause -> clauseTy_ast *)
-		     fun parseClause (Clause {pats, resultty, exp}) =
-			 let val (funsym,argpats) = parse pats
-			  in {kind = STRICT, funsym = funsym, argpats = argpats,  (* kind is STRICT by default *)
+		     (* kind is set to STRICT by default *)
+		     fun parseClause (Ast.Clause {pats, resultty, exp}: Ast.clause) =
+			 let val (funsym, argpats) = parsePatFixitems pats
+			  in {kind = STRICT, funsym = funsym, argpats = argpats,
 			      resultty = resultty, exp = exp}
 			 end
 
-		     val (clauses, var) =
-                         case map parseClause clauses
-			   of [] => bug "elabcore:no clauses"
-			    | (l as ({funsym=var,...}::_)) => (l,var)
+		     val (clauses: clauseTy_ast list, funSym: S.symbol) =
+                         case map parseClause clauses_fb
+			   of nil => bug "elabcore:no clauses"
+			    | (clauses as ({funsym,...}::_)) => (clauses, funsym)
 
-		     val _ = if List.exists 
-				  (fn {funsym,...} => not (S.eq (var,funsym)))
-				  clauses
+		     (* note difference between "funsym" and "funSym" as defined above. *)
+		     val _ = if List.exists (fn {funsym,...}: clauseTy_ast => not (S.eq (funsym, funSym)))
+					    clauses
 			     then  errorRegion (fbregion, "clauses do not all have same function name")
 			     else ()
 
-		     val v = newVALvar var
+		     (* create funVar: V.var from the funSym symbol *)
+		     val funVar: V.var = newVALvar funSym    (* was "val v = newVALvar var" *)
 
-		     (* number of curried argument patterns, checking consistency of clauses *)
-		     val argcount =
+		     (* number of curried argument patterns
+		      * checking that this number is the same for all clauses *)
+		     val argcount : int =
 			 case clauses
-			   of ({argpats,...})::rest =>
+			   of ({argpats,...}) :: rest =>
 				let val len = length argpats
 				 in if List.exists
 					(fn {argpats,...} => len <> length argpats)
@@ -1392,48 +1436,49 @@ let
 			    | [] => bug "elabFUNdec: no clauses"
 
 		  in if lazyp (* LAZY *)
-		     then let fun newArgs(args,0) = args
-				| newArgs(args,n) =
-				  newArgs([S.varSymbol("$"^Int.toString n)]::args,
-					  n-1)
-			      fun curryApp (f,[]) = f
-				| curryApp (f,x::xs) =
-				  curryApp(AppExp{function=f, argument=x},xs)
+		     then let (* newArgs: (S.symbol list * int) -> S.symbol list *)
+			      (* newArgs (nil, 3) ==> [$1, $2, $3] *)
+			      fun newArgs (args,0) = args
+				| newArgs (args,n) =
+				  newArgs ([S.varSymbol("$"^Int.toString n)]::args,
+					   n-1)
 
-			      val lazyvar = S.varSymbol(S.name var ^ "_")
+			      (* curryApp : Ast.exp * Ast.exp list -> Ast.exp *)
+			      fun curryApp (f, nil) = f
+				| curryApp (f, x::xs) =
+				    curryApp (AppExp {function=f, argument=x}, xs)
 
-			      val localVar: V.var = newVALvar lazyvar
+			      val lazySym: S.symbol = S.varSymbol(S.name funSym ^ "_")
 
-			      fun mkLazy(new,resty,[]) = (rev new,resty)
-			        | mkLazy(new,resty,
-					 {kind,funsym,argpats,resultty,exp}::rest) =
-				  mkLazy({kind=LZinner,funsym=lazyvar,argpats=argpats,
-					  resultty=NONE, (* moved to outer clause *)
-					  exp=exp}
-				         ::new,
-				         case resty
-					   of NONE => resultty
-					    | _ => resty,
-					 rest)
+			      val localVar: V.var = newVALvar lazySym
+
+			      fun mkLazy (new, resty, nil) = (rev new,resty)
+			        | mkLazy (new, resty,
+					  {kind,funsym,argpats,resultty,exp}::rest) =
+				  mkLazy ({kind = LZinner, funsym = lazySym, argpats = argpats,
+					   resultty = NONE, (* moved to outer clause *)
+					   exp = exp}
+				          ::new,
+				          case resty of NONE => resultty | _ => resty,
+					  rest)
 
                               (* BUG: this captures the first resultty encountered,
 			         if any, and discards the rest, not checking
 				 consistency of any redundant resultty constraints *)
-			      val (innerclauses,resultty) =
+			      val (innerclauses, resultty) =
 				  mkLazy ([], NONE, clauses)
 
                               val outerargs = newArgs([],argcount)
 
 			      val outerclause =
-				  {kind=LZouter, funsym=var, resultty=resultty,
-				   argpats=map VarPat outerargs,
-				   exp=curryApp(VarExp[lazyvar],
-						     map VarExp outerargs)}
+				  {kind = LZouter, funsym = funSym, resultty = resultty,
+				   argpats = map VarPat outerargs,
+				   exp = curryApp (VarExp[lazySym], map VarExp outerargs)}
 
-			   in ((localVar, innerclauses, fbregion) :: (v, [outerclause], fbregion) :: lcl,
-			       SE.bind(var,B.VALbind v, SE.bind(lazyvar,B.VALbind localVar, env')))
+			   in ((localVar, innerclauses, fbregion) :: (funVar, [outerclause], fbregion) :: lcl,
+			       SE.bind(funSym, B.VALbind funVar, SE.bind (lazySym, B.VALbind localVar, env')))
 			  end
-		     else ((v, clauses, fbregion) :: lcl, SE.bind (var, B.VALbind v, env'))
+		     else ((funVar, clauses, fbregion) :: lcl, SE.bind (funSym, B.VALbind funVar, env'))
 		 end (* fun makevar *)
 
 	    val (fundecs, env') = foldl (makevar region) ([], SE.empty) fbs
@@ -1481,6 +1526,7 @@ let
 
 	    val tyvarsetRef : TS.tyvarset ref = ref TS.empty
 	      (* single common ref cell for the tyvarset for all bindings? *)
+
 	    fun fbsUpdater (tyvarset: TS.tyvarset) : unit =
 		let val tyvarset' = TS.diffPure (tyvarset, etvs)  (* subtract "external"? tyvars *)
 		    val local_tyvarset = diff (union (fbsTyvarset, etvs), tyvarset')

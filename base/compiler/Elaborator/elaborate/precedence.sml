@@ -1,11 +1,12 @@
+(* Elaborator/elaborate/precedence.sml *)
 (* Copyright 1996 by AT&T Bell Laboratories *)
-(* precedence.sml *)
+(* Copyright 2025 by The Fellowship of SML/NJ (www.smlnj.org) *)
+(* [DBM, 2025.03.25] Rewritten to clarify and simplify the precedence parsing algorithm. *)
 
 signature PRECEDENCE =
 sig
   val parse: {apply: 'a * 'a -> 'a, pair: 'a * 'a -> 'a} -> 
-                'a Ast.fixitem list * StaticEnv.staticEnv * 
-                (SourceMap.region->ErrorMsg.complainer) -> 'a
+                'a Ast.fixitem list * StaticEnv.staticEnv * SourceMap.region -> 'a
 
 end (* signature PRECEDENCE *)
 
@@ -13,73 +14,116 @@ end (* signature PRECEDENCE *)
 structure Precedence : PRECEDENCE = 
 struct    
 
-local structure EM = ErrorMsg 
-      structure F = Fixity
+local (* imports *)
+
+  structure SM = SourceMap			
+  structure EM = ErrorMsg 
+  structure S = Symbol
+  structure F = Fixity
 
 in 
 
-datatype 'a precStack 
-  = INf of Symbol.symbol * int * 'a * 'a precStack
-  | NONf of 'a * 'a precStack
-  | NILf
+(* throughout, 'a instantiates uniformly to either Ast.exp or Ast.pat *)
 
-fun parse {apply,pair} =
-  let fun ensureNONf((e,F.NONfix,_,err),p) = NONf(e,p)
-        | ensureNONf((e,F.INfix _,SOME sym,err),p) = 
-	   (err EM.COMPLAIN
-	      ("expression or pattern begins with infix identifier \"" 
-	       ^ Symbol.name sym ^ "\"") EM.nullErrorBody;
-	       NONf(e,p))
-	| ensureNONf _ = EM.impossible "precedence:ensureNONf"
+type 'a token = 'a * F.fixity * S.symbol option
+  (* a variant of 'a Ast.fixItem, making the F.fixity part explicit, the symbol option is
+   * only used in error messages.
+   * Note that the symbol, if present, is in the fixity name space, but this 
+   * does not matter for printing its name. *)
 
-      fun start token = ensureNONf(token,NILf)
+(* 'a frame:  elements of the precedence parsing stack ('a = Ast.pat, Ast.exp) *)
+datatype 'a frame  
+  = INFIX of Symbol.symbol * int * 'a  (* int is an infix operator right binding power *)
+  | NONFIX of 'a
 
-      (* parse an expression *)
-      fun parse(NONf(e,r), (e',F.NONfix,_,err)) = NONf(apply(e,e'),r)
-        | parse(p as INf _, token) = ensureNONf(token,p)
-        | parse(p as NONf(e1,INf(_,bp,e2,NONf(e3,r))), 
-                (e4, f as F.INfix(lbp,rbp),SOME sym,err))=
-	    if lbp > bp then INf(sym,rbp,e4,p)
-            else (if lbp = bp
-		  then err EM.WARN "mixed left- and right-associative \
-				      \operators of same precedence"
-			         EM.nullErrorBody
-		  else ();
-	          parse(NONf(apply(e2,pair (e3,e1)),r),(e4,f,SOME sym,err)))
+(* the precedence parsing stack ('a = Ast.pat, Ast.exp) *)
+type 'a stack = 'a frame list
 
-        | parse(p as NONf _, (e',F.INfix(lbp,rbp),SOME sym,_)) = 
-            INf(sym,rbp,e',p)
-        | parse _ = EM.impossible "Precedence.parse"
-     
-      (* clean up the stack *)
-      fun finish (NONf(e1,INf(_,_,e2,NONf(e3,r))),err) = 
-		     finish(NONf(apply(e2,pair (e3,e1)),r),err)
-        | finish (NONf(e1,NILf),_) = e1
-        | finish (INf(sym,_,e1,NONf(e2,p)),err) = 
-		     (err EM.COMPLAIN 
-		      ("expression or pattern ends with infix identifier \"" 
-		       ^ Symbol.name sym ^ "\"") EM.nullErrorBody;
-		      finish(NONf(apply(e2,e1),p),err))
-        | finish (NILf,err) = EM.impossible "Corelang.finish NILf"
-        | finish _ = EM.impossible "Corelang.finish"
+(* parse: ['a] {apply: 'a * 'a -> 'a, pair: 'a * 'a -> 'a}
+            -> 'a Ast.fixitem list * StaticEnv.staticEnv * SourceMap.region
+            -> 'a
+ * complete parsing of Ast exp or pattern (represented as partially parsed exp/pat Ast.fixitem list)
+ * using precedence parsing
+ * - this is not using the regions found in the fixitems. Do they have any other uses? *)
+fun 'a parse {apply: 'a * 'a -> 'a, pair: 'a * 'a -> 'a}
+	     (items: 'a Ast.fixitem list, env: StaticEnv.staticEnv, region: SM.region) : 'a =
 
-   in fn (items as item1 :: items',env,error) =>
-        let fun getfix{item,region,fixity} =
-	      (item,  case fixity of NONE => F.NONfix 
-                                   | SOME sym => Lookup.lookFix(env,sym),
-               fixity, error region)
+    let fun err (msg: string) = EM.complainRegion (region, "Precedence.parse: " ^ msg)
 
-            fun endloc[{region=(_,x),item,fixity}] = error(x,x)
-              | endloc(_::a) = endloc a
-	      | endloc _ = EM.impossible "precedence:endloc"
-	      
-            fun loop(state, a::rest) = loop(parse(state,getfix a),rest)
-              | loop(state,nil) = finish(state, endloc items)
+        (* parseToken : 'a token * 'a stack -> 'a stack *)
+	(* 1 step of parsing an expression - driven by loop function below *)
+	fun 'a parseToken ((e' , F.NONfix, _): 'a token, (NONFIX e :: rest): 'a stack) =
+	      NONFIX (apply (e, e')) :: rest  (* make an application *)
+	  | parseToken ((e, fixity, symbolOp): 'a token,
+			stack as (INFIX _) :: _) =  (* top of stack is an infix item *)
+	      (case fixity (* check fixity *)
+		 of F.NONfix => NONFIX e :: stack  (* OK, stack looking for an infix arg *)
+		  | F.INfix _ =>  (* error or bug *)
+		    (case symbolOp
+		      of SOME sym =>
+			   (err (String.concat ["expression/pattern begins with infix identifier \"",
+					     Symbol.name sym, "\""]); nil)
+		       | NONE => EM.impossible "Precedence.parse: - bad token"))
+	  | parseToken ( token as (e4, fixity as F.INfix(lbp,rbp), SOME sym): 'a token,
+			 NONFIX e1 :: INFIX (_, bp, e2) :: NONFIX e3 :: stack' ) = 
+	      (* bp is the rbp of e2, which should be a an infix variable/constructor *)
+	      if lbp > bp
+	      then INFIX (sym, rbp, e4) :: stack' (* e4 defeats e2, can grab e1 *)
+	      else (if lbp = bp
+		    then EM.warnRegion
+			   (region,
+			    "mixed left- and right-associative operators of same precedence")
+		    else ();
+		    (* "reduce" the three top-of-stack frames to one and start over *)
+		    parseToken (token, NONFIX (apply (e2, pair (e3, e1))) :: stack'))
 
-         in loop(start(getfix item1), items')
-        end
-       | _ => EM.impossible "precedence:parse"
-  end
+	  | parseToken ( (e', F.INfix(lbp,rbp), SOME sym),
+		         stack as NONFIX _ :: stack')  = 
+	      INFIX (sym, rbp, e') :: stack'  (* stack is seeking a right argument with power rbp *)
+
+	  (* when stack is empty, i.e. this is the first token *)
+          | parseToken ((e, fixity, symbolOp), nil) =
+	      (case fixity
+		 of F.NONfix => [NONFIX e]
+		  | F.INfix _ =>  (* => symbolOp should be SOME sym *)
+		     (case symbolOp
+			of SOME sym =>
+			     (err (String.concat ["expression/pattern begins with infix identifier \"",
+						  Symbol.name sym, "\""]);
+			      nil)
+			  | NONE => EM.impossible "Precedence.parse: - bad token"))
+
+	  | parseToken _ = EM.impossible "Precedence.parseToken"
+
+        (* finish: 'a stack -> 'a *)
+	(* clean up the stack, checking for errors *)
+	fun finish (NONFIX e1 :: INFIX (_, _, e2) :: NONFIX e3 :: stack') = 
+              (* infix application configuration of the stack;
+	       * e3 is earlier than e1,
+	       * e2 should be a variable exp or pat whose name symbol had an infix binding *)
+	      finish (NONFIX (apply (e2, pair (e3,e1))) :: stack')
+	  | finish [NONFIX e1] = e1   (* success! *)
+	  | finish (INFIX (sym, _, e1) :: NONFIX e2 :: stack) = 
+	      (err ("expression or pattern ends with infix identifier \"" 
+		   ^ Symbol.name sym ^ "\"");
+	       e2)  (* dummy error return value *)
+	  | finish nil = EM.impossible "Precedence.parse:finish on nil stack"
+	  | finish _ = EM.impossible "Precedence.parse:finish"
+
+        (* itemToToken : 'a Ast.fixitem -> 'a token *)
+	fun itemToToken ({item, fixity, ...}: 'a Ast.fixitem) : 'a token =
+	      (item,
+	       case fixity
+		 of NONE => F.NONfix 
+		  | SOME sym => Lookup.lookFix(env,sym),
+	       fixity)  (* fixity : S.symbol option; SOME sym if sym is an infix variable name *)
+
+        val tokens = map itemToToken items
+
+     in finish (foldl parseToken nil tokens)
+	(* or should it be foldr? I think foldl is right. The fixitems should be processed
+         * left to right *)
+    end (* end fun parse *)
 
 end (* local *)
 end (* structure Precedence *)

@@ -24,8 +24,18 @@ struct
 
   (* symbolic path (Modules.spath) *)
     type path = symbol list
+
     type 'a fixitem = {item: 'a, fixity: S.symbol option, region: SM.region}
-      (* FIX: "fixity" is bad name for this field. When is it NONE? *)
+      (* item will be either an exp or a pat. fixity is SOME only when the exp or pat
+       * is an identifier (id in sml.grm), in which case the symbol is the identifier
+       * translated to the fixity name space. *)
+      (* FIX 1: "fixity" is a rather poor name for this field.
+       * FIX 2: This type has some redundancy, since symbol option part is SOME iff
+       * the item exp/pat part is a variable, in which case the "var" flavor of the
+       * symbol is the name of the variable, which can be used, in conjunction with
+       * a static env, to determine the "fixity" of that variable/symbol. Thus the 
+       * symbol option component is not needed. Thus the simpler version would be 
+       * just "type 'a fixitem = {item: 'a, region: SM.region}, where 'a = pat or exp. *)
 
   (* integer/word literal; the string is the literal as it appeared in the source
    * and the int is the value of the literal.
@@ -120,9 +130,8 @@ struct
 							(* application *)
 	       | MarkFct of fctexp * region     	(* mark *)
 
-    (* WHERE SPEC *)
-    and wherespec = WhType of symbol list * tyvar list * ty
-		  | WhStruct of symbol list * symbol list
+    (* WHERE SPEC *) and wherespec = WhType of symbol list * tyvar
+    list * ty | WhStruct of symbol list * symbol list
 
     (* SIGNATURE EXPRESSION *)
     and sigexp = VarSig of symbol			(* signature variable *)
