@@ -3,20 +3,20 @@
  * COPYRIGHT (c) 2025 The Fellowship of SML/NJ (www.smlnj.org).
  *)
 
+(* [DBM, 2025.03.26] Simplified. See source.sml.] *)
+
 signature SOURCE =
 sig
-  type inputSource = {
-      sourceMap: SourceMap.sourcemap,
-      fileOpened: string,
-      interactive: bool,
-      sourceStream: TextIO.instream, 
-      content: string option ref,
-      anyErrors: bool ref,
-      errConsumer: PrettyPrint.device
-    }
 
-  val newSource : (string * TextIO.instream * bool * PrettyPrint.device)
-	-> inputSource
+  type inputSource =
+    {file: string option,  (* NONE iff interactive *)
+     sourceMap: SourceMap.sourcemap option,  (* NONE iff interactive *)
+     sourceStream: TextIO.instream,  (* stdIn iff interactive *)
+     content: string option ref} (* !content = NONE if interactive *)
+
+  val newSource : (string option) -> inputSource
+  (* string option is an optional file name (path?). If none, the input
+   * instream defaults to TextIO.stdInd. *)
 
   val closeSource: inputSource -> unit
 
@@ -28,9 +28,10 @@ sig
 
   val regionContent : inputSource * SourceMap.region ->
 		      (string * SourceMap.region * int) option
+
 end (* signature SOURCE *)
 
-(*
+(* [DBM: update this comment!]
 The fileOpened field contains the name of the file that was opened to
 produce a particular inputSource.  It is used to derive related
 file names (for example, see CompileF.codeopt and CompileF.parse

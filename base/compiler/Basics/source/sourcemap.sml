@@ -4,6 +4,14 @@
  * All rights reserved.
  *)
 
+(* [DBM, 2025.03.26] This file should be replaced by the simplified version
+ * in the newpp branch of the smlnj/smlnj github repository. That version drops
+ * support for the #line directive and "resynchronization", which were added
+ * by Norman Ramsey to support his NoWeb "literate source" system, which is no
+ * longer maintained (and was perhaps only used by Ramsey?).  The NoWeb system
+ * did not seem to be compatible with or relevant to the SML module system.
+ *)
+
 (* Norman Ramsey: *)
 (* I can imagine at least three implementations: one that doesn't
  * support resynchronization, one that supports resynchronization only at
@@ -64,7 +72,7 @@ struct
 
   (* compiler bug errors *)
   exception SourceMap of string
-  fun bug msg = raise SourceMap(msg)
+  fun bug msg = raise (SourceMap msg)
 
   (* types ------------------------------- *)
 

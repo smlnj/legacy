@@ -52,7 +52,7 @@ fun 'a parse {apply: 'a * 'a -> 'a, pair: 'a * 'a -> 'a}
 
         (* parseToken : 'a token * 'a stack -> 'a stack *)
 	(* 1 step of parsing an expression - driven by loop function below *)
-	fun 'a parseToken ((e' , F.NONfix, _): 'a token, (NONFIX e :: rest): 'a stack) =
+	fun parseToken ((e' , F.NONfix, _): 'a token, (NONFIX e :: rest): 'a stack) =
 	      NONFIX (apply (e, e')) :: rest  (* make an application *)
 	  | parseToken ((e, fixity, symbolOp): 'a token,
 			stack as (INFIX _) :: _) =  (* top of stack is an infix item *)

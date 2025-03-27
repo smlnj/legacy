@@ -1,63 +1,70 @@
 (* source.sml
  *
- * COPYRIGHT (c) 2012 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2012, 2025 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
+
+(* [DBM, 2025.03.26] Simplified inputSource.
+ * inputSource is interactive if fileOp = NONE
+ * removed anyErrors and errconsumer (could put these in either CompInfo or ErrorMsg) *)
 
 structure Source : SOURCE =
 struct
 
-  type inputSource = {
-        sourceMap: SourceMap.sourcemap,
-        fileOpened: string,
-        interactive: bool,
-        sourceStream: TextIO.instream,
-        content: string option ref,
-        anyErrors: bool ref,
-        errConsumer: PrettyPrint.device
-      }
+  structure SM = SourceMap
 
-(* -- inactive diagnostic printing
-  fun say (msg : string) = Control_Print.say msg
-*)
+  type inputSource =
+     {fileOp: string option,
+      sourceMap: SM.sourcemap option,
+      sourceStream: TextIO.instream,
+      content: string option ref}
 
-  fun newSource(fileName, sourceStream, interactive, errConsumer) =
-      {sourceMap=SourceMap.newSourceMap fileName,
-       fileOpened=fileName,
-       interactive=interactive,
-       sourceStream=sourceStream,
-       content=ref NONE,
-       anyErrors=ref false,
-       errConsumer=errConsumer}
+  (* newSource : string option -> inputSource *) 
+  fun newSource (fileOp: string option) =
+      {fileOp = fileNameOp,  (* NONE => interactive source (stdIn) *)
+       sourceMap =
+	 (case fileOp
+	    of NONE => NONE
+	    | SOME file => SM.newSourceMap file)
+       sourceStream = 
+         (case fileOp
+	   of NONE => TextIO.stdIn
+	    | SOME file => TextIO.openIn file)
+       content=ref NONE}  (* remains NONE if interactive *)
 
-  fun closeSource ({interactive=true, ...} : inputSource) = ()
-    | closeSource ({sourceStream, ...}) = (
-        (* app say ["[closing ", (Pathnames.trim fileName), "]\n"];*)
-        TextIO.closeIn sourceStream handle IO.Io _ => ())
+  (* closeSource : inputStource -> unit *)
+  fun closeSource ({fileOp, sourceStream, ...} : inputSource) =
+      (case fileOp
+	of NONE => ()
+	 | SOME file =>
+	    (TextIO.closeIn sourceStream
+	     handle IO.Io _ => ()))
 
-  fun filepos ({sourceMap,...}: inputSource) pos = SourceMap.filepos sourceMap pos
+  (* filepos: inputSource -> SM.charpos -> SM.sourceloc *)
+  fun filepos ({sourceMap,...}: inputSource) pos = SM.filepos sourceMap pos
 
+  (* getContent: inputSource -> string option *)
   fun getContent ({fileOpened,interactive,content,...}: inputSource) : string option =
       case !content
         of NONE =>
-            if interactive then NONE
-              (* need to capture history of interactive input *)
-	    else (let val s = TextIO.inputAll(TextIO.openIn fileOpened)
-		   in content := SOME s;
-		      !content
-		  end handle IO.Io _ => NONE)
-         | s => s
+           (case fileOp
+	      of NONE => NONE (* could we capture history of interactive input? *)
+	       | SOME file => 
+		   let val s = TextIO.inputAll(TextIO.openIn fileOpened)
+		    in content := SOME s;
+		       !content
+		   end handle IO.Io _ => NONE)
 
   (* regionContent:
-          inputSource * SourceMap.region
-       -> (SourceMap.region * string * int) option *)
+          inputSource * SM.region
+       -> (SM.region * string * int) option *)
   fun regionContent (src as {sourceMap,...}: inputSource, region) =
       case getContent src
         of NONE => NONE
          | SOME content =>
-           let val wideregion as (lo,hi) = SourceMap.widenToLines sourceMap region
+           let val wideregion as (lo,hi) = SM.widenToLines sourceMap region
 	       val content = substring(content, lo-1, hi-lo)
-	       val ({line,...},_)::_ = SourceMap.fileregion sourceMap wideregion
+	       val ({line,...},_)::_ = SM.fileregion sourceMap wideregion
 	    in SOME(content, wideregion, line)
 	   end
 
