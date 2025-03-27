@@ -214,3 +214,4 @@ osx-dist/smlnj.dst
 osx-dist/smlnj-*.pkg
 win-dist/smlnj
 
+/base/system/saved-boot
