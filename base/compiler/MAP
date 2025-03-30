@@ -623,6 +623,9 @@ TopLevel/
     interact.sig,sml
       creating top-level loops
       defs: INTERACT, Interact: EVALLOOP => INTERACT
+    mutecompiler.sig,sml
+      allow compiler silencing
+      defs: MUTECOMPILER, Mutecompiler
 
   print/
   Pretty printing for absyn declarations, values
