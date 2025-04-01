@@ -1,15 +1,15 @@
-(* lambdavar.sml
+(* ElabData/basics/lambdavar.sml
  *
- * COPYRIGHT (c) 2020 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2020, 2025 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
 
 structure LambdaVar :> LAMBDA_VAR =
-  struct
+struct
 
     structure S = Symbol
     structure Map = IntRedBlackMap
-    structure Set = IntRedBlackSet
+    structure Set = IntRedBlackSet  (* use THIS instead of SortedList!!! *)
     structure Tbl = IntHashTable
 
   (* if true, we remember the names of lambda vars *)
@@ -33,48 +33,49 @@ structure LambdaVar :> LAMBDA_VAR =
 
     fun prLvar (lvar:lvar) = Int.toString lvar
 
-    fun sameName (v, w) = if !saveLvarNames
-	  then (case findName w
-	     of SOME x => giveLvarName(v, x)
-	      | NONE => (case findName v
-		   of SOME x => giveLvarName (w, x)
-		    | NONE => ()
+    fun sameName (v, w) =
+	if !saveLvarNames
+	then (case findName w
+	        of SOME x => giveLvarName(v, x)
+		 | NONE => (case findName v
+			      of SOME x => giveLvarName (w, x)
+			       | NONE => ()
 		  (* end case *))
 	    (* end case *))
-	  else ()
+	else ()
 
     val mkLvar = newLvar varcount
 
-    fun clear () = (varcount := 0; Tbl.clear lvarNames)
+    fun reset () = (varcount := 0; Tbl.clear lvarNames)
 
-    fun dupLvar v = let
-          val nv = mkLvar()
-	  in
-	    if !saveLvarNames
-	      then (case findName v
-		 of SOME x => giveLvarName(nv, x)
-		  | NONE => ()
-		(* end cadse *))
-	      else ();
+    fun dupLvar v =
+	let val nv = mkLvar()
+	 in if !saveLvarNames
+	    then (case findName v
+		    of SOME x => giveLvarName(nv, x)
+		     | NONE => ()
+		 (* end cadse *))
+	    else ();
 	    nv
-	  end
+	end
 
-    fun namedLvar (id: S.symbol) = let
-	  val nv = mkLvar()
-          in
-	    if !saveLvarNames then giveLvarName(nv, S.name id) else ();
+    fun namedLvar (id: S.symbol) =
+	let val nv = mkLvar()
+         in if !saveLvarNames then giveLvarName(nv, S.name id) else ();
 	    nv
-          end
+        end
 
-    fun lvarSym (lv : lvar) : S.symbol option = (case findName lv
+    fun lvarSym (lv : lvar) : S.symbol option =
+	(case findName lv
 	   of SOME x => SOME(S.varSymbol x)
 	    | NONE => NONE
-	  (* end case *))
+	(* end case *))
 
-    fun lvarName (lv : lvar) : string = (case findName lv
+    fun lvarName (lv : lvar) : string =
+	(case findName lv
 	   of SOME x => x ^ Int.toString lv
 	    | NONE => "v" ^ Int.toString lv
-	  (* end case *))
+	(* end case *))
 
     val toId = Fn.id
     val fromId = Fn.id

@@ -32,8 +32,8 @@ signature LAMBDA_VAR =
     val lvarSym : lvar -> Symbol.symbol option
     val lvarName : lvar -> string
 
-  (* reset the unique id generator and clear the name table *)
-    val clear : unit -> unit
+  (* reset the unique id generator. Called by CompInfo.reset. *)
+    val reset : unit -> unit
 
   (* conversion between the abstract lvar type and the unique integer
    * IDs used to represent them.  These functions are meant to be used

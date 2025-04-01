@@ -10,13 +10,9 @@ functor CompileF (
     structure CC : CCONFIG
     val cproto_conv : string
 
-  ) : COMPILE0 = struct
+  ) : COMPILE0 =
 
-    fun mkCompInfo { source, transform } = CompInfo.mkCompInfo {
-	    source = source,
-	    transform = transform,
-	    mkStampGenerator = CC.mkMkStamp
-	  }
+struct
 
     type pickle     = CC.pickle		(* pickled format *)
     type hash       = CC.hash		(* environment hash id *)

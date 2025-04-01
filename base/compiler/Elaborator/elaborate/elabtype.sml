@@ -18,8 +18,8 @@ local (* imports *)
   structure T  = Types
   structure TU = TypesUtil
   structure BT = BasicTypes
-  structure EU = ElabUtil
   structure TS = TyvarSet
+  structure EU = ElabUtil
   structure VC = VarCon	     
 
   open Symbol Absyn Ast Types TypesUtil (* unopen these! *)
@@ -37,18 +37,6 @@ fun debugmsg (msg: string) =
 
 (* bug : string -> 'a *)
 fun bug msg = ErrorMsg.impossible("ElabType: " ^ msg)
-
-(* error0 : SM.region * EM.severity * string -> unit *)
-fun error0 (region: SM.region, severity: EM.severity, msg: string) : unit =
-    !CompInfo.errorRef region severity msg EM.nullErrorBody
-
-(* error : string -> unit *)
-fun error (msg: string) : unit =
-    !CompInfo.errorRef SM.nullRegion EM.COMPLAIN msg EM.nullErrorBody
-
-(* errorRegion : SM.region * string -> unit *)
-fun errorRegion (region, msg) = error0 (region, EM.COMPLAIN, msg)
-
 
 (* infix arrow tycon *)
 val --> = BT.-->
@@ -71,7 +59,7 @@ fun elabTyvarList (tyvars: Ast.tyvar list, region) =
                         | _ => bug "elabTyvarList") tvs
      in if EU.checkUniq names
         then tvs  (* tyvar names are unique *) 
-        else (errorRegion (region, "duplicate type variable name"); nil)
+        else (EM.errorRegion (region, "duplicate type variable name"); nil)
     end
 
 (* elabType : Ast.ty * SE.staticEnv * SM.region -> T.ty * TS.tyvarset
@@ -92,7 +80,7 @@ fun elabType (ast: Ast.ty, env: SE.staticEnv, region: SM.region)
 			     val pathString = SP.toString path
 			  in case L.lookTyc (env, path)
 			      of NONE =>
-				   (errorRegion (region, "elabType: unbound " ^ pathString);
+				   (EM.errorRegion (region, "elabType: unbound " ^ pathString);
 				    T.ERRORtyc)
 			       | SOME tycon =>
 				   (if TU.tyconArity tycon = arity (* check for expected tycon arity *)
@@ -125,7 +113,7 @@ and elabRecordFields (fields, env, region: SM.region) =
 		  val tyvarsetOp = TS.union (tyvarset', tyvarset)
 	       in case tyvarsetOp  (* error checking for incompatible tyvarsets *)
 		    of SOME tyvarset' => ((lab, ty')::rest, tyvarset')
-		     | NONE => (errorRegion (region, "ElabType: elabRecordFields -- incompatible tyvars");
+		     | NONE => (EM.errorRegion (region, "ElabType: elabRecordFields -- incompatible tyvars");
 			        (nil, TS.empty))
 	      end
      in foldr folder ([],TS.empty) fields
@@ -140,7 +128,7 @@ and elabTypeList (types: Ast.ty list, env: SE.staticEnv, region: SM.region) =
 	      let val (ty', tyvarset') = elabType (ty, env, region)
 	       in case TS.union (tyvarset', tyvarset)
 		    of SOME tyvarset'' => (ty' :: types, tyvarset'')
-		     | NONE => (errorRegion (region, "ElabType: elabTypeList -- incompatible tyvars");
+		     | NONE => (EM.errorRegion (region, "ElabType: elabTypeList -- incompatible tyvars");
 			        (nil, TS.empty))
 	       end
       in foldr folder ([],TS.empty) types (* foldr to maintain the order of the types *)
@@ -196,7 +184,7 @@ and elabTypeList (types: Ast.ty list, env: SE.staticEnv, region: SM.region) =
 		      in case u
 			   of SOME tyvarset'' =>
 			        (dcon' :: dcons, tyvarset'')  (* union successful, tyvarsets compatible *)
-			    | NONE => (errorRegion (region, "ElabDB:  -- incompatible tvarsets");
+			    | NONE => (EM.errorRegion (region, "ElabDB:  -- incompatible tvarsets");
 				       (nil, TS.empty))
 		      end
 	     in foldr folder ([], TS.empty) def
@@ -260,7 +248,7 @@ fun elabTBlist (tbl:Ast.tb list, notwith:bool, env0, rpath, region)
 		       val _ = TU.bindTyvars tyvars'
 		       val _ = TU.compressTy ty
 		       val tycon =
-			   DEFtyc{stamp = CompInfo.mkStamp (),
+			   DEFtyc{stamp = Stamps.fresh (),
 				  path = IP.extend (rpath, name),
 				  strict = TU.calcStrictness (arity,ty),
 				  tyfun = TYFUN{arity=arity, body=ty}}
@@ -284,7 +272,7 @@ fun elabTYPEdec (tbl: Ast.tb list, env, rpath, region) : Absyn.dec * SE.staticEn
 	val _ = debugmsg "--elabTYPEdec: elabTBlist done"
      in if EU.checkUniq names
 	then ()
-	else errorRegion (region, "duplicate type definition");
+	else EM.errorRegion (region, "duplicate type definition");
 	debugmsg "<<elabTYPEdec";
 	(TYPEdec tycs, env')
     end
@@ -293,7 +281,7 @@ fun elabDATATYPEdec ({datatycs,withtycs}, env0, sigContext,
                       sigEntEnv, isFree, rpath, region) = 
     let (* predefine datatypes *)
 	val _ = debugmsg ">>elabDATATYPEdec"
-        val error = !CompInfo.errorRef region
+        val error = EM.error region
 	fun preprocess region (Db{tyc=name,rhs=def,tyvars,lazyp}) =
 	    let val tvs = elabTyvarList (tyvars, region)
 		val strictName =
@@ -302,13 +290,13 @@ fun elabDATATYPEdec ({datatycs,withtycs}, env0, sigContext,
 		    else name
 		val tyc = GENtyc{path = IP.extend(rpath,strictName),
 				 arity = length tyvars,
-				 stamp = CompInfo.mkStamp (),
+				 stamp = Stamps.fresh (),
 				 eq = ref DATA,
 				 kind = TEMP,
 				 stub = NONE}
 		val binddef =
 		    if lazyp then
-			   DEFtyc{stamp = CompInfo.mkStamp (),
+			   DEFtyc{stamp = Stamps.fresh (),
 				  tyfun=TYFUN{arity=length tyvars,
 					      body=CONty(BT.suspTycon,
 						    [CONty(tyc,map VARty tvs)])},
@@ -339,7 +327,7 @@ fun elabDATATYPEdec ({datatycs,withtycs}, env0, sigContext,
 	(* check for duplicate tycon names *)
         val _ = if EU.checkUniq (map #name dbs @ withtycNames)
 		then ()
-		else errorRegion (region, "duplicate type names in type declaration")
+		else EM.errorRegion (region, "duplicate type names in type declaration")
 			     
         val _ = debugmsg "--elabDATATYPEdec: uniqueness checked"
 
@@ -440,7 +428,7 @@ fun elabDATATYPEdec ({datatycs,withtycs}, env0, sigContext,
         val nfamily = {members=Vector.fromList members,
 		       properties = PropList.newHolder (),
                        (* lambdatyc=ref NONE, *)
-                       mkey = CompInfo.mkStamp ()}
+                       mkey = Stamps.fresh ()}
         val nfreetycs =
           let val (x, n) = !freeTycsRef
               val _ = if length x = n then ()  (* sanity check *)
@@ -531,7 +519,7 @@ fun elabDATATYPEdec ({datatycs,withtycs}, env0, sigContext,
 
      in if EU.checkUniq (List.concat(map #dconNames dbs'))
 	then ()
-        else errorRegion (region, "duplicate datacon names in datatype declaration");
+        else EM.errorRegion (region, "duplicate datacon names in datatype declaration");
         debugmsg "<<elabDATATYPEdec";
 	(finalDtycs,finalWithtycs,finalDcons,finalEnv)
     end (* fun elabDATATYPEdec0 *)

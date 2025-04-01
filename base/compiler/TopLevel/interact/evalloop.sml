@@ -35,15 +35,14 @@ functor EvalLoopF (Compile: TOP_COMPILE) : EVALLOOP =
 
     exception EndOfFile
 
-    fun interruptable f x = let
-	  val oldcont = !U.topLevelCont
-	  in
-	    U.topLevelCont := SMLofNJ.Cont.callcc
+    fun interruptable f x =
+	let val oldcont = !U.topLevelCont
+	 in U.topLevelCont := SMLofNJ.Cont.callcc
 		(fn k => (SMLofNJ.Cont.callcc(fn k' => (SMLofNJ.Cont.throw k k'));
 			  raise Interrupt));
 	    (f x before U.topLevelCont := oldcont)
 	      handle e => (U.topLevelCont := oldcont; raise e)
-	  end
+	end
 
   (* to wrap exceptions that are raised during the execution of a top-level transaction *)
     exception ExnDuringExecution of exn
@@ -56,22 +55,21 @@ functor EvalLoopF (Compile: TOP_COMPILE) : EVALLOOP =
    * then, if the user "filters" the environment ref, a smaller image
    * can be written.
    *)
-    fun evalLoop source = let
-	  val parser = SmlFile.parseOne source
-	  val cinfo = C.mkCompInfo { source = source, transform = fn x => x }
+    fun evalLoop source =
+	let val _ = CompInfo.reset source
+	    val parser = SmlFile.parseOne source
 
-	  fun checkErrors (s: string) =
-		if CompInfo.anyErrors cinfo
-		  then (
-		    if !Control.progressMsgs
+	    fun checkErrors (s: string) =
+		if !CompInfo.anyErrors
+		then (if !Control.progressMsgs
 		      then say (concat["<<< Error stop after ", s, "\n"])
 		      else ();
-		    raise EM.Error)
+		      raise EM.Error)
 		else if !Control.progressMsgs
-		  then say (concat["<<< ", s, " successful\n"])
-		  else ()
+		     then say (concat["<<< ", s, " successful\n"])
+		     else ()
 
-	  fun oneUnit () = ((* perform one transaction  *)
+	    fun oneUnit () = ((* perform one transaction  *)
 		if !Control.progressMsgs
 		  then say (concat["<<< begin compile \"", #fileOpened source, "\"\n"])
 		  else ();

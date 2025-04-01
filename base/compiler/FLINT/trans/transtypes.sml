@@ -1,6 +1,6 @@
-(* transtypes.sml
+(* FLINT/trans/transtypes.sml
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2019, 2025 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
 
@@ -19,45 +19,55 @@ signature TRANSTYPES =
   end (* signature TRANSTYPES *)
 
 structure TransTypes : TRANSTYPES =
-  struct
+struct
 
-    structure BT = BasicTypes
-    structure DA = Access
-    structure DI = DebIndex
-    structure EE = EntityEnv
-    structure EM = ErrorMsg
-    structure EPC = EntPathContext
-    structure EV = EvalEntity
-    structure INS = Instantiate
-    structure IP = InvPath
-    structure LT = PLambdaType
-    structure PT = PrimTyc
-    structure MU = ModuleUtil
-    structure SE = StaticEnv
-    structure TU = TypesUtil
-    structure PP = PrettyPrint
-    open Types Modules ElabDebug
+local (* imports *)
+
+  structure EM = ErrorMsg
+  structure PP = PrettyPrint
+
+  structure IP = InvPath
+  structure DA = Access
+  structure DI = DebIndex
+
+  structure SE = StaticEnv
+
+  structure BT = BasicTypes
+  structure TU = TypesUtil
+
+  structure ED = ElabDebug
+
+  structure EE = EntityEnv
+  structure MU = ModuleUtil
+  structure EPC = EntPathContext
+  structure EV = EvalEntity
+  structure INS = Instantiate
+
+  structure LT = PLambdaType
+  structure PT = PrimTyc
+
+  open Types Modules
+
+in (* imports *)
 
     fun bug msg = ErrorMsg.impossible ("TransTypes: " ^ msg)
     val say = Control.Print.say
     val debugging = FLINT_Control.tmdebugging
     fun debugmsg (msg: string) =
 	  if !debugging then (say msg; say "\n") else ()
-    val debugPrint = (fn x => debugPrint debugging x)
-    val defaultError =
-	  EM.errorNoFile(EM.defaultConsumer(),ref false) SourceMap.nullRegion
+    val debugPrint = (fn x => ED.debugPrint debugging x)
 
-    val env = StaticEnv.empty
+    val env = SE.empty
 
     fun ppType x =
-     ((PP.with_pp (EM.defaultConsumer())
+     ((PP.with_pp PP.defaultDevice
 	       (fn ppstrm => (PP.string ppstrm "find: ";
 			      PPType.resetPPType();
 			      PPType.ppType env ppstrm x)))
       handle _ => say "fail to print anything")
 
     fun ppTycon x =
-	((PP.with_pp (EM.defaultConsumer())
+	((PP.with_pp (PP.defaultDevice)
 	    (fn ppstrm => (PP.string ppstrm "find: ";
 			   PPType.resetPPType();
 			   PPType.ppTycon env ppstrm x)))
@@ -489,4 +499,5 @@ structure MIDict = RedBlackMapFn(struct type ord_key = ModuleId.modId
   end (* function genTT *)
 (* ---------------- end genTT ---------------- *)
 
+end (* local - imports *)
 end (* structure TransTypes *)

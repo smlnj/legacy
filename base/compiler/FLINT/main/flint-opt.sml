@@ -7,8 +7,7 @@
 structure FLINTOpt : sig
 
   (* the int option gets passed to lambda-split phases (if any) *)
-    val optimize : FLINT.prog * Absyn.dec CompInfo.compInfo * int option
-	  -> FLINT.prog * FLINT.prog option
+    val optimize : FLINT.prog * int option -> FLINT.prog * FLINT.prog option
 
   end = struct
 
@@ -74,17 +73,18 @@ structure FLINTOpt : sig
     val fcs : (FLINT.prog -> FLINT.prog) list ref = ref []
 
   (** optimizing FLINT code *)
-    fun optimize (flint, compInfo: Absyn.dec CompInfo.compInfo, splitting) = let
-	  val {sourceName=src, ...} = compInfo
+    fun optimize (flint, splitting) =
+	let val src = Source.name (CompInfo.source ())
 
-	  fun check (checkE, printE, chkId) (lvl,logId) e = if checkE (e,lvl)
-		then (
-		  dumpTerm (printE, src ^ "." ^ chkId ^ logId, e);
-		  bug (chkId ^ " typing errors " ^ logId))
-		else ()
-	  fun wff (f, s) = if wformed f
-		then ()
-		else print ("\nAfter " ^ s ^ " CODE NOT WELL FORMED\n")
+	    fun check (checkE, printE, chkId) (lvl,logId) e = if checkE (e,lvl)
+		  then (
+		    dumpTerm (printE, src ^ "." ^ chkId ^ logId, e);
+		    bug (chkId ^ " typing errors " ^ logId))
+		  else ()
+
+	    fun wff (f, s) = if wformed f
+		  then ()
+		  else print ("\nAfter " ^ s ^ " CODE NOT WELL FORMED\n")
 
 	 (* f:prog        flint code
 	  * fi:prog opt   inlinable approximation of f

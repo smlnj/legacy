@@ -3,67 +3,52 @@
  * COPYRIGHT (c) 2025 The Fellowship of SML/NJ (www.smlnj.org).
  *)
 
-(* [DBM, 2025.03.26] Simplified. See source.sml.] *)
+(* [DBM, 2025.03.26] Simplified. See source.sml for the implementation.] *)
 
 signature SOURCE =
 sig
 
-  type inputSource =
-    {file: string option,  (* NONE iff interactive *)
-     sourceMap: SourceMap.sourcemap option,  (* NONE iff interactive *)
-     sourceStream: TextIO.instream,  (* stdIn iff interactive *)
-     content: string option ref} (* !content = NONE if interactive *)
+  type source   (* abstract! *)
 
-  val newSource : (string option) -> inputSource
+  val newSource : (string option) -> source
   (* string option is an optional file name (path?). If none, the input
-   * instream defaults to TextIO.stdInd. *)
+   * instream defaults to TextIO.stdIn. *)
 
-  val closeSource: inputSource -> unit
+  val closeSource: source -> unit
 
-  val filepos: inputSource -> SourceMap.charpos -> SourceMap.sourceloc
-  (* Simply calls SourceMap.filepos on the sourceMap component of inputSource,
-   * Provided for convenience. *)
+  val sourcemap: source -> SourceMap.sourcemap
+
+  val interactive : source -> bool
+
+  val name: source -> string option
+
+  val stream : source -> TextIO.instream
 
   val getContent : inputSource -> string option
 
-  val regionContent : inputSource * SourceMap.region ->
-		      (string * SourceMap.region * int) option
+  val filepos: source -> SourceLoc.charpos -> SourceLoc.location
+  (* Simply calls SourceMap.charposToLocation on the map component of source.
+   * Provided for convenience -- should delete. *)
 
 end (* signature SOURCE *)
 
-(* [DBM: update this comment!]
-The fileOpened field contains the name of the file that was opened to
-produce a particular inputSource.  It is used to derive related
-file names (for example, see CompileF.codeopt and CompileF.parse
-in build/compile.sml.). It is also used when we need to access the content
-of the sourcefile for error messages (getContent).  This assumes that the
-current directory remains fixed if the file name is a relative path.
+(* [DBM: 2025.03.31]
+The former files sourcemap.sml and source.sml have been substantially rewritten
+and correspond to the three Basics/source/{sourceloc.sml, sourcemap.sml, and source.sml}
+with corresponding signatures (sourceloc.sig not written yet).
 
-newSource takes as argument a file name, the corresponding instream of the
-opened file, a boolean flag indicating whether the source is interactive
-(i.e. stdIn), and a prettyPrint device. (Note: Formerly newSource also took
-an additional int argument representing the initial line number, but this
-argument was always 1, so it has been dropped). (DBM: the PrettyPrint.device
-argument of newSource should also be dropped. This should be replaced by 
-an error outstream stored within the ErrorMsg structure.)
+The sourceloc.sml file defines the SourceLoc structure that contains the
+types charpos, location, and region.  SourceMap (in sourcemap.sml) defines
+a limited history structure that is used to translate charpos positions into
+line.column locations in the input stream.  The Source structure (source.sml)
+defines the input source type, dealing with the differences and common
+functionalities of file and interactive input sources.
 
-getContent only works if the source is a single file (no #line directives
-changing the source file), and it obiously won't work for an interactive source,
-i.e., stdIn. The first exception no longer applies, since we do not support #line
-directives [DBM, 2025.03.05].
+getContent returns the contents of a source, and only works if the source
+is derived from a file.  Currently there is no mechanism for capturing the full
+text history for an interactive source.
 
-[DBM: 2025.03.05]
-What file name (for fileOpened) should be provided if the source is interactive, i.e., the
-sourceStream is TextIO.stdIn?  Should it be "stdIn" in that case, or the empty string?
-
-The definition of inputSource should be simplified by dropping anyErrors and errConsumer,
-which are not logically part of or depending on the source. The target for outputting
-error messages should be determined and maintained elsewhere, say in ErrorMsg. Usually it
-would be the outstream for stdOut or stdErr.
-
-The record of the current inputSource should be maintained in either CompInfo or ErrorMsg,
-where it would be set before each compilation to the source correspondiing the the
-compilation unit.
-
+The former anyErrors and errConsumer parts of a source (formerly inputSource) have
+been droped and are now to be found in the CompInfo structure.
 *)
 

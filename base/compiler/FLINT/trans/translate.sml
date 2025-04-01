@@ -12,8 +12,7 @@ sig
 		   exportLvars: Access.lvar list,
                    oldenv: StaticEnv.staticEnv,
                    env: StaticEnv.staticEnv,
-		   cproto_conv: string,
-		   compInfo: Absyn.dec CompInfo.compInfo }
+		   cproto_conv: string}
                  -> {flint: FLINT.prog,
                      imports: (PersStamps.persstamp
                                * ImportTree.importTree) list}
@@ -45,7 +44,7 @@ local structure B  = Bindings
       structure Tgt = Target
 
       structure IIMap = RedBlackMapFn (type ord_key = IntInf.int
-					val compare = IntInf.compare)
+				       val compare = IntInf.compare)
 
       open Absyn PLambda TransUtil
 in
@@ -85,9 +84,7 @@ fun ppLexp lexp =
  *                               * ImportTree.importTree) list}             *
  ****************************************************************************)
 
-fun transDec
-	{ rootdec, exportLvars, oldenv, env, cproto_conv,
-	 compInfo as {errorMatch,error,...}: Absyn.dec CompInfo.compInfo } =
+fun transDec { rootdec, exportLvars, oldenv, env, cproto_conv} =
 let
 
 (* We take mkLvar from compInfo.  This should answer Zhong's question... *)
@@ -147,10 +144,11 @@ fun CON' ((_, DA.REF, lt), ts, e) = APP (PRIM (PO.MAKEREF, lt, ts), e)
  * errormsg reporting.
  *)
 
-local val region = ref(0,0)
-      val markexn = PRIM(PO.MARKEXN,
-		      LT.ltc_parrow(LT.ltc_tuple [LT.ltc_exn, LT.ltc_string],
-				    LT.ltc_exn), [])
+local val region = ref SL.NULLregion
+      val markexn =
+	  PRIM (PO.MARKEXN,
+	        LT.ltc_parrow(LT.ltc_tuple [LT.ltc_exn, LT.ltc_string],
+			      LT.ltc_exn), [])
 in
 
 fun withRegion loc f x =
@@ -160,19 +158,19 @@ fun withRegion loc f x =
   end
 
 fun mkRaise(x, lt) =
-  let val e = if !Control.trackExn
-              then APP(markexn, RECORD[x, STRING(errorMatch(!region))])
-              else x
-   in RAISE(e, lt)
-  end
+    let val e = if !Control.trackExn
+		then APP(markexn, RECORD[x, STRING (EM.locationString (!region))])
+		else x
+     in RAISE (e, lt)
+    end
 
-fun complain s = error (!region) s
-fun repErr x = complain EM.COMPLAIN x EM.nullErrorBody
+fun complain msg = EM.errorRegion (!region, msg)
+fun repErr x = complain x
 fun repPolyEq () =
-    if !Control.polyEqWarn then complain EM.WARN "calling polyEqual" EM.nullErrorBody
+    if !Control.polyEqWarn then EM.warnRegion (!region, "calling polyEqual")
     else ()
 
-fun repWarn msg = complain EM.WARN msg EM.nullErrorBody
+fun repWarn msg = EM.warnRegion (!region, msg)
 
 (** This may shadow previous definition of mkv ... this version reports the
     site of introduction of the lvar *)
@@ -1180,7 +1178,7 @@ val _ = debugmsg ">>mkDec"
 (** translating the ML absyn into the PLambda expression *)
 val body = mkDec (rootdec, DI.top) exportLexp
 val _ = debugmsg "<<mkDec"
-val _ = if CompInfo.anyErrors compInfo
+val _ = if !CompInfo.anyErrors
 	then raise EM.Error
 	else ()
 (** add bindings for intinf constants *)
@@ -1191,7 +1189,7 @@ val (plexp, imports) = wrapPidInfo (body, PersMap.listItemsi (!persmap))
 
 (** type check body (including kind check) **)
 val ltyerrors = if !FLINT_Control.plchk
-		then ChkPlexp.checkLtyTop(plexp,0)
+		then ChkPlexp.checkLtyTop (plexp,0)
 		else false
 val _ = if ltyerrors
         then (print "**** Translate: checkLty failed ****\n";
@@ -1202,19 +1200,19 @@ val _ = if ltyerrors
 		 PP.newline str;
                  PU.pps str "lexp:"; PP.newline str;
                  PPLexp.ppLexp 25 str plexp));
-              complain EM.WARN "checkLty" EM.nullErrorBody;
-	     bug "PLambda type check error!")
+              EM.warnRegion (SL.NULLregion, "checkLty");
+	      bug "PLambda type check error!")
         else ()
 
 
 val _ = if !Control.FLINT.print
-	  then (say ("\n\n[After Translate" ^ " ...]\n\n"); ppLexp plexp)
-	  else ()
+	then (say ("\n\n[After Translate" ^ " ...]\n\n"); ppLexp plexp)
+	else ()
 
 (** normalizing the plambda expression into FLINT *)
 val flint = let val _ = debugmsg ">>norm"
 		val _ = if !debugging
-			then complain EM.WARN ">>flintnm" EM.nullErrorBody
+			then EM.warnRegion (SL.NULLregion, ">>flintnm")
 			else ()
 		val n = FlintNM.norm plexp
 		val _ = debugmsg "<<postnorm"

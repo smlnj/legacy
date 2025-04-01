@@ -57,11 +57,12 @@ struct
 
 local
 
+   structure EM = ErrorMsg
+
    structure A  = Absyn
    structure B  = Bindings
    structure DA = Access
    structure EE = EntityEnv
-   structure EM = ErrorMsg
    structure EP = EntPath
    structure EPC = EntPathContext
    structure EU = ElabUtil
@@ -171,7 +172,7 @@ fun matchStr1(specSig as SIG{stamp=sigStamp,closed,fctflag,
 
 let
 
-  val err = !CompInfo.errorRef region
+  val err = EM.error region
   val _ = let fun h pps sign =PPModules.ppSignature pps (sign,statenv,6)
               val s = ">>matchStr1 - specSig :"
            in debugPrint debugging (s, h, specSig)
@@ -941,7 +942,7 @@ let
             matchElems(sigElements, entEnv, [], [], [], true)
             handle EE.Unbound => (debugmsg "$matchIt 1"; raise EE.Unbound)
      in if succeed then
-          let val resultEntEnv = EE.mark(CompInfo.mkStamp, resultEntEnv)
+          let val resultEntEnv = EE.mark(Stamps.fresh, resultEntEnv)
               val _ = debugmsg "--matchIt: elements matched successfully"
 
               val _ = checkSharing(specSig, resultEntEnv)
@@ -1010,7 +1011,7 @@ and matchStr {sign, str, strExp, evOp, tdepth, entEnv, rpath, statenv, region} =
 
   let val _ = debugmsg ">>matchStr"
 
-      val uncoerced = case evOp of SOME x => x | NONE => CompInfo.mkStamp ()
+      val uncoerced = case evOp of SOME x => x | NONE => Stamps.fresh ()
       val (resDec, resStr, exp) =
         matchStr1 (sign, str, anonSym, tdepth, entEnv, [uncoerced], rpath,
                    statenv, region)
@@ -1044,7 +1045,7 @@ and matchFct1(specSig as FSIG{paramsig=fsigParamSig,paramvar=fsigParamVar,
 (let
 
 (*** the entity var for the source functor "uncoercedFct" *)
-val uncoerced = CompInfo.mkStamp ()
+val uncoerced = Stamps.fresh ()
 val srcFctExp = M.VARfct [uncoerced]
 val paramSym = case paramsym of SOME x => x
                               | NONE => paramSym
