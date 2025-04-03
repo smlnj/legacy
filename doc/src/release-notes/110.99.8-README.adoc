@@ -92,6 +92,9 @@ gforge bug tracker.
 | [.bugid]#349#
 | {pull-base}/349[`PackReal64Big` and `PackReal64Little` export internals]
 | n.a.
+| [.bugid]#351#
+| {pull-base}/351[Fix `Word8Buffer.contents` to return an object with `ByteVector` representation]
+| n.a.
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]
