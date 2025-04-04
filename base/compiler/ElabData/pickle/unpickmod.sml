@@ -517,11 +517,11 @@ structure UnpickMod : UNPICKMOD = struct
 	fun libModSpec () = option lmsOptM (pair lmsPairM (int, symbol)) ()
 
 	fun stamp () = let
-	    fun st #"A" = Stamps.global { pid = globalPid (),
+	    fun st #"A" = Stamp.global { pid = globalPid (),
 					  cnt = int () }
-	      | st #"B" = Stamps.global { pid = pid (),
+	      | st #"B" = Stamp.global { pid = pid (),
 					  cnt = int () }
-	      | st #"C" = Stamps.special (string ())
+	      | st #"C" = Stamp.special (string ())
 	      | st _ = raise Format
 	in
 	    share stampM st

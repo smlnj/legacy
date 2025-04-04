@@ -50,7 +50,7 @@ local structure S  = Symbol
       structure EU = ElabUtil
       structure ET = ElabType
       structure EX = ExpandTycon
-      structure ST = Stamps
+      structure ST = Stamp
       open Ast Modules
 in
 

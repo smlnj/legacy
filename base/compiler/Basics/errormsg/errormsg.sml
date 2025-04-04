@@ -11,7 +11,7 @@
  * (1) Eliminate compilcations due to Ramsey's model of the sourceMap (done).
  * (2) Use the new PrettyPrint library instead of the old PP library.
  * The version of errormsg.s?? in the smlnj[newpp] branch does both of these.
- * This version simplifies by using CompInfo for accessing the anyErrors
+ * This version simplifies by using CompInfo for accessing the anyrrors
  * and errorConsumer values. This means that these don't have to be passed
  * as parameters in many places. They are expected to remain fixed throughout
  * a particular compilation.
@@ -49,8 +49,8 @@ in
   fun recordError severity : unit = 
       (case severity
  	 of WARN => ()  (* no consequences for warnings *)
-          | COMPLAIN =>  CI.anyErrors := true (* allow possibility of error recovery *)
-	  | TERMINAL => (CI.anyErrors := true; raise Error))
+          | COMPLAIN =>  CI.reportError () (* allow possibility of error recovery *)
+	  | TERMINAL => (CI.reportError (); raise Error))
 
   (* val nullErrorBody : bodyPrinter -- prints nothing *)
   (* should now be renamed "nullBodyPrinter" *)

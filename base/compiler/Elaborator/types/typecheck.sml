@@ -8,7 +8,7 @@ signature TYPECHECK =
 sig
 
   val decType : StaticEnv.staticEnv * Absyn.dec * int * bool
-		* ErrorMsg.errorFn * (unit -> bool) * SourceMap.region
+		* (unit -> bool) * SourceMap.region
                 -> Absyn.dec
     (* decType(senv,dec,tdepth,toplev,err,region):
          senv: the context static environment
@@ -88,7 +88,7 @@ fun mkDummy0 () = BasicTypes.unitTy
 (*
  * decType : SE.staticEnv * AS.dec * bool * EM.errorFn * SM.region -> AS.dec
  *)
-fun decType(env,dec,tdepth,toplev,err,anyErrors,region) =
+fun decType(env,dec,tdepth,toplev,region) =
 let
 
 (* setup for recording and resolving overloaded variables and literals *)
@@ -156,7 +156,7 @@ fun checkFlex (): unit =
     let fun check1 (tv,r) =
             (case !tv
                of OPEN{kind=FLEX _,...} =>
-                  (err region COMPLAIN
+                  (EM.error region COMPLAIN
 			  "unresolved flex record (hidden)"
 		       (fn ppstrm =>
 			     (PPType.resetPPType();
@@ -165,7 +165,7 @@ fun checkFlex (): unit =
 			      ppType ppstrm (VARty(tv)))))
                 | INSTANTIATED _ => ()
                 | _ => bug "checkFlex")
-    in if anyErrors () then ()
+    in if CI.errors () then ()
        else app check1 (!flexTyVars)
     end
 
@@ -183,7 +183,7 @@ fun tyToLoc (MARKty(t as MARKty _,region)) = tyToLoc t
 
 fun unifyErr{ty1,name1,ty2,name2,message=m,region,kind,kindname,phrase} =
     (unifyTy(ty1, ty2, tyToLoc ty1, tyToLoc ty2); true) handle Unify(mode) =>
-      (err region COMPLAIN (message(m,mode))
+      (EM.error region COMPLAIN (message(m,mode))
        (fn ppstrm =>
 	 (PPType.resetPPType();
 	  let val len1 = size name1
@@ -255,11 +255,12 @@ fun generalizeTy(VALvar{typ,path,btvs,...}, userbound: tyvar list,
                              (generalize orelse (toplevel occ)))
                             orelse ((toplevel occ) andalso (depth=0))
                          then
-			   (err region COMPLAIN (String.concat
-			     ["unresolved flex record\n\
-			      \   (can't tell what fields there are besides #",
-			      Symbol.name lab, ")"])
-			     nullErrorBody;
+			   (EM.errorRegion
+				(region,
+				 String.concat
+			             ["unresolved flex record\n\
+			              \ (can't tell what fields there are besides #",
+			              Symbol.name lab, ")"]);
                             tv := INSTANTIATED WILDCARDty;
 			    WILDCARDty)
                          else ty
@@ -268,7 +269,7 @@ fun generalizeTy(VALvar{typ,path,btvs,...}, userbound: tyvar list,
                              (generalize orelse (toplevel occ)))
                             orelse ((toplevel occ) andalso (depth=0))
                          then
-  			   (err region COMPLAIN
+  			   (EM.error region COMPLAIN
 			        "unresolved flex record (need to know the \
 			        \names of ALL the fields\n in this context)"
 			    (fn ppstrm =>
@@ -295,11 +296,10 @@ fun generalizeTy(VALvar{typ,path,btvs,...}, userbound: tyvar list,
 					      new
 					  end
 				     else (if !ElabControl.valueRestrictionLocalWarn
-					   then err region WARN
-				             ("type variable not generalized\
-                                              \ in local decl (value restriction): "
-                                              ^ (tyvarPrintname tv))
-				             nullErrorBody
+					   then EM.warnRegion (region,
+						   ("type variable not generalized\
+                                                    \ in local decl (value restriction): "
+                                                   ^ (tyvarPrintname tv)))
 					   else ();
 					   (* reset depth to prevent later
 					      incorrect generalization inside
@@ -330,12 +330,10 @@ fun generalizeTy(VALvar{typ,path,btvs,...}, userbound: tyvar list,
 				  bind(tv,new);
 				  new
 			      end)
-		       else (err region COMPLAIN
+		       else (EM.errorRegion (region,
 			     ("explicit type variable cannot be \
 			       \generalized at its binding \
-			       \declaration: " ^
-			       (tyvarPrintname tv))
-			      nullErrorBody;
+			       \declaration: " ^ (tyvarPrintname tv)));
 			     tv := INSTANTIATED WILDCARDty;
 			     WILDCARDty))
 		  else (debugmsg "is not local"; ty))
@@ -366,10 +364,9 @@ fun generalizeTy(VALvar{typ,path,btvs,...}, userbound: tyvar list,
         val _ = app elimUbound generalizedTyvars
 
      in if !failure andalso !ElabControl.valueRestrictionTopWarn
-	  then err region WARN
+	  then EM.warnRegion (region,
 	        "type vars not generalized because of\n\
-                 \   value restriction are instantiated to dummy types (X1,X2,...)"
-		nullErrorBody
+                 \   value restriction are instantiated to dummy types (X1,X2,...)")
           else ();
 	debugmsg "generalizeTy returning";
 	typ := (if !index > 0 then
@@ -426,7 +423,7 @@ fun patType(pat: AS.pat, depth: int, region: SM.region) : AS.pat * T.ty =
 	      (typ := mkMETAtyBounded depth; (pat,MARKty(!typ, region)))
 			             (* multiple occurrence due to or-pat *)
        | AS.VARpat (VALvar{typ, ...}) => (pat, MARKty(!typ, region))
-       | AS.NUMpat (src, {ival, ty}) => (pat, oll_push(ival, src, ty, err region))
+       | AS.NUMpat (src, {ival, ty}) => (pat, oll_push(ival, src, ty, EM.error region))
        | AS.STRINGpat _ => (pat,MARKty(stringTy, region))
        | AS.CHARpat _ => (pat,MARKty(charTy, region))
        | AS.RECORDpat {fields,flex,typ} =>
@@ -454,8 +451,7 @@ fun patType(pat: AS.pat, depth: int, region: SM.region) : AS.pat * T.ty =
             in (VECTORpat(npats,nty),
 	    	MARKty(CONty(vectorTycon,[nty]), region))
            end handle Unify(mode) => (
-	     err region COMPLAIN
-		 (message("vector pattern type failure",mode)) nullErrorBody;
+	     EM.errorRegion (region, (message("vector pattern type failure",mode)))
 	     (pat,WILDCARDty)))
        | AS.ORpat (p1, p2) =>
            let val (p1, ty1) = patType(p1, depth, region)
@@ -484,7 +480,7 @@ fun patType(pat: AS.pat, depth: int, region: SM.region) : AS.pat * T.ty =
                val npat = APPpat(ndcon,insts,argpat)
             in (npat,MARKty(applyType(ty2,argty), region))
 	       handle Unify(mode) =>
-		(err region COMPLAIN
+		(EM.error region COMPLAIN
                   (message("constructor and argument do not agree in pattern",mode))
 		  (fn ppstrm =>
 		   (PPType.resetPPType();
@@ -548,13 +544,13 @@ in
 	    in (VARexp(r, insts), MARKty(ty, region))
 	   end
        | VARexp(varref as ref(OVLDvar _),_) =>
- 	   (exp, olv_push (varref, region, err region))
+ 	   (exp, olv_push (varref, region, EM.error region))
        | VARexp(r as ref ERRORvar, _) => (exp, WILDCARDty)
        | CONexp(dcon as DATACON{typ,...},_) =>
            let val (ty,insts) = instantiatePoly typ
             in (CONexp(dcon, insts), MARKty(ty, region))
            end
-       | NUMexp(src, {ival, ty}) => (exp, oll_push(ival, src, ty, err region))
+       | NUMexp(src, {ival, ty}) => (exp, oll_push(ival, src, ty, EM.error region))
 (* REAL32: overload real literals *)
        | REALexp _ => (exp,MARKty(realTy, region))
        | STRINGexp _ => (exp,MARKty(stringTy, region))
@@ -579,7 +575,7 @@ in
             in (unifyTy(pt, nty, region, tyToLoc nty);
 		(SELECTexp(l, nexp), MARKty(res, region)))
                handle Unify(mode) =>
-                 (err region COMPLAIN
+                 (EM.error region COMPLAIN
                   (message("selecting a non-existing field from a record",mode))
                   (fn ppstrm =>
                    (PPType.resetPPType();
@@ -601,9 +597,8 @@ in
             in (VECTORexp(exps',vty),
 	    	MARKty(CONty(vectorTycon,[vty]), region))
            end handle Unify(mode) =>
-	   (err region COMPLAIN
-	     (message("vector expression type failure",mode))
-             nullErrorBody; (exp,WILDCARDty)))
+		 (EM.errorRegion (region, (message("vector expression type failure",mode)));
+		  (exp,WILDCARDty)))
        | SEQexp exps =>
 	   let fun scan nil = (nil,unitTy)
 	         | scan [e] =
@@ -628,7 +623,7 @@ in
 		   val reducedRatorTy = headReduceType ratorTy
 		in PPType.resetPPType();
 		   if isArrowType(reducedRatorTy)
-		   then (err region COMPLAIN
+		   then (EM.error region COMPLAIN
 			  (message("operator and operand do not agree",mode))
 			  (fn ppstrm =>
 			   (PP.newline ppstrm;
@@ -642,7 +637,7 @@ in
 			    ppExp ppstrm (exp,!printDepth);
 			    ppModeErrorMsg ppstrm mode));
 			 (exp,WILDCARDty))
-		   else (err region COMPLAIN
+		   else (EM.error region COMPLAIN
 			  (message("operator is not a function",mode))
 			  (fn ppstrm =>
 			    (PP.newline ppstrm;
@@ -940,9 +935,7 @@ and decType0 (decl, occ, tdepth, region) : dec =
 
        | EXCEPTIONdec(ebs) =>
 	   let fun check(VARty(ref(UBOUND _))) =
-		     err region COMPLAIN
-		         "type variable in top level exception type"
-			 nullErrorBody
+		     EM.errorRegion (region, "type variable in top level exception type")
 		 | check(CONty(_,args)) =
 		     app check args
 		 | check _ = ()

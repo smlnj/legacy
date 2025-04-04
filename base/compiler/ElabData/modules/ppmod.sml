@@ -105,7 +105,7 @@ fun sigToEnv(M.SIG {elements,...}) =
                 SE.bind(sym,B.TYCbind spec,env)
              | M.TYCspec{info=M.InfTycSpec{name,arity},...} =>
                 let val tyc =
-                        T.GENtyc {stamp=Stamps.special "x", arity=arity,
+                        T.GENtyc {stamp=Stamp.special "x", arity=arity,
                                   eq=ref(T.UNDEF), kind=T.FORMAL, stub=NONE,
                                   path=IP.extend(IP.empty,name)}
                 in SE.bind(sym,B.TYCbind tyc,env)
@@ -419,7 +419,7 @@ and ppSignature0 ppstrm (sign,env,depth,entityEnvOp) =
 		  PP.openHVBox ppstrm (PP.Abs 0);
 		    pps "SIG:";
 		    PP.openVBoxI ppstrm 2;
-		     pps "stamp: "; pps (Stamps.toShortString stamp);
+		     pps "stamp: "; pps (Stamp.toShortString stamp);
 		     cut ppstrm; pps "name: ";
 		     case name
 		       of NONE => pps "ANONYMOUS"
@@ -531,7 +531,7 @@ and ppStrEntity ppstrm (e,env,depth) =
 		pps (IP.toString rpath);
 		PP.cut ppstrm;
 		pps "stamp: ";
-		pps (Stamps.toShortString stamp);
+		pps (Stamp.toShortString stamp);
 		PP.cut ppstrm;
 		pps "entities:";
 		if null(EE.toList entities)
@@ -560,7 +560,7 @@ and ppFctEntity ppstrm (e, env, depth) =
 		pps (IP.toString rpath);
 		PP.cut ppstrm;
 		pps "stamp: ";
-		pps (Stamps.toShortString stamp);
+		pps (Stamp.toShortString stamp);
 		PP.cut ppstrm;
 		pps "closure:";
 		break{nsp=1,offset=2};

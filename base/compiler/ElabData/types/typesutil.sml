@@ -15,7 +15,7 @@ local (* imports *)
     structure SP = SymPath
     structure IP = InvPath
     structure S = Symbol
-    structure ST = Stamps
+    structure ST = Stamp
     structure A = Access
     structure T = Types
     structure V = VarCon		      
@@ -135,7 +135,7 @@ in (* top local *)
       | eqRecordLabels(x::xs,y::ys) = Symbol.eq(x,y) andalso eqRecordLabels(xs,ys)
       | eqRecordLabels _ = false
 
-    fun eqTycon (T.GENtyc g, T.GENtyc g') = Stamps.eq (#stamp g, #stamp g')
+    fun eqTycon (T.GENtyc g, T.GENtyc g') = Stamp.eq (#stamp g, #stamp g')
       | eqTycon (T.ERRORtyc,_) = true
       | eqTycon (_,T.ERRORtyc) = true
       (* this rule for PATHtycs is conservatively correct, but is only an
@@ -151,7 +151,7 @@ in (* top local *)
        * a datatype.  Used elsewhere?
        *)
       | eqTycon(T.DEFtyc{stamp=s1,...},T.DEFtyc{stamp=s2,...}) =
-	  Stamps.eq(s1,s2)
+	  Stamp.eq(s1,s2)
       | eqTycon _ = false
 
     (* eqDatacon : T.datacon * T.datacon -> bool
@@ -317,7 +317,7 @@ in (* top local *)
     local
       (* making dummy argument lists to be used in equalTycon *)
 	fun makeDummyType() =
-	    T.CONty (T.GENtyc {stamp = Stamps.fresh (),
+	    T.CONty (T.GENtyc {stamp = Stamp.fresh (),
 			       path = IP.IPATH[Symbol.tycSymbol "dummy"],
 			       arity = 0, eq = ref T.YES, stub = NONE,
 			       kind = T.PRIMITIVE},[])

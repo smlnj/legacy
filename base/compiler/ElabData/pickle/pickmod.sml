@@ -794,12 +794,12 @@ in
 
 	fun libModSpec lms = option (pair (int, symbol)) lms
 
-	val stampConverter = Stamps.newConverter ()
+	val stampConverter = Stamp.newConverter ()
 
 	fun stamp s = let
 	    val op $ = PU.$ ST
 	in
-	    Stamps.Case	stampConverter s
+	    Stamp.Case	stampConverter s
 		{ fresh = fn i => "A" $ [int i],
 		  global = fn { pid = p, cnt } => "B" $ [pid p, int cnt],
 		  special = fn s => "C" $ [string s] }

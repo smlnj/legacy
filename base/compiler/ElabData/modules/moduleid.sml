@@ -78,7 +78,7 @@ structure ModuleId : MODULE_ID = struct
     structure M = Modules
     structure T = Types
     structure A = Access
-    structure ST = Stamps
+    structure ST = Stamp
 
     fun bug m = ErrorMsg.impossible ("ModuleId: " ^ m)
 

@@ -9,7 +9,7 @@ local
 
   structure EP = EntPath
   structure ED = EntPath.EvDict
-  structure ST = Stamps
+  structure ST = Stamp
   structure M = Modules
   structure T = Types
 

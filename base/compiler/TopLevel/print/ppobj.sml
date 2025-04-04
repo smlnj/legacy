@@ -191,7 +191,7 @@ fun interpArgs(tys,NONE) = tys
      in map subst tys
     end
 
-fun transMembers(stamps: Stamps.stamp vector,
+fun transMembers(stamps: Stamp.stamp vector,
                  freetycs: T.tycon list, root,
                  family as {members,...} : T.dtypeFamily) =
     let fun dtmemberToTycon(n, {tycname,arity,dcons,eq,sign,lazyp}, l) =

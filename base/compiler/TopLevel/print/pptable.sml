@@ -8,7 +8,7 @@ signature PPTABLE =
 sig
   exception PP_NOT_INSTALLED
 
-  val pp_object : PrettyPrint.stream -> Stamps.stamp -> Unsafe.Object.object
+  val pp_object : PrettyPrint.stream -> Stamp.stamp -> Unsafe.Object.object
                   -> unit
 
   val install_pp : string list ->
@@ -59,7 +59,7 @@ struct
 	     | _ => error "install_pp: nongenerative type constructor"
       end
 
-  fun pp_object ppstrm (s: Stamps.stamp) (obj:object) =
+  fun pp_object ppstrm (s: Stamp.stamp) (obj:object) =
       case StampMap.find (!global_pp_table, s)
         of SOME p => p ppstrm obj
 	 | NONE => raise PP_NOT_INSTALLED

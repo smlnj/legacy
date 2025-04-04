@@ -1,10 +1,11 @@
-(* Copyright 1996 by AT&T Bell Laboratories *)
-(* eqtypes.sml *)
+(* ElabData/modules/eqtypes.sml *)
+
+(* Copyright 2025 by The Fellowship of SML/NJ (www.smlnj.org) *)
 
 signature EQTYPES =
 sig
 
-  val eqAnalyze : Modules.Structure * (Stamps.stamp -> bool)
+  val eqAnalyze : Modules.Structure * (Stamp.stamp -> bool)
                                     * ErrorMsg.complainer -> unit
 
   val defineEqProps : Types.tycon list * ExpandTycon.sigContext
@@ -35,7 +36,7 @@ local
   structure M = Modules
   structure MU = ModuleUtil
   structure SS = SpecialSymbols
-  open Types Stamps TypesUtil
+  open Types Stamp TypesUtil
 
 in
 
@@ -97,7 +98,7 @@ exception UnboundStamp
  * constraints.
  *)
 
-fun eqAnalyze(str,localStamp : Stamps.stamp -> bool,err : EM.complainer) =
+fun eqAnalyze(str,localStamp : Stamp.stamp -> bool,err : EM.complainer) =
 let val tycons = ref StampMap.empty
     val depend = ref StampMap.empty
     val dependr = ref StampMap.empty
@@ -124,7 +125,7 @@ let val tycons = ref StampMap.empty
 	let val depend = ref([]: stamp list)
 	    val dependsInd = ref false
 	    fun member(stamp,[]) = false
-	      | member(st,st'::rest) = Stamps.eq(st,st') orelse member(st,rest)
+	      | member(st,st'::rest) = Stamp.eq(st,st') orelse member(st,rest)
 	    fun eqtyc(tyc as GENtyc { stamp, eq, ... }) =
 		(case !eq
 		  of YES => ()
@@ -133,7 +134,7 @@ let val tycons = ref StampMap.empty
 		   | IND => dependsInd := true
 		   | (DATA | UNDEF) =>
 		     if member(stamp,!depend)
-			orelse Stamps.eq(stamp,datatycStamp) then ()
+			orelse Stamp.eq(stamp,datatycStamp) then ()
 		     else depend := stamp :: !depend)
 	      | eqtyc(RECORDtyc _) = ()
 	      | eqtyc _ = bug "eqAnalyze.eqtyc"
@@ -156,7 +157,7 @@ let val tycons = ref StampMap.empty
                                 val {tycname,dcons,...}: dtmember =
                                       Vector.sub(members,i)
 		             in if member(stamp,!depend)
-			        orelse Stamps.eq(stamp,datatycStamp)
+			        orelse Stamp.eq(stamp,datatycStamp)
 			        then ()
 			        else depend := stamp :: !depend
   		            end
@@ -243,7 +244,7 @@ let val tycons = ref StampMap.empty
 
     (* propagate the NO eqprop forward and the YES eqprop backward *)
     fun propagate_YES_NO(stamp) =
-      let fun earlier s = Stamps.compare(s,stamp) = LESS
+      let fun earlier s = Stamp.compare(s,stamp) = LESS
        in case applyMap''(eqprop,stamp)
 	   of YES =>
                propagate (YES,(fn s => applyMap'(depend,s)),earlier) stamp
@@ -254,7 +255,7 @@ let val tycons = ref StampMap.empty
     (* propagate the IND eqprop *)
     fun propagate_IND(stamp) =
       let fun depset s = applyMap'(dependr,s)
-	  fun earlier s = Stamps.compare(s,stamp) = LESS
+	  fun earlier s = Stamp.compare(s,stamp) = LESS
        in case applyMap''(eqprop,stamp)
 	   of UNDEF => (updateMap eqprop (stamp,IND);
 		        propagate (IND,depset,earlier) stamp)
@@ -265,7 +266,7 @@ let val tycons = ref StampMap.empty
     (* phase 0: scan signature strenv, joining eqprops of shared tycons *)
     val _ = addstr str
     val tycStamps =
-      ListMergeSort.sort (fn xy => Stamps.compare xy = GREATER) (!tycStampsRef)
+      ListMergeSort.sort (fn xy => Stamp.compare xy = GREATER) (!tycStampsRef)
  in
     (* phase 1: propagate YES backwards and NO forward *)
     app propagate_YES_NO tycStamps;

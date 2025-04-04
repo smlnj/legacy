@@ -38,9 +38,10 @@ struct
 
     (** take ast, do semantic checks,
      ** and output the new env, absyn and pickles *)
-    fun elaborate {ast, statenv=senv, compInfo=cinfo, guid} = let
+    fun elaborate {ast, statenv=senv, guid} = let
 	  val (absyn, nenv) = ElabTop.elabTop(ast, senv, cinfo)
-	  val (absyn, nenv) = if CompInfo.anyErrors cinfo
+	  val (absyn, nenv) =
+	        if CompInfo.errors ()
 		then (Absyn.SEQdec nil, StaticEnv.empty)
 	        else (absyn, nenv)
 	  val { pid, pickle, exportLvars, exportPid, newenv } =

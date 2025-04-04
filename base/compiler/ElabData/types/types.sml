@@ -11,7 +11,7 @@ local structure A  = Access
       structure EP = EntPath
       structure IP = InvPath
       structure S  = Symbol
-      structure ST = Stamps
+      structure ST = Stamp
 in
 
 type label = S.symbol

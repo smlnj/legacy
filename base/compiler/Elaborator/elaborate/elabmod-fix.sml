@@ -1076,7 +1076,7 @@ case fctexp
 		 | _ => (* Entering a functor for the first time *)
 		    let val base = mkStamp()
 			fun flex stamp =
-			    (case Stamps.compare(base,stamp)
+			    (case Stamp.compare(base,stamp)
 			       of LESS => true
 				| _ => false)
 		     in (flex, DI.top)
@@ -1452,7 +1452,6 @@ and elabDecl0
        epContext: EPC.context,
        rpath: IP.path,
        region: SourceMap.region,
-       compInfo as {mkStamp,mkLvar=mkv,error,anyErrors,transform,...}
          : EU.compInfo)
       : A.dec * entityDec * SE.staticEnv * entityEnv =
 
@@ -1563,7 +1562,7 @@ and elabDecl0
 		     val _ = (* instantiate to check well-formedness,
                               * but only if there have been no earlier errors *)
 			if !ElabControl.instantiateSigs
-                           andalso not(!(#anyErrors compInfo))
+                           andalso not(CI.errors ())
 			then (INS.instParam
 			        {sign=s,entEnv=EE.empty,tdepth=DI.top,
 				 rpath=IP.extend (IP.empty, SS.errorId),

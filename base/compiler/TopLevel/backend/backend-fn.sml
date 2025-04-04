@@ -44,7 +44,7 @@ functor BackendFn (
 		       end
 
 		       local
-			   val stampGen = Stamps.newGenerator ()
+			   val stampGen = Stamp.newGenerator ()
 		       in
 		           fun mkMkStamp () = stampGen (* always the same *)
 		       end
@@ -78,7 +78,7 @@ functor BackendFn (
 			newenv = newenv' }
 		  end
 
-		  val mkMkStamp = Stamps.newGenerator
+		  val mkMkStamp = Stamp.newGenerator
 	      end)
 
     structure Profile =

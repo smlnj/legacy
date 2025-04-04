@@ -77,7 +77,7 @@ local
    structure S  = Symbol
    structure SE = StaticEnv
    structure SP = SymPath
-   structure ST = Stamps
+   structure ST = Stamp
    structure T  = Types
    structure TU = TypesUtil
    structure TS = TyvarSet
@@ -942,7 +942,7 @@ let
             matchElems(sigElements, entEnv, [], [], [], true)
             handle EE.Unbound => (debugmsg "$matchIt 1"; raise EE.Unbound)
      in if succeed then
-          let val resultEntEnv = EE.mark(Stamps.fresh, resultEntEnv)
+          let val resultEntEnv = EE.mark(Stamp.fresh, resultEntEnv)
               val _ = debugmsg "--matchIt: elements matched successfully"
 
               val _ = checkSharing(specSig, resultEntEnv)
@@ -1011,7 +1011,7 @@ and matchStr {sign, str, strExp, evOp, tdepth, entEnv, rpath, statenv, region} =
 
   let val _ = debugmsg ">>matchStr"
 
-      val uncoerced = case evOp of SOME x => x | NONE => Stamps.fresh ()
+      val uncoerced = case evOp of SOME x => x | NONE => Stamp.fresh ()
       val (resDec, resStr, exp) =
         matchStr1 (sign, str, anonSym, tdepth, entEnv, [uncoerced], rpath,
                    statenv, region)
@@ -1045,7 +1045,7 @@ and matchFct1(specSig as FSIG{paramsig=fsigParamSig,paramvar=fsigParamVar,
 (let
 
 (*** the entity var for the source functor "uncoercedFct" *)
-val uncoerced = Stamps.fresh ()
+val uncoerced = Stamp.fresh ()
 val srcFctExp = M.VARfct [uncoerced]
 val paramSym = case paramsym of SOME x => x
                               | NONE => paramSym

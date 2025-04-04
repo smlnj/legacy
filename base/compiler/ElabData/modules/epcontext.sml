@@ -1,5 +1,6 @@
+(* ElabData/modules/epcontext.sml *)
 (* Copyright 1996 by AT&T Bell Laboratories *)
-(* epcontext.sml *)
+(* Copyright 2025 by The Fellowship of SML/NJ (www.smlnj.org) *)
 
 signature ENT_PATH_CONTEXT =
 sig
@@ -26,9 +27,12 @@ end  (* signature ENT_PATH_CONTEXT *)
 structure EntPathContext :> ENT_PATH_CONTEXT =
 struct
 
-local structure ST = Stamps
-      structure EP = EntPath
-      structure MI = ModuleId
+local
+
+  structure ST = Stamp
+  structure EP = EntPath
+  structure MI = ModuleId
+
 in
 
 type pathmap = EP.rEntPath MI.umap

@@ -14,7 +14,7 @@ local
   structure SP = SymPath
   structure IP = InvPath
   structure EP = EntPath
-  structure ST = Stamps
+  structure ST = Stamp
   structure T = Types
   structure A = Access
   structure E = Env

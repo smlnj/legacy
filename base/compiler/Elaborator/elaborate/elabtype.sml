@@ -248,7 +248,7 @@ fun elabTBlist (tbl:Ast.tb list, notwith:bool, env0, rpath, region)
 		       val _ = TU.bindTyvars tyvars'
 		       val _ = TU.compressTy ty
 		       val tycon =
-			   DEFtyc{stamp = Stamps.fresh (),
+			   DEFtyc{stamp = Stamp.fresh (),
 				  path = IP.extend (rpath, name),
 				  strict = TU.calcStrictness (arity,ty),
 				  tyfun = TYFUN{arity=arity, body=ty}}
@@ -290,13 +290,13 @@ fun elabDATATYPEdec ({datatycs,withtycs}, env0, sigContext,
 		    else name
 		val tyc = GENtyc{path = IP.extend(rpath,strictName),
 				 arity = length tyvars,
-				 stamp = Stamps.fresh (),
+				 stamp = Stamp.fresh (),
 				 eq = ref DATA,
 				 kind = TEMP,
 				 stub = NONE}
 		val binddef =
 		    if lazyp then
-			   DEFtyc{stamp = Stamps.fresh (),
+			   DEFtyc{stamp = Stamp.fresh (),
 				  tyfun=TYFUN{arity=length tyvars,
 					      body=CONty(BT.suspTycon,
 						    [CONty(tyc,map VARty tvs)])},
@@ -428,7 +428,7 @@ fun elabDATATYPEdec ({datatycs,withtycs}, env0, sigContext,
         val nfamily = {members=Vector.fromList members,
 		       properties = PropList.newHolder (),
                        (* lambdatyc=ref NONE, *)
-                       mkey = Stamps.fresh ()}
+                       mkey = Stamp.fresh ()}
         val nfreetycs =
           let val (x, n) = !freeTycsRef
               val _ = if length x = n then ()  (* sanity check *)
@@ -463,7 +463,7 @@ fun elabDATATYPEdec ({datatycs,withtycs}, env0, sigContext,
 
         fun applyMap m =
             let fun sameTyc(GENtyc g1, GENtyc g2) =
-		    Stamps.eq(#stamp g1, #stamp g2)
+		    Stamp.eq(#stamp g1, #stamp g2)
                   | sameTyc(tyc1 as DEFtyc _, tyc2 as DEFtyc _) =
 		      equalTycon(tyc1, tyc2)
                   | sameTyc _ = false

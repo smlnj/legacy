@@ -53,7 +53,7 @@ struct
 	    fun inputc_sourceStream _ = TextIO.input sourceStream
 	    fun getline k =
 		(if !doprompt
-		 then (if !CI.anyErrors then raise AbortLex else ();
+		 then (if CI.errors () then raise AbortLex else ();
 		       if !(#comLevel lexarg) > 0 orelse !(#charlist lexarg) <> nil
 		       then Control_Print.say (!ParserControl.secondaryPrompt)
 		       else Control_Print.say (!prompt);
@@ -83,13 +83,13 @@ struct
 					     (initialLinePos, SourceMap.lastLinePos sourcemap)
 			 in addLines linesRead;
 			    lexer' := lexer'';
-			    if !CI.anyErrors then ERROR else PARSE result
+			    if CI.errors() then ERROR else PARSE result
 			end
 		end handle LrParser.ParseError => ABORT
 			   | AbortLex => ABORT
 		  (* oneparse *)
 
-	 in fn () => (CI.anyErrors := false; oneparse ())
+	 in oneparse
 	end (* parse *)
 
 end (* structure MLParser *)

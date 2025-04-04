@@ -5,7 +5,7 @@
 (* Re-written by Matthias Blume (3/2000) *)
 (* rewritten by DBM 2025.02 *)
 
-structure Stamps :> STAMPS =
+structure Stamp :> STAMP =
 struct
 
   type pid = PersStamps.persstamp	(* for global stamps *)
@@ -93,4 +93,4 @@ struct
 		    end)
   end (* local *)
 
-end (* structure Stamps :> STAMPS *)
+end (* structure Stamp :> STAMP *)

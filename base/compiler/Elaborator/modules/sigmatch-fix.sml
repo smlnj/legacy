@@ -77,7 +77,7 @@ local
    structure S  = Symbol
    structure SE = StaticEnv
    structure SP = SymPath
-   structure ST = Stamps
+   structure ST = Stamp
    structure T  = Types
    structure TU = TypesUtil
    structure V  = VarCon
@@ -171,8 +171,7 @@ fun matchStr1 (specSig as SIG{stamp=sigStamp,closed,fctflag,
 	       epath: EP.entVar list,
 	       rpath: IP.path,
 	       statenv,
-	       region,
-	       compInfo as {mkStamp, mkLvar=mkv, error, anyErrors, ...}: EU.compInfo) =
+	       region)
 let
 
   val err = error region
@@ -1005,8 +1004,8 @@ end
  *      compInfo : ElabUtil.compInfo}
  *  -> {resDec : Absyn.dec, resStr : Modules.Structure, resExp : Modules.strExp} option
  *
- * If the signature match failes, returns NONE (after printing error message(s), setting
- * anyErrors to true).
+ * If the signature match failes, returns NONE (after printing error message(s), 
+ * and calls CompInfo.reportError.
  ***************************************************************************)
 and matchStr {sign, str, strExp, evOp, tdepth, entEnv, rpath, statenv, region,
               compInfo=compInfo as {mkStamp,...}: EU.compInfo} =

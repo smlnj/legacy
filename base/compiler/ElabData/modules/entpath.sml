@@ -1,10 +1,13 @@
+(* ElabData/modules/entpath.sml *)
+
 (* Copyright 1996 by AT&T Bell Laboratories *)
-(* entpath.sml *)
+
+(* Copyright 2025 by The Fellowship of SML/NJ (www.smlnj.org) *)
 
 signature ENT_PATH =
 sig
 
-  type entVar = Stamps.stamp
+  type entVar = Stamp.stamp
   type entPath = entVar list
   type rEntPath
 
@@ -41,7 +44,7 @@ struct
 (* imports *)
 local
 
-  structure ST = Stamps
+  structure ST = Stamp
 
 in
 

@@ -188,7 +188,7 @@ fun strength(ty) =
        | CONty(tycon, args) =>
 	   (case tycon
  	      of GENtyc { stamp, kind = PRIMITIVE, ... } =>
-		 if Stamps.eq(stamp,arrowStamp) then 0 else 2
+		 if Stamp.eq(stamp,arrowStamp) then 0 else 2
 	       | RECORDtyc (_::_) =>  (* excepting type unit *)
 		 if Tuples.isTUPLEtyc(tycon) then 1 else 2
 	       | _ => 2)
@@ -226,7 +226,7 @@ fun ppTycon1 env ppstrm membersOp =
 		    PP.string ppstrm "[";
 		    PP.string ppstrm "G";
 		    ppkind ppstrm kind; pps ";";
-		    PP.string ppstrm (Stamps.toShortString stamp);
+		    PP.string ppstrm (Stamp.toShortString stamp);
 		    PP.string ppstrm ";";
 		    ppEqProp ppstrm (!eq);
 		    PP.string ppstrm "]";
@@ -312,7 +312,7 @@ and ppType1 env ppstrm (ty: ty, sign: T.polysign,
 		        of GENtyc { stamp, kind, ... } =>
 			 (case kind of
 			      PRIMITIVE =>
-			      if Stamps.eq(stamp,arrowStamp)
+			      if Stamp.eq(stamp,arrowStamp)
 			      then case args
 			            of [domain,range] =>
 				       (openHVBox 0;

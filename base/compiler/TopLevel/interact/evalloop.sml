@@ -57,10 +57,12 @@ functor EvalLoopF (Compile: TOP_COMPILE) : EVALLOOP =
    *)
     fun evalLoop source =
 	let val _ = CompInfo.reset source
+	    val _ = Stamp.reset ()
+	    val _ = LambdaVar.reset ()
 	    val parser = SmlFile.parseOne source
 
 	    fun checkErrors (s: string) =
-		if !CompInfo.anyErrors
+		if CompInfo.errors ()
 		then (if !Control.progressMsgs
 		      then say (concat["<<< Error stop after ", s, "\n"])
 		      else ();
@@ -267,9 +269,9 @@ functor EvalLoopF (Compile: TOP_COMPILE) : EVALLOOP =
 		 of (NONE | SOME 0) => ()
 		  | SOME _ => (ignore (TextIO.input TextIO.stdIn); flush'())
 		(* end case *))
-	  fun flush () = (
-		#anyErrors source := false;
-		flush'() handle IO.Io _ => ())
+	  fun flush () =
+	      (CI.reset NONE;
+	       flush'() handle IO.Io _ => ())
 	  fun loop () = withErrorHandling false {
 		  thunk = fn () => evalLoop source,
 		  flush = flush, cont = loop o ignore

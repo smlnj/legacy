@@ -5,7 +5,7 @@
 (* Re-written by Matthias Blume (3/2000) *)
 (* Rewritten by DBM, 2025.02 *)
 
-signature STAMPS =
+signature STAMP =
 sig
     type stamp
     type ord_key = stamp		(* to match ORD_KEY *)
@@ -43,4 +43,4 @@ sig
 		 global  : { pid: pid, cnt: int } -> 'a,
 		 special : string -> 'a } -> 'a
 
-end (* signature STAMPS *)
+end (* signature STAMP *)

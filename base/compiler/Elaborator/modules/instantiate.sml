@@ -93,7 +93,7 @@ local (* imports *)
   structure S  = Symbol
   structure SP = SymPath
   structure IP = InvPath
-  structure ST = Stamps
+  structure ST = Stamp
 
   structure EU = ElabUtil
   structure ED = ElabDebug
@@ -178,7 +178,7 @@ datatype instKind
 datatype stampInfo
   = STAMP of ST.stamp   (* here is the stamp *)
   | PATH of EP.entPath  (* get the stamp of the entity designated by the path *)
-  | GENERATE            (* generate a new stamp (using Stamps.fresh) *)
+  | GENERATE            (* generate a new stamp (using Stamp.fresh) *)
 
 (* datatype entityInfo
  * The contents of the finalEnt field of the FinalStr inst variant.
@@ -1182,14 +1182,14 @@ fun buildTycClass (cnt, this_slot, entEnv, instKind, rpath, region: SM.region) =
 		    of T.FORMAL =>
 		       let val tk = TKind.TKCint(arity)
 			   val knd = newTycKind(epath,tk)
-			   val tyc = T.GENtyc {stamp = Stamps.fresh (), arity = arity,
+			   val tyc = T.GENtyc {stamp = Stamp.fresh (), arity = arity,
 					     path = IP.append(rpath,path),
 					     kind = knd, eq = ref(eqprop),
 					     stub = NONE}
 		       in (FinalTyc(ref(INST tyc)), SOME(tyc,(epath,tk)))
 		       end
 		     | T.DATATYPE _ =>
-		       let val tyc = T.GENtyc {stamp = Stamps.fresh(), kind = kind, arity = arity,
+		       let val tyc = T.GENtyc {stamp = Stamp.fresh(), kind = kind, arity = arity,
 					       stub = NONE, eq = ref eqprop, path = path}
 		       in (FinalTyc(ref(NOTINST tyc)), NONE)
 		       (* domains of dataconstructors will be instantiated
@@ -1345,7 +1345,7 @@ let fun instToStr' (instance as (FinalStr {sign as M.SIG {closed, elements,... }
 	     let
 		 (* Gets the stamp of an instance -- generates one if
 		  * one is not already built. *)
-		 fun getStamp instance : Stamps.stamp =
+		 fun getStamp instance : Stamp.stamp =
 		     let val stamp = get_stamp_info instance
 		     in case (!stamp)
 			 of STAMP s => (debugmsg "getStamp:STAMP"; s)
@@ -1357,7 +1357,7 @@ let fun instToStr' (instance as (FinalStr {sign as M.SIG {closed, elements,... }
 				  handle EE.Unbound => (debugmsg "getStamp:PATH failed";
 						   raise EE.Unbound)))
 			 | GENERATE =>
-			    let val s = Stamps.fresh ()
+			    let val s = Stamp.fresh ()
 			     in debugmsg "getStamp:GENERATE";
 				stamp := STAMP s; s
 			    end
@@ -1419,7 +1419,7 @@ let fun instToStr' (instance as (FinalStr {sign as M.SIG {closed, elements,... }
 				          T.TYFUN{arity=arity,
 						  body=MU.transType entEnv body}
 			              in T.DEFtyc{tyfun=tf, strict=strict,
-						  stamp = Stamps.fresh (),
+						  stamp = Stamp.fresh (),
 						  path=IP.append(rpath,path)}
 				     end
 			    in debugType("#instToTyc(NOTINST/DEFtyc)",tc);
@@ -1441,7 +1441,7 @@ let fun instToStr' (instance as (FinalStr {sign as M.SIG {closed, elements,... }
 				       (case root
 					 of NONE =>
 					      (* this is the lead dt of family *)
-					      Vector.map (fn _ => Stamps.fresh ()) stamps
+					      Vector.map (fn _ => Stamp.fresh ()) stamps
 					  | SOME rootev =>
 				      (* this is a secondary dt of a family,
 				       * find the stamp vector for the root
@@ -1452,7 +1452,7 @@ let fun instToStr' (instance as (FinalStr {sign as M.SIG {closed, elements,... }
 						      T.DATATYPE{stamps, ...},
 							    ... } => stamps
                                                | T.ERRORtyc =>
-						   Vector.map (fn _ => Stamps.fresh ()) stamps
+						   Vector.map (fn _ => Stamp.fresh ()) stamps
                                                | _ =>
 					         (* oops, the root instantiation
 					          * is not a datatype (see bug 1414) *)
@@ -1521,7 +1521,7 @@ let fun instToStr' (instance as (FinalStr {sign as M.SIG {closed, elements,... }
 				(*** would this case ever occur ??? ***)
 
 			    | NONE =>
-			      let val stamp = Stamps.fresh()
+			      let val stamp = Stamp.fresh()
 				  val (bodyExp, tpOp) =
 				      newFctBody(sign, epath, path, entEnv)
 				  val cl = M.CLOSURE{param=paramvar, body=bodyExp,
@@ -1588,7 +1588,7 @@ let fun instToStr' (instance as (FinalStr {sign as M.SIG {closed, elements,... }
                         end)
                   else (let val _ = debugmsg "mkEntEnv: not closed";
                             val baseEntC =
-                              (M.MARKeenv{stamp = Stamps.fresh(),
+                              (M.MARKeenv{stamp = Stamp.fresh(),
 					  env = entEnv, stub = NONE},
 			       failuresSoFar)
                             val (ee, fc) = mkEntEnv(baseEntC)
@@ -1660,7 +1660,7 @@ and getTkFct{sign as M.FSIG{paramvar, paramsig, bodysig, ...}, entEnv, rpath} =
                          of SOME u => (args, u)
                           | NONE =>
                              let val entEnv' =
-                                   EE.mark(Stamps.fresh,
+                                   EE.mark(Stamp.fresh,
                                        EE.bind(paramvar, M.STRent rlzn, entEnv))
 
                                  val (_, _, _, res, _) =
@@ -1692,7 +1692,7 @@ and getTkFct{sign as M.FSIG{paramvar, paramsig, bodysig, ...}, entEnv, rpath} =
 and instGeneric {sign, entEnv, instKind, rpath, region} = 
   let val _ = debugmsg (">>instantiate: "^signName sign)
       val _ = error_found := false
-      val baseStamp = Stamps.fresh ()
+      val baseStamp = Stamp.fresh ()
 
       val (inst, abstycs, tyceps, cnt) =
           sigToInst (sign, entEnv, instKind, rpath, region)

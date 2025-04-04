@@ -37,7 +37,7 @@ structure BasicTypes : BASICTYPES =
   (*** primitive type constructors and types ***)
 
   (*** function type constructor ***)
-    val arrowStamp = Stamps.special "->"
+    val arrowStamp = Stamp.special "->"
     val arrowTycon = T.GENtyc {
 	    stamp = arrowStamp,
 	     path = IP.IPATH [Symbol.tycSymbol "->"],
@@ -49,7 +49,7 @@ structure BasicTypes : BASICTYPES =
     infix -->
     fun t1 --> t2 = T.CONty (arrowTycon, [t1, t2])
 
-    fun isArrowType (T.CONty(T.GENtyc { stamp, ... }, _)) = Stamps.eq(stamp, arrowStamp)
+    fun isArrowType (T.CONty(T.GENtyc { stamp, ... }, _)) = Stamp.eq(stamp, arrowStamp)
       | isArrowType (T.VARty(ref(T.INSTANTIATED ty))) = isArrowType ty
       | isArrowType (T.MARKty(tyc, region)) = isArrowType tyc
       | isArrowType _ = false
@@ -79,7 +79,7 @@ structure BasicTypes : BASICTYPES =
  * a problem with the access assigned to PrimTypes. - DBM
  *)
     val unitTycon = T.DEFtyc {
-	    stamp = Stamps.special "unit",
+	    stamp = Stamp.special "unit",
 	    tyfun = T.TYFUN { arity = 0, body = T.CONty(Tuples.mkTUPLEtyc 0, []) },
 	    strict = [],
 	    path = IP.IPATH [unitSym]
@@ -90,7 +90,7 @@ structure BasicTypes : BASICTYPES =
   (*** primitive types ***)
 
     fun mkPrimTyc (name, arity, eqprop) = T.GENtyc{
-	    stamp = Stamps.special name,
+	    stamp = Stamp.special name,
             path = IP.IPATH[Symbol.tycSymbol name],
 	    arity = arity,
             eq = ref eqprop,
@@ -164,7 +164,7 @@ structure BasicTypes : BASICTYPES =
   (* primitive datatypes *)
 
   (* bool *)
-    val boolStamp = Stamps.special "bool"
+    val boolStamp = Stamp.special "bool"
     val boolsign = Access.CSIG (0, 2)
     val (boolTycon, boolTy, falseDcon, trueDcon) = let
 	  val booleq = ref T.YES
@@ -219,7 +219,7 @@ structure BasicTypes : BASICTYPES =
 	  end
 
   (* references *)
-    val refStamp = Stamps.special "ref"
+    val refStamp = Stamp.special "ref"
     val (refTycon, refPatType, refDcon) = let
 	val eqRef = ref T.OBJ
 	val alpha = T.IBOUND 0
@@ -263,7 +263,7 @@ structure BasicTypes : BASICTYPES =
 
   (* lists *)
 
-    val listStamp = Stamps.special "list"
+    val listStamp = Stamp.special "list"
     val consDom = tupleTy[alpha, T.CONty(T.RECtyc 0,[alpha])]
     val listsign = Access.CSIG(1,1) (* [Access.UNTAGGED,Access.CONSTANT 0], [Access.LISTCONS,Access.LISTNIL] *)
     val listeq = ref T.YES
@@ -306,7 +306,7 @@ structure BasicTypes : BASICTYPES =
 
 (* unrolled lists *)
 (* should this type have a different stamp from list? *)
-    val ulistStamp = Stamps.special "ulist"
+    val ulistStamp = Stamp.special "ulist"
     val ulistsign = Access.CSIG(1,1) (* [Access.LISTCONS,Access.LISTNIL] *)
     val ulistEq = ref T.YES
     val kind = T.DATATYPE{
@@ -350,7 +350,7 @@ structure BasicTypes : BASICTYPES =
 
     val antiquoteDom = alpha
     val quoteDom = stringTy
-    val fragStamp = Stamps.special "frag"
+    val fragStamp = Stamp.special "frag"
     val fragsign = Access.CSIG(2, 0) (* [Access.TAGGED 0, Access.TAGGED 1] *)
     val frageq = ref T.YES
     val kind = T.DATATYPE{
@@ -396,7 +396,7 @@ structure BasicTypes : BASICTYPES =
 
   (* LAZY: suspensions for supporting lazy evaluation *)
     val dollarDom = alpha
-    val suspStamp = Stamps.special "susp"
+    val suspStamp = Stamp.special "susp"
     val suspsign = Access.CSIG(1,0)
     val suspEq = ref T.NO
     val kind = T.DATATYPE{
