@@ -67,7 +67,7 @@ struct
 
 local
 
-  structure FP = FilePos (* <- ltypes charpos, location, region *)
+  structure SL = SourceLoc (* <- ltypes charpos, location, region *)
 
   (* compiler bug errors; FilePos precedes ErrorMsg, so cannot use ErrorMsg.impossible *)
   exception SOURCEMAP_ERROR of string
@@ -77,7 +77,7 @@ in
  
   (* types ------------------------------- *)
 
-  type smap = {lines: charpos list, count: int}
+  type smap = {lines: SL.charpos list, count: int}
     (* INVARIANT: {lines, count}: smap
          (1) not (null lines)
 	 (2) count > 0  (we assume a source in non-empty, so there is at least one line)
@@ -132,63 +132,65 @@ in
    source contains a sourcemap ref.
 *)
 
-  (* initSmap: smap *)
-  val initSmap : smap = {lines =[1], count = 1}
-
+  (* newSourcemap : unit -> sourcemap *)
+  fun newSourcemap () = ref {lines = [1], count = 1}
+			     
   (* charposToLocation : [pos:]charpos *  sourcemap -> location
    * REQUIRE: pos >= 1 (and char[pos] not newline?)
    * We strip lines from the !sourcemap lines list until the charpos occurs in the
    * first line of the remainder, while keeping count of how many lines have been
    * stripped to determine the line number the line containing the pos.
    * Does it matter if the pos is the charpos of a newline terminating a line? *)
-  fun charposToLocation (pos: charpos, sourcemap: sourcemap) : location =
+  fun charposToLocation (pos: SL.charpos, sourcemap: sourcemap) : SL.location =
       let val {lines, count} = !sourcemap
 	  fun strip (lines as pos' :: lines', count') : int * int =
-              if pos < pos' then strip (lines', count'-1) (* pos comes before this head line *)
-              else (count', pos - pos' + 1),  (* pos is in this first line of lines *)
+              if pos < pos'
+	      then strip (lines', count'-1) (* pos comes before this head line *)
+              else (count', pos - pos' + 1)  (* pos is in this first line of lines *)
 	    | strip _ = bug "uptoPos"
-	    val (line', column') = strip (lines, count)
-       in {line = line, column = column)
+	  val (line', column') = strip (lines, count)
+       in {line = line', column = column'}
       end
 
-  (* regionToLocations : sourcemap * region -> (location * location) option
+  (* regionToLocations : sourcemap * SL.region -> (SL.location * SL.location) option
    * this could be made more efficient by sweeping smap while looking for both hi and lo
    * limits of a region *)
-  fun regionToLocations (smap: sourcemap, REGION (lo, hi)) : (location * location) option =
-        SOME (charposToLocation (!smap, lo), charposToLocation (!smap, hi))
+  fun regionToLocations (smap: sourcemap, SL.REGION (lo, hi)) : (SL.location * SL.location) option =
+        SOME (charposToLocation (lo, smap), charposToLocation (hi, smap))
     | regionToLocations (_, NULLregion) = NONE
 
 (* functions called in the lexer files: Parse/lex/ ml.lex.sml, sml.lex.sml, user.sml,
  *   and Parse/main/ (s)ml-parser.sml  *)
 
-  (* regionNewlineCount : sourcemap * region -> int
+  (* regionNewlineCount : sourcemap * SL.region -> int
    * determines the number of newlines occurring within a region,
    * which may be 0 for a region that lies within a single line.
    * Also, by convention, returns 0 for NULLregion *)
-  fun newlineCount (smap: sourcemap, region: region) =
+  fun newlineCount (smap: sourcemap, region: SL.region) =
       (case regionToLocations (smap, region)
 	 of SOME ({line=lo_line, ...}, {line=hi_line,...}) =>
 	      hi_line - lo_line  (* hi_line and lo_line may be equal *)
 	  | NONE => 0)
 
-  (* lastLinePos : sourcemap -> charpos
+  (* lastLinePos : sourcemap -> SL.charpos
    * exported and used in Parse/lex/user.sml and in Parse/main/ (s)ml-parse.sml *)
-  fun lastLinePos (sourcemap: sourcemap) : charpos =
+  fun lastLinePos (sourcemap: sourcemap) : SL.charpos =
       let val {lines, ...} = !sourcemap
        in case lines
             of (pos::_) => pos
              | nil => bug "lastLineStart: empty sourcemap" (* sourcemap invariant (1) violated *)
+      end
 
-  (* newline : sourcemap -> charpos -> unit
+  (* newline : sourcemap ->SL.charpos -> unit
    * pos should be the position of the newline character (from the lexer's yypos),
    * the next line starts with the succeeding position, pos+1, skipping over the
    * newline char. *)
-  fun newline (sm: sourcemap) (pos: charpos) =
-      case !sm
-        of lines as ((_,line) :: _) => (sm := (pos+1, line+1) :: lines)
-         | nil => bug "newline"  (* invariant (1) violated *)
+  fun newline (sm: sourcemap) (pos: SL.charpos) =
+      let val {lines, count} = !sm
+       in sm := {lines = pos+1::lines, count = count+1}
+      end
 
-  (* resynch : sourcemap -> charpos * charpos * int * int * string option -> unit
+  (* resynch : sourcemap -> SL.charpos * SL.charpos * int * int * string option -> unit
    * This now does nothing.  It was used to process the obsolete #line directive
    * in the lexer. *)
   fun resynch (sm: sourcemap) (initpos, newpos, line, column, fileNameOp) = ()

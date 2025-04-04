@@ -28,7 +28,12 @@ end (* signature PPABSYN *)
 structure PPAbsyn: PPABSYN =
 struct
 
-local
+local (* imports *)
+
+  structure SM = SourceMap
+  structure SL = SourceLoc
+  structure SR = Source
+		     
   structure S = Symbol
   structure SS = SpecialSymbols
   structure IP = InvPath		     
@@ -39,7 +44,7 @@ local
   structure PU = PPUtil
   structure AU = AbsynUtil
 
-  open Absyn Tuples Fixity VarCon Types PPType PPVal
+  open Absyn Tuples Fixity VarCon Types PPType PPVal  (* delete these *)
 in
 
 (* debugging *)
@@ -62,12 +67,11 @@ fun strongerR(INfix(_,m),INfix(n,_)) = n > m
   | strongerR _ = true			(* should not matter *)
 
 fun prpos(ppstrm: PP.stream,
-          source: Source.inputSource, charpos: int) =
+          source: SR.source, charpos: int) =
     if (!lineprint) then
-      let val {line,column,...} = Source.filepos source charpos
-       in PU.ppi ppstrm line;
-	  PU.pps ppstrm ".";
-	  PU.ppi ppstrm column
+      let val {map, ...} = source
+          val locString = SL.locationToString (SM.charposToLocation (map, charpos))
+       in pps ppstrm locString;
       end
     else PU.ppi ppstrm charpos
 

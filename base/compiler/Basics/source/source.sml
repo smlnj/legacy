@@ -37,59 +37,52 @@ struct
 
   (* newSource : string option -> source *) 
   fun newSource (fileNameOp: string option) : source =
-      let val kind =
+      let val (kind, instream) =
 	      case fileNameOp
-                of NONE => STDIN  (* interactive source *)
-		 | SOME f => 
-		     FILE {fileName = f,  (* NONE => interactive source (stdIn) *)
-			   content = ref NONE}
-       in {sourceMap = SM.newSourcemap (),
-	   instream = TextIO.openIn file,
+                of NONE => (STDIN, TextIO.stdIn)  (* interactive source *)
+		 | SOME file => (FILE {name = file, content = ref NONE}, TextIO.openIn file)
+       in {map = SM.newSourcemap (),
+	   instream = instream,
 	   kind = kind}
       end
 
   (* close : source -> unit *)
-  fun closeSource ({kind, ...}): source = ()
+  fun closeSource ({kind, instream, ...}: source): unit =
       (case kind
-	 of STDIN => ()
-		  | FILE {instream, ...} =>
-		      (TextIO.closeIn sourceStream
-		       handle IO.Io _ => ()))
+	 of STDIN => ()  (* we won't close stdIn *)
+	  | FILE _ =>
+	      (TextIO.closeIn instream
+	       handle IO.Io _ => ()))
 
   (* sourcemap: source -> SM.sourcemap *)
   fun sourcemap ({map, ...}: source) : SM.sourcemap = map
 
   (* instream: source -> TextIO.instream *)
-  fun instream ({instream, ...}: source) : SM.sourcemap = instream
+  fun instream ({instream=strm, ...}: source) : TextIO.instream = strm
 							  
   (* name: source -> string *)
   fun name ({kind, ...}: source) : string =
       (case kind
 	 of STDIN => "stdIn"
-	  | FILE {fileName, ...} => fileName)
+	  | FILE {name, ...} => name)
 
   (* interactive: source -> bool *)
-  fun interactive ({kind, ...}: source) : string =
-      (case kind
-	 of STDIN => true
-	  | FILE {fileName, ...} => false)
-
+  fun interactive ({kind = STDIN, ...}: source) : bool = true
+    | interactive _ = false
 
   (* getContent: inputSource -> string option *)
   fun getContent ({kind, ...}: source) : string option =
-      case kind
-        of STDIN => NONE
-	| FILE{name, content, ...} => 
-	    case !content
-              of NONE =>
-		   let val cOp = SOME (TextIO.inputAll(TextIO.openIn name))
-		    in content := cOp;
-		       cOp
-		   end handle IO.Io _ => NONE)  (* couldn't read the file. Error? *)
-
-  (* filepos: source -> SL.charpos -> SL.location *)
-  (* should not be used: call SM.charposToLocation directly instead. *)
-  fun filepos ({map, ...} : source) (pos: SL.charpos) : SL.location =
-        SM.charposToLocation (map, pos)
+      (case kind
+         of STDIN => NONE  (* we don't collect the "content" of the stdIn instream *)
+	  | FILE{name, content} => 
+	      (case !content
+                 of NONE =>
+		      let val contentOp = SOME (TextIO.inputAll(TextIO.openIn name))
+		       in content := contentOp;
+			  contentOp
+		      end handle IO.Io _ => NONE))
+                      (* couldn't read the file: Return NONE, 
+			 leave value of !content unchanged,
+			 report Error? *)
 
 end (* structure Source *)

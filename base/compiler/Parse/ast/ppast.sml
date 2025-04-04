@@ -1,6 +1,6 @@
 (* ppast.sml
  *
- * COPYRIGHT (c) 2020 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2020, 2025 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *
  * Authors: Jing Cao and Lukasz Ziarek
@@ -9,12 +9,19 @@
 structure PPAst: PPAST =
 struct
 
-local structure EM = ErrorMsg
-      structure S = Symbol
-      structure PP = PrettyPrint
-      structure PU = PPUtil
+local (* imports *)
 
-      open Ast Fixity (* Tuples VarCon Types PrettyPrint PPUtil PPType PPVal *)
+  structure SM = SourceMap
+  structure SL = SourceLoc
+  structure SR = Source
+  structure EM = ErrorMsg
+
+  structure S = Symbol
+  structure PP = PrettyPrint
+  structure PU = PPUtil
+
+  open Ast Fixity (* delete this open decl *)
+
 in
 
 val internals = ParserControl.astInternals
@@ -24,14 +31,13 @@ val lineprint = ref false
 fun C f x y = f y x
 
 fun prpos(ppstrm: PP.stream,
-          source: Source.inputSource, charpos: int) =
+          source: SR.source, charpos: int) =
     if (!lineprint) then
-      let val {line,column,...} = Source.filepos source charpos
-       in PP.string ppstrm (Int.toString line);
-	  PP.string ppstrm ".";
-	  PP.string ppstrm (Int.toString column)
+      let val {map, ...} = source
+          val locString = SL.locationToString (SM.charposToLocation (map, charpos))
+       in pps ppstrm locString;
       end
-    else PP.string ppstrm (Int.toString charpos)
+    else PU.ppi ppstrm charpos
 
 fun bug msg = ErrorMsg.impossible("PPAst: "^msg)
 
@@ -1241,4 +1247,13 @@ end (* structure PPAst *)
    - Changed ":" to "=" for Strb's (note that constraints were not and
      are still not handled).
 
-   Jon Riehl *)
+   Jon Riehl
+
+  [DBM, 2025.04.03] "Round tripping" is unlikely to work for nontrivial code
+  due to the fact that Ast is incompletely parsed (because of statically
+  scoped infix declarations. Parsing is completed during elaboration in the
+  presence of a static environment that carries "fixity" bindings for symbols
+  that are declared infix.  Even code that involves no infix operators will only
+  be partially parsed.
+
+ *)

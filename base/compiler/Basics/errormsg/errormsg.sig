@@ -17,7 +17,7 @@ sig
     datatype severity = WARN | COMPLAIN | TERMINAL
     type bodyPrinter = PrettyPrint.stream -> unit
   
-    val locationString : SL.region -> string
+    val locationString : SourceLoc.region -> string
     (* used in FLINT/trans/translate.sml *)
     (* prints region, concatenating source name to the front; belongs somewhere else? *)					   
     exception Error

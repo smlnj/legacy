@@ -79,15 +79,16 @@ in
 
   (* locationString : SL.region -> string *)
   (* Map a region in the current source file to a _location string_ to be used in
-   * an error message.
-   * exported for use in FLINT/trans/translate.sml => should be moved elsewhere? *)
-  fun locationString (region: SM.region) : string =
+   * an error message. The location string starts with the source name (file name) and is
+   * followed by the start and end _location_ strings for the region.
+   * Exported for use (only?) in FLINT/trans/translate.sml => should be moved elsewhere? *)
+  fun locationString (region: SL.region) : string =
       let val source = CI.source ()
 	  val sourceName = S.name source
           val sourceMap = S.sourcemap source
        in (case region
-	    of SM.NULLregion => sourceName ^ ":<NULLregion>"
-	     | SM.REGION (lo, hi) =>
+	    of SL.NULLregion => sourceName ^ ":<NULLregion>"
+	     | SL.REGION (lo, hi) =>
 		 let val (startLoc, endLoc) = SM.regionToLocations sourcemap region
 		  in String.concat
 		      [sourceName, ":", SL.locationToString startLoc, "-",
@@ -95,8 +96,8 @@ in
 		 end)
       end
 
-  (* error : SM.region -> severity -> string -> bodyPrinter -> unit *)
-  fun error (region: SM.region) (severity: severity) (msg: string) (body : bodyPrinter) =
+  (* error : SL.region -> severity -> string -> bodyPrinter -> unit *)
+  fun error (region: SL.region) (severity: severity) (msg: string) (body : bodyPrinter) =
       (ppmsg ((locationString region), severity, msg, body);
        recordError severity)
 

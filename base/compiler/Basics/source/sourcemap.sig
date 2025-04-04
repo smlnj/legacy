@@ -88,10 +88,12 @@ sig
   (* types *)
   type sourcemap  (* Abstract, represented by smap ref *)
 
-  val charposToLocation : sourcemap * SourceLoc.charpos -> SourceLoc.location
+  val newSourcemap : unit -> sourcemap
+
+  val charposToLocation : SourceLoc.charpos * sourcemap -> SourceLoc.location
 
   val regionToLocations : sourcemap * SourceLoc.region
-			  -> (SourceLoc.location * SourcLoc.location) option
+			  -> (SourceLoc.location * SourceLoc.location) option
       (* using sourcemaps to translate region to a location pair;
        * returns NONE for NULLregion *)
 
@@ -107,7 +109,7 @@ sig
   (* This adds a new line to the lines list and increments the line count,
    * mutating the sourcemap. *)
 
-  val resynch : sourcemap -> SourceLoca.charpos * SourceLoc.charpos * int * int
+  val resynch : sourcemap -> SourceLoc.charpos * SourceLoc.charpos * int * int
                              * string option
 		          -> unit
   (* Formerly used in the implementation of the #line directive. Now does nothing.

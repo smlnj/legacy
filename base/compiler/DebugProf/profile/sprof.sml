@@ -1,5 +1,7 @@
+(* DebugProf/profile/sprof.sml *)
+
 (* COPYRIGHT (c) 1996 Bell Laboratories *)
-(* sprof.sml *)
+(* COPYRIGHT (c) 2025 The Fellowship of SML/NJ (www.smlnj.org) *)
 
 signature SPROF =
 sig
@@ -27,12 +29,16 @@ end
 
 struct
 
-local structure SP = SymPath
-      structure V = VarCon
-      structure M  = Modules
-      structure B  = Bindings
-      structure P = PrimOp
-      open Absyn VarCon Types BasicTypes
+local
+
+  structure SP = SymPath
+  structure V = VarCon
+  structure M  = Modules
+  structure B  = Bindings
+  structure P = PrimOp
+
+  open Absyn VarCon Types BasicTypes
+
 in 
 
 infix -->
@@ -53,13 +59,12 @@ val _ = entertyp := POLYty{sign=[false],
 			   tyfun = TYFUN{arity=1,
 					 body=tupleTy[alpha,intTy] --> alpha}}
 
-
 val enterexp = VARexp(ref entervar, [])
 
 fun clean names = names
 val err = ErrorMsg.impossible
 
-fun enter((line_a,line_b),names,exp) = 
+fun enter ((line_a,line_b), names, exp) = 
    let fun dot (a,[z]) = Symbol.name z :: a
 	 | dot (a,x::rest) = dot("." :: Symbol.name x :: a, rest)
 	 | dot _ = err "no path in instrexp"

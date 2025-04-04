@@ -71,7 +71,6 @@ Group  (* exports *)
 	structure ExpandTycon
 	structure StaticEnv
 	structure Lookup
-	structure CompInfo
 	structure CoreSym
 	structure BasicTypes
 	structure GenModIdMap
@@ -113,7 +112,6 @@ is (* "members": source files *)
 	basics/sympaths.sml
 	basics/tkind.sml
 	basics/sig-plist.sml
-	basics/compinfo.sml
 
 	syntax/absyn.sig
 	syntax/absyn.sml

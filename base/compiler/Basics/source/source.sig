@@ -20,21 +20,17 @@ sig
 
   val interactive : source -> bool
 
-  val name: source -> string option
+  val name: source -> string
 
-  val stream : source -> TextIO.instream
+  val instream : source -> TextIO.instream
 
-  val getContent : inputSource -> string option
-
-  val filepos: source -> SourceLoc.charpos -> SourceLoc.location
-  (* Simply calls SourceMap.charposToLocation on the map component of source.
-   * Provided for convenience -- should delete. *)
+  val getContent : source -> string option
 
 end (* signature SOURCE *)
 
 (* [DBM: 2025.03.31]
-The former files sourcemap.sml and source.sml have been substantially rewritten
-and correspond to the three Basics/source/{sourceloc.sml, sourcemap.sml, and source.sml}
+The former files sourcemap.sml and source.sml have been substantially rewritten into
+three files: Basics/source/{sourceloc.sml, sourcemap.sml, and source.sml}
 with corresponding signatures (sourceloc.sig not written yet).
 
 The sourceloc.sml file defines the SourceLoc structure that contains the
