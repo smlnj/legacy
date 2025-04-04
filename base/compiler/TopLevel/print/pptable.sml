@@ -44,12 +44,17 @@ struct
       val global_pp_table = ref StampMap.empty
   in
 
-  fun make_path([s],p) = SymPath.SPATH(rev(Symbol.tycSymbol(s)::p))
-    | make_path(s::r,p) = make_path(r,Symbol.strSymbol(s)::p)
+  (* this table of object prettyprinter functions works only for the case where the
+   * the tycon designated by the symbol path is nullary *)
+
+  (* make_path : string list * Symbol.symbol list) -> SymPath.path *)
+  fun make_path ([s], p) = SymPath.SPATH (rev (Symbol.tycSymbol s :: p))
+    | make_path (s::r, p) = make_path (r, Symbol.strSymbol s :: p)
     | make_path _ = error "install_pp: empty path"
 
+  (* install_pp : string list -> (PrettyPrint.stream -> object -> unit) -> unit *)
   fun install_pp (path_names: string list)
-                 (p: PrettyPrint.stream -> object -> unit) =
+                 (printer: PrettyPrint.stream -> object -> unit) =
       let val sym_path = make_path(path_names,[])
 	  val tycon =
 	      case Lookup.lookTyc ((#static(EnvRef.combined())), sym_path)
@@ -57,7 +62,7 @@ struct
 		 | SOME tyc => tyc
        in case tycon
 	    of Types.GENtyc { stamp, ... } =>
-	          global_pp_table := StampMap.insert (!global_pp_table, stamp, p)
+	          global_pp_table := StampMap.insert (!global_pp_table, stamp, printer)
 	     | _ => error "install_pp: nongenerative type constructor"
       end
 
