@@ -7,14 +7,12 @@
 signature TYPECHECK =
 sig
 
-  val decType : StaticEnv.staticEnv * Absyn.dec * int * bool
-		* (unit -> bool) * SourceMap.region
+  val decType : StaticEnv.staticEnv * Absyn.dec * int * bool * SourceMap.region
                 -> Absyn.dec
-    (* decType(senv,dec,tdepth,toplev,err,region):
+    (* decType(senv,dec,tdepth,toplev,,region):
          senv: the context static environment
          dec: the declaration to be type checked
          tdepth: abstraction depth of lambda-bound type variables
-         err: error function
          region: source region of dec
      *)
   val debugging : bool ref
@@ -31,6 +29,7 @@ struct
 
 local (* imports *)
 
+  structure CI = CompInfo
   structure SM = SourceMap
   structure EM = ErrorMsg
   structure SE = StaticEnv
@@ -86,7 +85,7 @@ fun message(msg,mode: Unify.unifyFail) =
 fun mkDummy0 () = BasicTypes.unitTy
 
 (*
- * decType : SE.staticEnv * AS.dec * bool * EM.errorFn * SM.region -> AS.dec
+ * decType : SE.staticEnv * AS.dec * bool * SM.region -> AS.dec
  *)
 fun decType(env,dec,tdepth,toplev,region) =
 let
@@ -153,7 +152,7 @@ fun registerFlex (x as (tv : T.tyvar, region: SM.region)) =
     flexTyVars := x :: !flexTyVars
 
 fun checkFlex (): unit =
-    let fun check1 (tv,r) =
+    let fun check1 (tv, r) =
             (case !tv
                of OPEN{kind=FLEX _,...} =>
                   (EM.error region COMPLAIN
@@ -165,8 +164,10 @@ fun checkFlex (): unit =
 			      ppType ppstrm (VARty(tv)))))
                 | INSTANTIATED _ => ()
                 | _ => bug "checkFlex")
-    in if CI.errors () then ()
-       else app check1 (!flexTyVars)
+
+     in if CI.errors ()
+        then ()
+        else app check1 (!flexTyVars)
     end
 
 (* managing source locations (srcloc = SourceMap.region) *)

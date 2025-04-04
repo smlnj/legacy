@@ -25,7 +25,7 @@ sig
 
   val source : unit -> Source.source
 
-  val reset : Source.Source -> unit
+  val reset : Source.source -> unit
     (* resets the current source and resets the errorRef to false (no errors) *)
 				  
 end (* signature COMP_INFO *)  
@@ -47,7 +47,7 @@ in
 
   val errorsRef = ref false
   fun reportError () = (errorsRef := true)
-  fun errors () : bool = errorsRef  (* have any errors been reported *)
+  fun errors () : bool = !errorsRef  (* have any errors been reported *)
 
   (* reset : SR.source -> unit
    * re-initializes the compiler global info for the given input source *)
@@ -65,14 +65,14 @@ in
   be accessed using CompInfo.source.  ErrorMsg (and some other structures?) get the
   current source from CompInfo using CompInfo.source.
  
-  [DBM, 2025.04.01] This is now done. CompInfo has the source and the anyErrors
-  boolean flag. CompInfo.reset(source) sets a new source and resets counters for
-  stamps and lambda vars (and other counters in the future).  CompInfo no longer
-  provides access to the mlLvar and mkStamp functions, which shoule be accessed
-  directly as Stamp.fresh and LambdaVar.mkLvar.  Similarly, the Stamp.reset and
-  LambdaVar reset functions must be called separately and directly, rather than
-  through CompInfo.reset.  This is for convenience, because Stamp and LambdaVar are
-  defined in ElabData/basics, while CompInfo is now defined (earlier) in Basics/compiler.
+  [DBM, 2025.04.01] This is now done. CompInfo has the source and the anyErrors boolean
+  flag, renamed "errorsRef". CompInfo.reset(source) sets a new source and resets counters
+  for stamps and lambda vars (and other counters in the future). CompInfo no longer
+  provides access to the mlLvar and mkStamp functions, which shoule be accessed directly
+  as Stamp.fresh and LambdaVar.mkLvar. Similarly, the Stamp.reset and LambdaVar reset
+  functions must be called separately and directly, rather than through CompInfo.reset.
+  This is for convenience, because Stamp and LambdaVar are defined in ElabData/basics,
+  while CompInfo is now defined (earlier) in Basics/compiler.
 
 *)
 

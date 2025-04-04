@@ -1691,13 +1691,12 @@ and elabDecl0
              * they may not be properly dealt with now ! (ZHONG)
              *)
 
-            fun chkError () = !anyErrors
             (* note that transform is applied to decl before type checking *)
             val decl' = Typecheck.decType(SE.atop(env',env0), transform decl,
                                           tdepth, top, error, chkError, region)
             val (entEnv, entDec) =
-              bindNewTycs(context, epContext, mkStamp, abstycs, withtycs,
-			  rpath, error region)
+		bindNewTycs(context, epContext, mkStamp, abstycs, withtycs,
+			    rpath, EM.error region)
          in (decl', entDec, env', entEnv)
         end
         handle EE.Unbound =>
@@ -1718,20 +1717,18 @@ and elabDecl0
                           | _ => false))
                 | _ => (fn _ => false))
 
-            val (decl,env') = EC.elabDec(dec, env0, isFree,
-                                         rpath, region)
-              handle EE.Unbound => (debugmsg("$EC.elabDec"); raise EE.Unbound)
+            val (decl,env') =
+		EC.elabDec(dec, env0, isFree, rpath, region)
+		handle EE.Unbound => (debugmsg("$EC.elabDec"); raise EE.Unbound)
+
             val _ = debugmsg (">>elabDecl0.dec[after EC.elabDec: top="
                               ^ (Bool.toString top))
-            val decl' = transform decl
-            val _ = debugmsg ">>elabDecl0.dec[after transform]"
-            fun chkError () = !anyErrors
-            val decl'' = Typecheck.decType(SE.atop(env',env0), decl',
-                                           tdepth, top, error, chkError, region)
+
+            val decl' = Typecheck.decType(SE.atop(env',env0), decl, tdepth, top, region)
                          handle EE.Unbound => (debugmsg("$decType");
                                                raise EE.Unbound)
             val _ = debugmsg ">>elabDecl0.dec[after decType]"
-         in (decl'', M.EMPTYdec, env', EE.empty)
+         in (decl', M.EMPTYdec, env', EE.empty)
         end handle EE.Unbound =>
 	      (debugmsg("$elabDecl0: CoreDec"); raise EE.Unbound)))
 

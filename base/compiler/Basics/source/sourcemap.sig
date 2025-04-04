@@ -92,7 +92,7 @@ sig
 
   val charposToLocation : SourceLoc.charpos * sourcemap -> SourceLoc.location
 
-  val regionToLocations : sourcemap * SourceLoc.region
+  val regionToLocations : SourceLoc.region * sourcemap
 			  -> (SourceLoc.location * SourceLoc.location) option
       (* using sourcemaps to translate region to a location pair;
        * returns NONE for NULLregion *)

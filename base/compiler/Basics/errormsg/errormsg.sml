@@ -5,7 +5,7 @@
  * All rights reserved.
  *)
 
-(* ErrorMsg: error reporting *)
+(* ErrorMsg: error recording and reporting *)
 
 (* [DBM, 2025.03.26] This can be considerably simplified in two ways:
  * (1) Eliminate compilcations due to Ramsey's model of the sourceMap (done).
@@ -37,15 +37,15 @@ in
     = WARN     (* warning messages, non-fatal. It should be possible for compilation
 		* and execution to complete after a warning. *)
     | COMPLAIN (* "recoverable" errors, where static elaboration can attempt to continue,
-		* but CompInfo.anyErrors is set to true and compilation terminates after 
-                * the elaboration phase. *)
+		* but the CompInfo internal error flag is set to true and compilation
+		* will terminate after the elaboration phase. *)
     | TERMINAL (* "terminal" errors, where we cannot continue elaboration, so compilation
 		* terminates immediately. *)
 
   (* bodyPrinter will be replaced with Format.format when we move to the new PrettyPrint library *)
   type bodyPrinter = PP.stream -> unit
 
-  (* val recordError : severity * bool ref -> unit *)
+  (* val recordError : severity -> unit *)
   fun recordError severity : unit = 
       (case severity
  	 of WARN => ()  (* no consequences for warnings *)
@@ -79,7 +79,7 @@ in
 
   (* locationString : SL.region -> string *)
   (* Map a region in the current source file to a _location string_ to be used in
-   * an error message. The location string starts with the source name (file name) and is
+   * an error message. The location string begins with the source name (file name),
    * followed by the start and end _location_ strings for the region.
    * Exported for use (only?) in FLINT/trans/translate.sml => should be moved elsewhere? *)
   fun locationString (region: SL.region) : string =
@@ -89,11 +89,12 @@ in
        in (case region
 	    of SL.NULLregion => sourceName ^ ":<NULLregion>"
 	     | SL.REGION (lo, hi) =>
-		 let val (startLoc, endLoc) = SM.regionToLocations sourcemap region
-		  in String.concat
-		      [sourceName, ":", SL.locationToString startLoc, "-",
-		       SL.locationToString endLoc]
-		 end)
+		  let val startLoc = SM.charposToLocation (lo, sourceMap)
+		      val endLoc = SM.charposToLocation (hi, sourceMap)
+		   in String.concat [sourceName, ":",
+				         SL.locationToString startLoc, "-",
+				         SL.locationToString endLoc]
+		  end)
       end
 
   (* error : SL.region -> severity -> string -> bodyPrinter -> unit *)
@@ -116,6 +117,7 @@ in
        Control_Print.flush();
        raise Error)
 
+(* there was only one call in translate.sml -- delete
   (* impossibleWithBody : string -> bodyPrinter -> 'a *)
   fun impossibleWithBody (msg: string) (bodyPrinter: bodyPrinter) =
       (PP.with_pp (PP.defaultDevice) (fn ppstrm =>
@@ -124,6 +126,7 @@ in
          bodyPrinter ppstrm;
          PP.newline ppstrm));
        raise Error)
+*)
 
 end (* top local - imports *)
 end (* structure ErrorMsg *)

@@ -14,8 +14,7 @@ sig
 		   exportLvars: Access.lvar list,
                    oldenv: StaticEnv.staticEnv,
                    env: StaticEnv.staticEnv,
-		   cproto_conv: string,
-		   compInfo: Absyn.dec CompInfo.compInfo }
+		   cproto_conv: string}
                  -> {flint: FLINT.prog,
                      imports: (PersStamps.persstamp
                                * ImportTree.importTree) list}
@@ -110,36 +109,21 @@ fun transNum ({ival, ty}: TP.ty IntConst.t) : con =
     end
 
 (****************************************************************************
- *                          MAIN FUNCTION                                   *
- *                                                                          *
- *  val transDec : Absyn.dec * Access.lvar list                             *
- *                 * StaticEnv.staticEnv * CompBasic.compInfo               *
- *                 -> {flint: FLINT.prog,                                   *
- *                     imports: (PersStamps.persstamp                       *
- *                               * ImportTree.importTree) list}             *
+ *                          MAIN FUNCTION
+ *
+ *  val transDec : Absyn.dec * Access.lvar list * StaticEnv.staticEnv
+ *                 -> {flint: FLINT.prog,
+ *                     imports: (PersStamps.persstamp
+ *                               * ImportTree.importTree) list}
  ****************************************************************************)
 
-fun transDec
-	{ rootdec, exportLvars, oldenv, env, cproto_conv,
-	 compInfo as {errorMatch,error,...}: Absyn.dec CompInfo.compInfo } =
+fun transDec {rootdec, exportLvars, oldenv, env, cproto_conv} =
+	 
 let
 
-(* We take mkLvar from compInfo.  This should answer Zhong's question... *)
-(*
-(*
- * MAJOR CLEANUP REQUIRED ! The function mkv is currently directly taken
- * from the LambdaVar module; I think it should be taken from the
- * "compInfo". Similarly, should we replace all mkLvar in the backend
- * with the mkv in "compInfo" ? (ZHONG)
- *)
 val mkv = LambdaVar.mkLvar
 fun mkvN NONE = mkv()
   | mkvN (SOME s) = LambdaVar.namedLvar s
-*)
-
-val mkvN = #mkLvar compInfo
-fun mkv () = mkvN NONE
-
 
 (** generate the set of ML-to-FLINT type translation functions *)
 val {tpsKnd, tpsTyc, toTyc, toLty, strLty, fctLty} =
@@ -700,11 +684,11 @@ fun mkCE (TP.DATACON{const, rep, name, typ, ...}, ts, apOp, d) =
   end
 
 fun mkStr (s as M.STR { access, prim, ... }, d) =
-    mkAccInfo(access, fn () => strLty(s, d, compInfo), NONE)
+    mkAccInfo(access, fn () => strLty(s, d), NONE)
   | mkStr _ = bug "unexpected structures in mkStr"
 
 fun mkFct (f as M.FCT { access, prim, ... }, d) =
-    mkAccInfo(access, fn () => fctLty(f, d, compInfo), NONE)
+    mkAccInfo(access, fn () => fctLty(f, d), NONE)
   | mkFct _ = bug "unexpected functors in mkFct"
 
 fun mkBnd d =
@@ -814,7 +798,7 @@ and mkVBs (vbs, d) =
 
               | pat =>
 		(* boundtvs is cumulative bound metatyvars for the whole pattern *)
-		let val (newpat,oldvars,newvars) = aconvertPat(pat, compInfo)
+		let val (newpat,oldvars,newvars) = aconvertPat pat
 		      (* this is the only call of aconvertPat; it replaces pattern variables with
 		       * new versions with fresh lvar access values. Why is this needed? *)
 		    val newVarExps = map (fn v => VARexp(ref v,[])) newvars
@@ -942,7 +926,7 @@ and mkFctexp (fe, d) =
                    val hdr = buildHeader v
                (* binding of all v's components *)
                in
-		   TFN(knds, FN(v, strLty(param, nd, compInfo), hdr body))
+		   TFN(knds, FN(v, strLty(param, nd), hdr body))
                end
 	     | _ => bug "mkFctexp: unexpected access")
         | g (LETfct (dec, b)) = mkDec (dec, d) (g b)
@@ -1006,7 +990,7 @@ and mkDec (dec, d) =
               let (* special hack to make the import tree simpler *)
                   fun mkos (_, s as M.STR { access = acc, ... }) =
                       if extern acc then
-                          let val _ = mkAccT(acc, strLty(s, d, compInfo), NONE)
+                          let val _ = mkAccT(acc, strLty(s, d), NONE)
                           in ()
                           end
                       else ()
@@ -1237,10 +1221,11 @@ and mkExp (exp, d) =
 
         | mkExp0 (LETexp (dc, e)) = mkDec (dc, d) (mkExp0 e)
 
-        | mkExp0 e =
-             EM.impossibleWithBody "untranslateable expression"
+        | mkExp0 e = EM.impossible "untranslateable expression"
+(* could enable printing of the bad expression:
               (fn ppstrm => (PP.string ppstrm " expression: ";
                             PPAbsyn.ppExp (env,NONE) ppstrm (e, !ppDepth)))
+*) 
 
    in mkExp0 exp
   end
@@ -1342,7 +1327,7 @@ val _ = debugmsg ">>mkDec"
 (** translating the ML absyn into the PLambda expression *)
 val body = mkDec (rootdec, DI.top) exportLexp
 val _ = debugmsg "<<mkDec"
-val _ = if CompInfo.anyErrors compInfo
+val _ = if CompInfo.errors ()
 	then raise EM.Error
 	else ()
 (** add bindings for intinf constants *)

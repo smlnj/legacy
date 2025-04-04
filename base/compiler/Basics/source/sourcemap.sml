@@ -155,9 +155,9 @@ in
   (* regionToLocations : sourcemap * SL.region -> (SL.location * SL.location) option
    * this could be made more efficient by sweeping smap while looking for both hi and lo
    * limits of a region *)
-  fun regionToLocations (smap: sourcemap, SL.REGION (lo, hi)) : (SL.location * SL.location) option =
+  fun regionToLocations (SL.REGION (lo, hi), smap: sourcemap) : (SL.location * SL.location) option =
         SOME (charposToLocation (lo, smap), charposToLocation (hi, smap))
-    | regionToLocations (_, NULLregion) = NONE
+    | regionToLocations (NULLregion, _) = NONE
 
 (* functions called in the lexer files: Parse/lex/ ml.lex.sml, sml.lex.sml, user.sml,
  *   and Parse/main/ (s)ml-parser.sml  *)
@@ -167,7 +167,7 @@ in
    * which may be 0 for a region that lies within a single line.
    * Also, by convention, returns 0 for NULLregion *)
   fun newlineCount (smap: sourcemap, region: SL.region) =
-      (case regionToLocations (smap, region)
+      (case regionToLocations (region, smap)
 	 of SOME ({line=lo_line, ...}, {line=hi_line,...}) =>
 	      hi_line - lo_line  (* hi_line and lo_line may be equal *)
 	  | NONE => 0)

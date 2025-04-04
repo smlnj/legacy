@@ -6,6 +6,7 @@
 
 signature PPTABLE =
 sig
+
   exception PP_NOT_INSTALLED
 
   val pp_object : PrettyPrint.stream -> Stamp.stamp -> Unsafe.Object.object
@@ -13,6 +14,7 @@ sig
 
   val install_pp : string list ->
                    (PrettyPrint.stream -> Unsafe.Object.object -> unit) -> unit
+
 end (* signature PPTABLE *)
 
 (* The following code implements automatic prettyprinting of values. *)
@@ -51,8 +53,8 @@ struct
       let val sym_path = make_path(path_names,[])
 	  val tycon =
 	      case Lookup.lookTyc ((#static(EnvRef.combined())), sym_path)
-                of NONE => error "PPTable.install_pp: unbound tycon"
-		   SOME tyc => tyc
+                of NONE => (error "PPTable.install_pp: unbound tycon"; Types.ERRORtyc)
+		 | SOME tyc => tyc
        in case tycon
 	    of Types.GENtyc { stamp, ... } =>
 	          global_pp_table := StampMap.insert (!global_pp_table, stamp, p)

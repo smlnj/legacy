@@ -5,7 +5,7 @@
  *)
 
 (* [DBM,  2025.04.01] Considerably simplified (legacy[dbm2] branch).
- * anyErrors: bool ref is now in CompInfo.
+ * The anyErrors: bool ref is now an internal error flag in CompInfo.
  * This is still using the PP prettyprint library.
  *)
 
@@ -18,19 +18,18 @@ sig
     type bodyPrinter = PrettyPrint.stream -> unit
   
     val locationString : SourceLoc.region -> string
-    (* used in FLINT/trans/translate.sml *)
-    (* prints region, concatenating source name to the front; belongs somewhere else? *)					   
+    (* Prints region as a pair of locations, concatenating the source name on the front;
+     * Used just in FLINT/trans/translate.sml, so this probably belongs somewhere else? *)					   
     exception Error
 
     val nullErrorBody : bodyPrinter  (* --> "nullBodyPrinter" ? *)
 
     val error : SourceLoc.region -> severity -> string -> bodyPrinter -> unit
 
-  (* a couple simpler error functions *)
+  (* a couple simpler error functions. These can be used instead of error with nullErrorBody. *)
     val errorRegion: SourceLoc.region * string -> unit
     val warnRegion: SourceLoc.region * string -> unit
 
     val impossible : string -> 'a
-    val impossibleWithBody : string -> bodyPrinter -> 'a
 
 end (* signature ERRORMSG *)
