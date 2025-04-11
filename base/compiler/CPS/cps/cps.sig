@@ -133,7 +133,7 @@ signature CPS =
       | NUM of intty IntConst.t
       | REAL of int RealConst.t
       | STRING of string
-      | VOID
+      | VOID                            (* used in closure conversion *)
 
     datatype accesspath
       = OFFp of int

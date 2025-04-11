@@ -254,7 +254,7 @@ functor Convert (MachSpec : MACH_SPEC) : CONVERT =
   (* appmc : mcont * value list -> cexp *)
     fun appmc (MCONT{cnt, ...}, vs) = cnt(vs)
 
-  (* makmc : (value list -> cexp) * cty list -> cexp *)
+  (* makmc : (value list -> cexp) * cty list -> mcont *)
     fun makmc (cnt, ts) = MCONT{cnt=cnt, ts=ts}
 
   (* rttys : mcont -> cty list *)
@@ -361,8 +361,8 @@ functor Convert (MachSpec : MACH_SPEC) : CONVERT =
 	    in h(vl, [])
 	   end
 
-	 (* loop : F.lexp * (value list -> cexp) -> cexp *)
-	 fun loop' m (le, c) = let val loop = loop' m
+	 (* loop : F.lexp * mcont -> cexp *)
+	 fun loop' m (le, c : mcont) = let val loop = loop' m
 	 in case le
 	     of F.RET vs => appmc(c, lpvars vs)
 	      | F.LET(vs, e1, e2) =>
