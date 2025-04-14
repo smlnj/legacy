@@ -190,10 +190,12 @@ in
        in sm := {lines = pos+1::lines, count = count+1}
       end
 
+(*
   (* resynch : sourcemap -> SL.charpos * SL.charpos * int * int * string option -> unit
    * This now does nothing.  It was used to process the obsolete #line directive
    * in the lexer. *)
   fun resynch (sm: sourcemap) (initpos, newpos, line, column, fileNameOp) = ()
+*)
 
 end (* top local *)
 end (* structure SourceMap *)

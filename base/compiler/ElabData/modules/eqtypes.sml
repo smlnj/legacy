@@ -5,11 +5,11 @@
 signature EQTYPES =
 sig
 
-  val eqAnalyze : Modules.Structure * (Stamp.stamp -> bool)
-                                    * ErrorMsg.complainer -> unit
+  val eqAnalyze : Modules.Structure * (Stamp.stamp -> bool) * SourceLoc.region
+		  -> unit
 
-  val defineEqProps : Types.tycon list * ExpandTycon.sigContext
-                      * EntityEnv.entityEnv -> unit
+  val defineEqProps : Types.tycon list * ExpandTycon.sigContext * EntityEnv.entityEnv
+		      -> unit
 
   val checkEqTySig : Types.ty * Types.polysign -> bool
       (* check whether type ty is an equality type, given a polysign
@@ -30,18 +30,22 @@ struct
 
 (* functions to determine and check equality types *)
 local
+
+  structure SL = SourceLoc
   structure EM = ErrorMsg
+
   structure IP = InvPath
+  structure ST = Stamp
   structure TU = TypesUtil
   structure M = Modules
   structure MU = ModuleUtil
   structure SS = SpecialSymbols
-  open Types Stamp TypesUtil
+  open Types TypesUtil
 
 in
 
 (* debugging *)
-fun bug msg = EM.impossible("EqTypes: "^msg)
+fun bug msg = EM.impossible("EqTypes: " ^ msg)
 val say = Control_Print.say
 val debugging = ref false
 fun debugmsg (msg: string) =
@@ -98,13 +102,14 @@ exception UnboundStamp
  * constraints.
  *)
 
-fun eqAnalyze(str,localStamp : Stamp.stamp -> bool,err : EM.complainer) =
+(* eqAnalyze : Modules.Structure * (ST.stamp -> bool) * SL.region -> unit *)
+fun eqAnalyze (str, localStamp : ST.stamp -> bool, region: SL.region) =
 let val tycons = ref StampMap.empty
     val depend = ref StampMap.empty
     val dependr = ref StampMap.empty
     val eqprop = ref StampMap.empty
     val dependsInd = ref false
-    val tycStampsRef : stamp list ref = ref nil
+    val tycStampsRef : ST.stamp list ref = ref nil
 
     fun dflApply dfl (mr, k) =
 	case StampMap.find (!mr, k) of
@@ -116,16 +121,16 @@ let val tycons = ref StampMap.empty
 
     fun updateMap mr (k, v) = mr := StampMap.insert (!mr, k, v)
 
-    val err = fn s => err EM.COMPLAIN s EM.nullErrorBody
+    fun err (msg: string) = EM.errorRegion (region, msg)
 
-    fun checkdcons(datatycStamp: stamp,
+    fun checkdcons(datatycStamp: ST.stamp,
 		   evalty: ty -> ty,
 		   dcons: dconDesc list,
-                   stamps, members, freetycs) : (eqprop * stamp list) =
-	let val depend = ref([]: stamp list)
+                   stamps, members, freetycs) : (eqprop * ST.stamp list) =
+	let val depend = ref([]: ST.stamp list)
 	    val dependsInd = ref false
 	    fun member(stamp,[]) = false
-	      | member(st,st'::rest) = Stamp.eq(st,st') orelse member(st,rest)
+	      | member(st,st'::rest) = ST.eq(st,st') orelse member(st,rest)
 	    fun eqtyc(tyc as GENtyc { stamp, eq, ... }) =
 		(case !eq
 		  of YES => ()
@@ -134,7 +139,7 @@ let val tycons = ref StampMap.empty
 		   | IND => dependsInd := true
 		   | (DATA | UNDEF) =>
 		     if member(stamp,!depend)
-			orelse Stamp.eq(stamp,datatycStamp) then ()
+			orelse ST.eq(stamp,datatycStamp) then ()
 		     else depend := stamp :: !depend)
 	      | eqtyc(RECORDtyc _) = ()
 	      | eqtyc _ = bug "eqAnalyze.eqtyc"
@@ -157,7 +162,7 @@ let val tycons = ref StampMap.empty
                                 val {tycname,dcons,...}: dtmember =
                                       Vector.sub(members,i)
 		             in if member(stamp,!depend)
-			        orelse Stamp.eq(stamp,datatycStamp)
+			        orelse ST.eq(stamp,datatycStamp)
 			        then ()
 			        else depend := stamp :: !depend
   		            end
@@ -244,7 +249,7 @@ let val tycons = ref StampMap.empty
 
     (* propagate the NO eqprop forward and the YES eqprop backward *)
     fun propagate_YES_NO(stamp) =
-      let fun earlier s = Stamp.compare(s,stamp) = LESS
+      let fun earlier s = ST.compare(s,stamp) = LESS
        in case applyMap''(eqprop,stamp)
 	   of YES =>
                propagate (YES,(fn s => applyMap'(depend,s)),earlier) stamp
@@ -255,7 +260,7 @@ let val tycons = ref StampMap.empty
     (* propagate the IND eqprop *)
     fun propagate_IND(stamp) =
       let fun depset s = applyMap'(dependr,s)
-	  fun earlier s = Stamp.compare(s,stamp) = LESS
+	  fun earlier s = ST.compare(s,stamp) = LESS
        in case applyMap''(eqprop,stamp)
 	   of UNDEF => (updateMap eqprop (stamp,IND);
 		        propagate (IND,depset,earlier) stamp)
@@ -266,7 +271,7 @@ let val tycons = ref StampMap.empty
     (* phase 0: scan signature strenv, joining eqprops of shared tycons *)
     val _ = addstr str
     val tycStamps =
-      ListMergeSort.sort (fn xy => Stamp.compare xy = GREATER) (!tycStampsRef)
+      ListMergeSort.sort (fn xy => ST.compare xy = GREATER) (!tycStampsRef)
  in
     (* phase 1: propagate YES backwards and NO forward *)
     app propagate_YES_NO tycStamps;

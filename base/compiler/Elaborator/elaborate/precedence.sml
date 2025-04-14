@@ -6,7 +6,7 @@
 signature PRECEDENCE =
 sig
   val parse: {apply: 'a * 'a -> 'a, pair: 'a * 'a -> 'a} -> 
-                'a Ast.fixitem list * StaticEnv.staticEnv * SourceMap.region -> 'a
+                'a Ast.fixitem list * StaticEnv.staticEnv * SourceLoc.region -> 'a
 
 end (* signature PRECEDENCE *)
 
@@ -16,7 +16,8 @@ struct
 
 local (* imports *)
 
-  structure SM = SourceMap			
+  structure SL = SourceLoc
+  structure SM = SourceMap
   structure EM = ErrorMsg 
   structure S = Symbol
   structure F = Fixity
@@ -46,14 +47,15 @@ type 'a stack = 'a frame list
  * using precedence parsing
  * - this is not using the regions found in the fixitems. Do they have any other uses? *)
 fun 'a parse {apply: 'a * 'a -> 'a, pair: 'a * 'a -> 'a}
-	     (items: 'a Ast.fixitem list, env: StaticEnv.staticEnv, region: SM.region) : 'a =
+	     (items: 'a Ast.fixitem list, env: StaticEnv.staticEnv, region: SL.region) : 'a =
 
-    let fun err (msg: string) = EM.complainRegion (region, "Precedence.parse: " ^ msg)
+    let fun err (msg: string) = EM.errorRegion (region, "Precedence.parse: " ^ msg)
 
         (* parseToken : 'a token * 'a stack -> 'a stack *)
 	(* 1 step of parsing an expression - driven by loop function below *)
 	fun parseToken ((e' , F.NONfix, _): 'a token, (NONFIX e :: rest): 'a stack) =
 	      NONFIX (apply (e, e')) :: rest  (* make an application *)
+
 	  | parseToken ((e, fixity, symbolOp): 'a token,
 			stack as (INFIX _) :: _) =  (* top of stack is an infix item *)
 	      (case fixity (* check fixity *)
@@ -64,6 +66,7 @@ fun 'a parse {apply: 'a * 'a -> 'a, pair: 'a * 'a -> 'a}
 			   (err (String.concat ["expression/pattern begins with infix identifier \"",
 					     Symbol.name sym, "\""]); nil)
 		       | NONE => EM.impossible "Precedence.parse: - bad token"))
+
 	  | parseToken ( token as (e4, fixity as F.INfix(lbp,rbp), SOME sym): 'a token,
 			 NONFIX e1 :: INFIX (_, bp, e2) :: NONFIX e3 :: stack' ) = 
 	      (* bp is the rbp of e2, which should be a an infix variable/constructor *)

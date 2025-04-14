@@ -27,7 +27,7 @@ val getFct : Modules.elements * Modules.entityEnv
              -> Modules.Functor * EntPath.entVar
 
 (*** these functions are used in eqtypes.sml ***)
-val getStrStamp : Modules.Structure -> Stamps.stamp
+val getStrStamp : Modules.Structure -> Stamp.stamp
 val getStrName : Modules.Structure -> InvPath.path
 val getStrs : Modules.Structure -> Modules.Structure list
 val getTycs : Modules.Structure -> Types.tycon list

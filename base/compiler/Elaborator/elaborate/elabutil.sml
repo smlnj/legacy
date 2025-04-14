@@ -9,6 +9,9 @@ struct
 
 local
 
+  structure CI = CompInfo
+  structure SL = SourceLoc
+
   structure EM = ErrorMsg
   structure SP = SymPath
   structure LU = Lookup
@@ -41,7 +44,7 @@ val internalSym = SpecialSymbols.internalVarId
  * simplified basic error function
  * -- could pass meaningful region argument to improve the messages *)
 fun error (message: string) =
-    !CompInfo.errorRef SourceMap.nullRegion EM.COMPLAIN message EM.nullErrorBody
+    EM.errorRegion (SourceLoc.NULLregion, message)
 
 (* elaboration context *)
 
@@ -132,7 +135,7 @@ fun checkForbiddenCons symbol =
  * be merged with this.
  *)
 fun bindVARp patlist =
-    let val vl = ref (nil: symbol list)
+    let val vl = ref (nil: S.symbol list)
 	val env = ref(SE.empty: SE.staticEnv)
 	fun f (VARpat(v as VALvar{path=SP.SPATH[name],...})) =
 	       (if S.eq(name, EQUALsym)
@@ -188,11 +191,11 @@ fun TPSELexp(e, i) =
      the fact that start and end locations for these marks
      are the same! DBM: Is that you, Andrew Tolmach?  Is this
      kludge still relevant?  Probably not! *)
-fun completeMatch'' rule [r as RULE(pat,MARKexp(_,(_,right)))] =
-      [r, rule (fn exp => MARKexp(exp,(right,right)))]
+fun completeMatch'' rule [r as RULE(pat,MARKexp(_, SL.REGION(_,right)))] =
+      [r, rule (fn exp => MARKexp(exp, SL.REGION (right,right)))]
   | completeMatch'' rule
-                    [r as RULE(pat,CONSTRAINTexp(MARKexp(_,(_,right)),_))] =
-      [r, rule (fn exp => MARKexp(exp,(right,right)))]
+                    [r as RULE(pat,CONSTRAINTexp(MARKexp(_,SL.REGION(_,right)),_))] =
+      [r, rule (fn exp => MARKexp(exp, SL.REGION(right,right)))]
   | completeMatch'' rule [r] = [r,rule (fn exp => exp)]
   | completeMatch'' rule (a::r) = a :: completeMatch'' rule r
   | completeMatch'' _ _ = bug "completeMatch''"

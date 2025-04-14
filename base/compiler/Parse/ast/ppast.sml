@@ -1,3 +1,4 @@
+
 (* ppast.sml
  *
  * COPYRIGHT (c) 2020, 2025 The Fellowship of SML/NJ (http://www.smlnj.org)
@@ -33,9 +34,9 @@ fun C f x y = f y x
 fun prpos(ppstrm: PP.stream,
           source: SR.source, charpos: int) =
     if (!lineprint) then
-      let val {map, ...} = source
-          val locString = SL.locationToString (SM.charposToLocation (map, charpos))
-       in pps ppstrm locString;
+      let val sourcemap = SR.sourcemap source
+          val locString = SL.locationToString (SM.charposToLocation (charpos, sourcemap))
+       in PU.pps ppstrm locString
       end
     else PU.ppi ppstrm charpos
 
@@ -142,8 +143,9 @@ fun ppPat sourceOp ppstrm =
 	 	    pr=pr,
 		    style=PU.INCONSISTENT}
 		   v
+
 		end
-	  | ppPat' (MarkPat (pat, (s,e)), d) =
+	  | ppPat' (MarkPat (pat, SL.REGION(s,e)), d) =
 	    (case sourceOp
 		of SOME source =>
 		     if !internals
@@ -370,7 +372,7 @@ and ppExp sourceOp ppstrm =
 		     style=PU.INCONSISTENT}
 		    exps
 	      end
-	 | ppExp'(MarkExp (exp,(s,e)),atom,d) =
+	 | ppExp'(MarkExp (exp, SL.REGION(s,e)), atom, d) =
 	      (case sourceOp
 		of SOME source =>
 		     if !internals
@@ -462,7 +464,7 @@ and ppStrExp sourceOp ppstrm =
 	       pps "end";
 	       closeBox ())
 
-         | ppStrExp'(MarkStr(body,(s,e)),d) =
+         | ppStrExp' (MarkStr (body, SL.REGION (s,e)), d) =
              ppStrExp' (body,d)
     in
 	ppStrExp'
@@ -492,7 +494,7 @@ and ppFctExp sourceOp ppstrm =
 		     sblist;
                   PP.closeBox ppstrm
               end
-	  | ppFctExp'(MarkFct(body,(s,e)),d) =
+	  | ppFctExp'(MarkFct (body, SL.REGION(s,e)), d) =
 	     ppFctExp' (body,d)
           | ppFctExp'(BaseFct _, d) = ErrorMsg.impossible "ppFctExp: BaseFct"
     in
@@ -900,7 +902,7 @@ and ppDec sourceOp ppstrm =
 	     ops;
 	   closeBox ())
 
-        | ppDec'(MarkDec(dec,(s,e)),d) =
+        | ppDec'(MarkDec (dec, SL.REGION(s,e)), d) =
 	   (case sourceOp
 	      of SOME source =>
 	         (pps "MarkDec(";
@@ -953,7 +955,7 @@ and ppFb sourceOp ppstrm head =
 and ppClause sourceOp ppstrm =
     let val pps = PP.string ppstrm
         fun ppClause' (Clause{pats, resultty, exp}, d) =
-	    let fun pr _ {item:pat,fixity:symbol option,region:region} =
+	    let fun prFixItem _ {item:pat, fixity: S.symbol option, region: SL.region} =
 		    (case fixity
 		      of SOME a => ppPat sourceOp ppstrm (item,d)
 		       | NONE => (
@@ -973,19 +975,18 @@ and ppClause sourceOp ppstrm =
 			   | _ => ppPat sourceOp ppstrm (item,d)))
 
 		in PP.openHOVBox ppstrm (PP.Rel 0);
-	  	      (PU.ppSequence ppstrm
+	  	     PU.ppSequence ppstrm
 			{sep=(fn ppstrm => (PP.space ppstrm 1)),
-			 pr=pr,
+			 pr=prFixItem,
 			 style=PU.INCONSISTENT}
-			pats);
-		    (case resultty
-		      of SOME ty => (PP.string ppstrm ":";ppTy sourceOp ppstrm (ty,d))
-		       | NONE => ()
-		    );
-		    PP.space ppstrm 1;
-		    PP.string ppstrm "=";
-		    PP.space ppstrm 1;
-		    ppExp sourceOp ppstrm (exp,d);
+			pats;
+		      (case resultty
+		         of SOME ty => (PP.string ppstrm ":";ppTy sourceOp ppstrm (ty,d))
+		          | NONE => ());
+		      PP.space ppstrm 1;
+		      PP.string ppstrm "=";
+		      PP.space ppstrm 1;
+		      ppExp sourceOp ppstrm (exp,d);
 		  PP.closeBox ppstrm
 		end
 
@@ -1043,7 +1044,7 @@ and ppDbrhs sourceOp ppstrm =
     let val pps = PP.string ppstrm
 	fun ppDbrhs'(_,0)= pps "<DT.rhs>"
 	  | ppDbrhs'(constrs,d) =
-	    let fun pr ppstrm (sym:symbol, tv:Ast.ty option) =
+	    let fun pr ppstrm (sym: S.symbol, tv: Ast.ty option) =
 		    (case tv
 		       of SOME a =>
 			  (PU.ppSym ppstrm sym; pps" of "; ppTy sourceOp ppstrm (a, d))
@@ -1185,13 +1186,13 @@ and ppTy sourceOp ppstrm =
 	              PP.closeBox ppstrm))
 
 	| ppTy' (RecordTy s, d) =
-	  let fun pr ppstrm (sym:symbol, tv:Ast.ty) =
+	  let fun prfield ppstrm (sym: S.symbol, tv: Ast.ty) =
 		  (PU.ppSym ppstrm sym; pps ":"; ppTy sourceOp ppstrm (tv, d))
 	  in  PU.ppClosedSequence ppstrm
 	        {front=(C PP.string "{"),
 		 sep=PU.sepWithSpc ",",
 		 back=(C PP.string "}"),
-		 pr=pr,
+		 pr=prfield,
 		 style=PU.INCONSISTENT}
 		s
 	  end

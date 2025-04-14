@@ -9,6 +9,7 @@ struct
 
 local (* imports *)
 
+  structure SL = SourceLoc
   structure SM = SourceMap
   structure S = Symbol
   structure F = Fixity
@@ -49,7 +50,7 @@ in
       | LETexp of dec * exp
       | SEQexp of exp list
       | CONSTRAINTexp of exp * T.ty
-      | MARKexp of exp * SM.region
+      | MARKexp of exp * SL.region
 
     and rule = RULE of pat * exp
 
@@ -66,7 +67,7 @@ in
       | LAYEREDpat of pat * pat
       | ORpat of pat * pat
       | VECTORpat of pat list * T.ty
-      | MARKpat of pat * SM.region
+      | MARKpat of pat * SL.region
       | NOpat
 
     and dec
@@ -86,7 +87,7 @@ in
       | SEQdec of dec list
       | OVLDdec of VarCon.var
       | FIXdec of {fixity: F.fixity, ops: S.symbol list}
-      | MARKdec of dec * SM.region
+      | MARKdec of dec * SL.region
 
     (*
      * [FLINT] The "argtycs" field in APPstr is used to record the list of instantiated
@@ -99,7 +100,7 @@ in
 		   arg: Modules.Structure,
 		   argtycs: T.tycpath list}
       | LETstr of dec * strexp
-      | MARKstr of strexp * SM.region
+      | MARKstr of strexp * SL.region
 
     (*
      * [FLINT] For typing purpose, a functor is viewed as a high-order type constructor
@@ -110,7 +111,7 @@ in
       = VARfct of Modules.Functor
       | FCTfct of {param: Modules.Structure, argtycs: T.tycpath list, def: strexp}
       | LETfct of dec * fctexp
-      | MARKfct of fctexp * SM.region
+      | MARKfct of fctexp * SL.region
 
     (*
      * Each value binding vb only binds one variable identifier [a FLINT "normalization"].

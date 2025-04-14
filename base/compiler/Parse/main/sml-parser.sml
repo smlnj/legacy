@@ -7,7 +7,17 @@
  *)
 
 structure SMLParser : SMLNJ_PARSER =
-  struct
+struct
+
+local (* imports *)
+
+  structure CI = CompInfo
+  structure SL = SourceLoc
+  structure SM = SourceMap
+  structure SR = Source
+  structure EM = ErrorMsg
+
+in
 
     structure LrVals = SMLLrValsFun(structure Token = LrParser.Token)
     structure Lex = SMLLexFun(structure Tokens = LrVals.Tokens)
@@ -19,11 +29,6 @@ structure SMLParser : SMLNJ_PARSER =
   (* the following two functions are also defined in build/computil.sml *)
     val addLines = Stats.addStat(Stats.makeStat "Source Lines")
 
-    structure CI = CompInfo
-    structure SL = SourceLoc
-    structure S = Source
-    structure EM = ErrorMsg
-
     datatype parseResult = datatype ParseResult.parseResult
 
     exception AbortLex
@@ -32,21 +37,26 @@ structure SMLParser : SMLNJ_PARSER =
     val dummySEMI = LrVals.Tokens.SEMICOLON(0,0)
 
     fun parse (source : Source.source) =
-	let val sourceStream = S.instream source
-	    val sourcemap = S.sourcemap source
-	    val interactive = S.interactive source
+	let val sourceStream = SR.instream source
+	    val sourcemap = SR.sourcemap source
+	    val interactive = SR.interactive source
 
+	    (* err : (int * int) -> EM.severity -> string -> EM.bodyPrinter -> unit *)
+            (* to match the arg type expected by P.parse in oneparse *)
+            fun err (lo: int, hi: int) = EM.error (SL.REGION (lo, hi))
+
+            (* parseerror : string * int * int -> unit *)
+	    (* where int = P.pos = SourceLoc.charpos *) 			     
 	    fun parseerror (msg, p1, p2) =
-	        EM.error (SL.REGION(p1, p2)) EM.COMPLAIN msg EM.nullErrorBody
+	        EM.error (SL.REGION (p1, p2)) EM.COMPLAIN msg EM.nullErrorBody
 
 	    val lexarg =
 		{comLevel = ref 0,
-		 sourceMap = sourcemap,
 		 charlist = ref (nil : string list),
 		 stringtype = ref false,
 		 stringstart = ref 0,
-		 err = EM.error,
 		 brack_stack = ref (nil: int ref list)}
+
 	    val doprompt = ref true
 	    val prompt = ref (!ParserControl.primaryPrompt)
 	    fun inputc_sourceStream _ = TextIO.input sourceStream
@@ -77,11 +87,12 @@ structure SMLParser : SMLNJ_PARSER =
 			 then EOF
 			 else
 			   let val _ = prompt := !ParserControl.secondaryPrompt;
-			       val initialLinePos = SourceMap.lastLinePos sourcemap
+			       val initialLinePos = SM.lastLinePos sourcemap
 			       val (result, lexer'') =
-				     P.parse (lookahead, !lexer', parseerror, EM.error)
-			       val linesRead = SourceMap.newlineCount sourcemap
-						 (initialLinePos, SourceMap.lastLinePos sourcemap)
+				     P.parse (lookahead, !lexer', parseerror, err)
+			       val linesRead = SM.newlineCount
+						 (sourcemap, SL.REGION (initialLinePos,
+									SM.lastLinePos sourcemap))
 			    in addLines linesRead;
 			       lexer' := lexer'';
 			       if CI.errors () then ERROR else PARSE result
@@ -93,4 +104,5 @@ structure SMLParser : SMLNJ_PARSER =
 	 in oneparse
 	end (* parse *)
 
+end (* top local (imports *)
 end (* structure SMLParser *)

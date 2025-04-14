@@ -1,16 +1,17 @@
 (* smlfile.sml
  *
- * COPYRIGHT (c) 2016 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2016, 2025 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
 
 signature SMLFILE =
   sig
-    val parseOne : Source.inputSource -> unit -> Ast.dec option
-    val parse : Source.inputSource -> Ast.dec
+    val parseOne : Source.source -> unit -> Ast.dec option
+    val parse : Source.source -> Ast.dec
   end
 
-structure SmlFile :> SMLFILE = struct
+structure SmlFile :> SMLFILE =
+struct
 
     structure R = ParseResult
 
@@ -22,32 +23,30 @@ structure SmlFile :> SMLFILE = struct
 	  then SMLParser.parse source
 	  else MLParser.parse source
 
-    fun parseOne source = let
-	val parser = parser source
-	val parser = Stats.doPhase parsePhase parser (* for correct timing *)
-	fun doit () = (
-	      case parser ()
-	       of R.EOF => NONE
-		| R.ABORT => fail "syntax error"
-		| R.ERROR => fail "syntax error"
-		| R.PARSE ast => SOME ast
-	      (* end case *))
-	in
-	  doit
+    fun parseOne source =
+	let val parser = parser source
+	    val parser = Stats.doPhase parsePhase parser (* for correct timing *)
+	    fun doit () = 
+	        (case parser ()
+		   of R.EOF => NONE
+		    | R.ABORT => fail "syntax error"
+		    | R.ERROR => fail "syntax error"
+		    | R.PARSE ast => SOME ast
+		(* end case *))
+	in doit
 	end
 
-    fun parse source = let
-	val parser = parser source
-	val parser = Stats.doPhase parsePhase parser (* for correct timing *)
-	fun loop asts = (
-	      case parser ()
-	       of R.EOF => Ast.SeqDec(rev asts)
-		| R.ABORT => fail "syntax error"
-		| R.ERROR => fail "syntax error"
-		| R.PARSE ast => loop(ast::asts)
-	      (* end case *))
-	in
-	  loop []
+    fun parse source =
+	let val parser = parser source
+	    val parser = Stats.doPhase parsePhase parser (* for correct timing *)
+	    fun loop asts =
+	        (case parser ()
+		   of R.EOF => Ast.SeqDec(rev asts)
+		    | R.ABORT => fail "syntax error"
+		    | R.ERROR => fail "syntax error"
+		    | R.PARSE ast => loop(ast::asts)
+		(* end case *))
+	 in loop []
 	end
 
-end
+end (* structure SmlFile *)

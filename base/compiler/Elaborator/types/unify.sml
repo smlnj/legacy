@@ -1,17 +1,19 @@
-(* Copyright 1997 Bell Laboratories *)
-(* unify.sml *)
+(* Elaborator/types/unify.sml *)
+
+(* Copyright 1997 Bell Laboratories
+ * Copyright 2025 The Fellowship of SML/NJ (www.smlnj.org) *)
 
 signature UNIFY =
 sig
 
   datatype unifyFail
-    = CIRC of Types.tyvar * Types.ty * SourceMap.region * SourceMap.region
+    = CIRC of Types.tyvar * Types.ty * SourceLoc.region * SourceLoc.region
         (* circularity *)
-    | TYC of Types.tycon * Types.tycon * SourceMap.region * SourceMap.region
+    | TYC of Types.tycon * Types.tycon * SourceLoc.region * SourceLoc.region
         (* tycon mismatch *)
-    | TYP of Types.ty * Types.ty * SourceMap.region * SourceMap.region
+    | TYP of Types.ty * Types.ty * SourceLoc.region * SourceLoc.region
         (* type mismatch *)
-    | UBV of Types.tvKind * Types.ty * SourceMap.region * SourceMap.region
+    | UBV of Types.tvKind * Types.ty * SourceLoc.region * SourceLoc.region
         (* UBOUND match *)
     | OVLD_F of string                  (* overload mismatch *)
     | OVLD_UB of string                 (* overload and user-bound ty var mismatch *)
@@ -23,7 +25,7 @@ sig
 
   val failMessage: unifyFail -> string
 
-  val unifyTy : Types.ty * Types.ty * SourceMap.region  * SourceMap.region -> unit
+  val unifyTy : Types.ty * Types.ty * SourceLoc.region  * SourceLoc.region -> unit
 
   val debugging : bool ref
 
@@ -35,13 +37,18 @@ struct
 
 val debugging = ElabControl.unidebugging
 
-local
+local (* imports *)
+
+  structure SL = SourceLoc
+
   structure S = Symbol
   structure T = Types
   structure TU = TypesUtil
   structure OLC = OverloadClasses
   structure ED = ElabDebug
   open Types
+
+in
 
   fun bug msg = ErrorMsg.impossible("Unify: "^msg)
 
@@ -54,18 +61,17 @@ local
   fun debugPPType (msg,ty) =
       ED.debugPrint debugging (msg, ppType, ty)
 
-in
 
 (* for the time being, not region instrumenting the EQ and REC failures *)
 datatype unifyFail
-  = CIRC of tyvar * ty * SourceMap.region * SourceMap.region  (* circularity *)
+  = CIRC of tyvar * ty * SL.region * SL.region  (* circularity *)
   | EQ                               (* equality type required *)
-  | TYC of tycon * tycon * SourceMap.region * SourceMap.region
+  | TYC of tycon * tycon * SL.region * SL.region
                                      (* tycon mismatch *)
-  | TYP of ty * ty * SourceMap.region * SourceMap.region     (* type mismatch *)
+  | TYP of ty * ty * SL.region * SL.region     (* type mismatch *)
   | OVLD_F of string                 (* overload mismatch -- not a simple type *)
   | OVLD_UB of string                (* mismatch of OVLD and UBOUND tyvars *)
-  | UBV of tvKind * ty * SourceMap.region * SourceMap.region  (* UBOUND match *)
+  | UBV of tvKind * ty * SL.region * SL.region  (* UBOUND match *)
   | UBVE of tvKind                   (* UBOUND, equality mismatch -- never used *)
   | REC                              (* record labels *)
 
@@ -521,5 +527,5 @@ and merge_fields(extra1, extra2, fields1, fields2, reg1, reg2) =
 		  fields1, fields2)
     end
 
-end (* local *)
+end (* top local (imports) *)
 end (* structure Unify *)

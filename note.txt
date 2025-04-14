@@ -1,0 +1,55 @@
+Examples where an infix function symbol appears on LHS of a function defn clause.
+
+Standard ML of New Jersey [Version 2025.1; 64-bit; February 14, 2025]
+- infix c;
+infix c
+- datatype A of int | B of int;
+stdIn:2.12-2.20 Error: syntax error: deleting  OF IDA BAR
+stdIn:2.21-2.29 Error: syntax error: deleting  IDA OF IDA
+- datatype t = A of int | B of int;
+datatype t = A of int | B of int
+- fun A x c B y = x + y;
+stdIn:3.9 Error: infix operator "c" used without "op" in fun dec
+stdIn:3.11 Error: data constructor B used without argument in pattern
+- fun x c y = x + y;
+val c = fn : int * int -> int
+- fun (A x) c (B y) = x + y;
+stdIn:4.5-4.26 Warning: match nonexhaustive
+          (A x,B y) => ...
+  
+val c = fn : t * t -> int
+- fun (x c y) z = (x+y) * z;
+val c = fn : int * int -> int -> int
+- infix d;
+infix d
+- fun x c y = x;
+val c = fn : 'a * 'b -> 'a
+- fun x d y = y;
+val d = fn : 'a * 'b -> 'b
+- 1 c 2 d 3;
+val it = 3 : int
+- fun x c y d z = y;
+stdIn:10.7 Error: infix operator "c" used without "op" in fun dec
+stdIn:10.11 Error: infix operator "d" used without "op" in fun dec
+- dataype tt = op c of int * int;
+stdIn:2.10 Error: syntax error found at OF
+- dataype tt =  c of int * int;
+stdIn:2.8 Error: syntax error found at OF
+- datatype tt = e of int * int;
+datatype tt = e of int * int
+- infix e;
+infix e
+- fun x e y d z = x+y;
+stdIn:12.7 Error: infix operator "e" used without "op" in fun dec
+stdIn:12.11 Error: infix operator "d" used without "op" in fun dec
+stdIn:12.7 Error: data constructor e used without argument in pattern
+stdIn:12.17-12.20 Error: operator and operand do not agree [overload - bad instantiation]
+  operator domain: 'Z[OL(+)] * 'Z[OL(+)]
+  operand:         ('Y -> 'X) * 'W
+  in expression:
+    x + y
+- 2 e 3;
+val it = 2 e 3 : tt
+- fun f x e y = y;
+stdIn:13.9 Error: infix operator "e" used without "op" in fun dec
+stdIn:13.9 Error: data constructor e used without argument in pattern

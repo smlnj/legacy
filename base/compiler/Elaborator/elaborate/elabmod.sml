@@ -14,7 +14,7 @@ sig
           tdepth    : int,
           epContext : EntPathContext.context,
           path      : InvPath.path,
-          region    : SourceMap.region)
+          region    : SourceLoc.region}
       -> {absyn     : Absyn.dec,
           statenv   : StaticEnv.staticEnv}
 

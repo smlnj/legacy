@@ -8,7 +8,7 @@ sig
   datatype context
     = TOP    (* at top level -- not inside any module, rigid *)
     | INSTR  (* inside a rigid structure, i.e. not inside any functor body *)
-    | INFCT of {flex: Stamps.stamp -> bool,  depth: DebIndex.depth}
+    | INFCT of {flex: Stamp.stamp -> bool,  depth: DebIndex.depth}
              (* predicate recognizing flexible stamps *)
     | INSIG  (* within a signature body *)
 
@@ -70,7 +70,7 @@ sig
                     resultty: Types.ty option,
                     exp: Absyn.exp} list,
           tyvars: TyvarSet.tyvarset ref,
-	  region: SourceMap.region } list
+	  region: SourceLoc.region } list
        -> (Absyn.dec * StaticEnv.staticEnv)
 
   val wrapRECdec : Absyn.rvb list -> (Absyn.dec * StaticEnv.staticEnv)

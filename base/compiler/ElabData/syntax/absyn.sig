@@ -5,7 +5,7 @@
  *)
 
 (* [DBM, 2025.03.16] 
- * No longer exports region type.  Now uses SourceMap.region instead.
+ * No longer exports region type.  Now uses SourceLoc.region instead.
  * Type of VB changed: tyvars field now is TyvarSet.tyvarset ref instead of tyvar list ref.
  * Exports:
  *   signature ABSYN
@@ -40,7 +40,7 @@ sig
       | LETexp of dec * exp
       | SEQexp of exp list
       | CONSTRAINTexp of exp * Types.ty
-      | MARKexp of exp * SourceMap.region
+      | MARKexp of exp * SourceLoc.region
 
     and rule = RULE of pat * exp
 
@@ -58,7 +58,7 @@ sig
       | LAYEREDpat of pat * pat
       | ORpat of pat * pat
       | VECTORpat of pat list * Types.ty
-      | MARKpat of pat * SourceMap.region
+      | MARKpat of pat * SourceLoc.region
       | NOpat
 
     and dec
@@ -79,7 +79,7 @@ sig
       | SEQdec of dec list
       | OVLDdec of VarCon.var
       | FIXdec of {fixity: Fixity.fixity, ops: Symbol.symbol list}
-      | MARKdec of dec * SourceMap.region
+      | MARKdec of dec * SourceLoc.region
 
     and strexp
       = VARstr of Modules.Structure
@@ -87,14 +87,14 @@ sig
       | APPstr of {oper: Modules.Functor, arg: Modules.Structure,
 		   argtycs: Types.tycpath list}
       | LETstr of dec * strexp
-      | MARKstr of strexp * SourceMap.region
+      | MARKstr of strexp * SourceLoc.region
 
     and fctexp
       = VARfct of Modules.Functor
       | FCTfct of {param: Modules.Structure, argtycs: Types.tycpath list,
 		   def: strexp}
       | LETfct of dec * fctexp
-      | MARKfct of fctexp * SourceMap.region
+      | MARKfct of fctexp * SourceLoc.region
 
     and vb = VB of {pat: pat, exp: exp, boundtvs: Types.tyvar list,
 		    tyvars: TyvarSet.tyvarset ref}  (* changed from Types.tyvar list ref *)

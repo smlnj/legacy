@@ -5,68 +5,68 @@
  *)
 
 structure AstUtil : ASTUTIL =
-  struct
+struct
 
-    structure Sym = Symbol
-    structure Err = ErrorMsg
+local (* imports *)
 
-    val unitPat = Ast.RecordPat{def=nil,flexibility=false}
+  structure SL = SourceLoc (* <- region *)
+  structure S = Symbol
+  structure EM = ErrorMsg
+
+in
+
+    val unitPat = Ast.RecordPat {def=nil,flexibility=false}
     val unitExp = Ast.RecordExp nil
-    val trueDcon = [Sym.varSymbol "true"]
-    val falseDcon = [Sym.varSymbol "false"]
-    val quoteDcon = [Sym.strSymbol "SMLofNJ", Sym.varSymbol "QUOTE"]
-    val antiquoteDcon = [Sym.strSymbol "SMLofNJ", Sym.varSymbol "ANTIQUOTE"]
-    val arrowTycon = Sym.tycSymbol "->"
-    val exnID = Sym.tycSymbol "exn"
-    val bogusID = Sym.varSymbol "BOGUS"
-    val symArg = Sym.strSymbol "<Parameter>"
-    val itsym = [Sym.varSymbol "it"]
+    val trueDcon = [S.varSymbol "true"]
+    val falseDcon = [S.varSymbol "false"]
+    val quoteDcon = [S.strSymbol "SMLofNJ", S.varSymbol "QUOTE"]
+    val antiquoteDcon = [S.strSymbol "SMLofNJ", S.varSymbol "ANTIQUOTE"]
+    val arrowTycon = S.tycSymbol "->"
+    val exnID = S.tycSymbol "exn"
+    val bogusID = S.varSymbol "BOGUS"
+    val symArg = S.strSymbol "<Parameter>"
+    val itsym = [S.varSymbol "it"]
 
-    fun checkFix (i, err) =
+    fun checkFix (i, region) =
 	  if (i < 0) orelse (9 < i)
-	    then (
-	      err Err.COMPLAIN "fixity precedence must be between 0 and 9" Err.nullErrorBody;
-	      9)
-	    else IntInf.toInt i
+	  then (EM.errorRegion (region, "fixity precedence must be between 0 and 9"); 9)
+	  else IntInf.toInt i
 
     (* layered patterns *)
 
-    fun lay3 ((x as Ast.VarPat _), y, _) = Ast.LayeredPat{varPat=x,expPat=y}
-      | lay3 (Ast.ConstraintPat{pattern,constraint}, y, err) =
-	     (err Err.COMPLAIN "illegal (multiple?) type constraints in AS pattern"
-			   Err.nullErrorBody;
-	      case lay3 (pattern,y,err)
-	       of Ast.LayeredPat{varPat,expPat} =>
-		 Ast.LayeredPat{varPat=varPat,
-			    expPat=Ast.ConstraintPat{pattern=expPat, constraint=constraint}}
-		| pat => pat)
-      | lay3 (Ast.MarkPat(x,_),y, err) = lay3 (x,y,err)
-      | lay3 (Ast.FlatAppPat[x],y,err) = (err Err.COMPLAIN "parentheses illegal around variable in AS pattern" Err.nullErrorBody; y)
-      | lay3 (x,y,err) = (err Err.COMPLAIN "pattern to left of AS must be variable"
-				Err.nullErrorBody; y)
+    (* lay3 : Ast.pat * Ast.pat * SL.region -> Ast.pat *)
+    fun lay3 ((x as Ast.VarPat _), y: Ast.pat, region: SL.region) = Ast.LayeredPat {varPat=x,expPat=y}
+      | lay3 (Ast.MarkPat(x,_), y, region) = lay3 (x, y, region)
+      | lay3 (Ast.ConstraintPat{pattern,constraint}, y, region) =
+	     (EM.errorRegion (region, "illegal (multiple?) type constraints in AS pattern"); y)
+      | lay3 (Ast.FlatAppPat[x], y, region) =
+	     (EM.errorRegion (region, "parentheses illegal around variable in AS pattern"); y)
+      | lay3 (x, y, region) =
+   	     (EM.errorRegion (region, "pattern to left of AS must be variable"); y)
 
-    fun lay2 (Ast.ConstraintPat{pattern,constraint}, y, err) =
-	     (err Err.COMPLAIN "illegal (multiple?) type constraints in AS pattern"
-			   Err.nullErrorBody;
-	      case lay2 (pattern,y,err)
-	       of Ast.LayeredPat{varPat,expPat} =>
-		 Ast.LayeredPat{varPat=varPat,
-			    expPat=Ast.ConstraintPat{pattern=expPat,
-						 constraint=constraint}}
-		| pat => pat)
-      | lay2 (Ast.MarkPat(x,_),y, err) = lay2 (x,y,err)
-      | lay2 (Ast.FlatAppPat[{item,...}],y,err) = lay3(item,y,err)
-      | lay2 p = lay3 p
+    (* lay2 : Ast.pat * Ast.pat * SL.region -> Ast.pat *)
+    fun lay2 (Ast.ConstraintPat{pattern,constraint}, y: Ast.pat, region: SL.region) =
+	     (EM.errorRegion (region, "illegal (multiple?) type constraints in AS pattern");
+	      case lay2 (pattern, y, region)
+	        of Ast.LayeredPat{varPat,expPat} =>
+		     Ast.LayeredPat{varPat=varPat,
+				    expPat=Ast.ConstraintPat{pattern=expPat,
+							     constraint=constraint}}
+		 | pat => pat)
+      | lay2 (Ast.MarkPat (x,_), y, region) = lay2 (x, y, region)  (* strip MarkPat *)
+      | lay2 (Ast.FlatAppPat [{item,...}], y, region) = lay3 (item, y, region)
+      | lay2 args = lay3 args
 
-    fun lay (Ast.ConstraintPat{pattern,constraint}, y, err) =
-	     (case lay2 (pattern,y,err)
-	       of Ast.LayeredPat{varPat,expPat} =>
-		 Ast.LayeredPat{varPat=varPat,
-			    expPat=Ast.ConstraintPat{pattern=expPat,
-						 constraint=constraint}}
+    (* lay : Ast.pat * Ast.pat * SL.region -> Ast.pat *)
+    fun lay (Ast.ConstraintPat{pattern,constraint}, y: Ast.pat, region: SL.region) =
+	     (case lay2 (pattern, y, region)
+	       of Ast.LayeredPat {varPat,expPat} =>
+		    Ast.LayeredPat {varPat=varPat,
+				    expPat=Ast.ConstraintPat{pattern=expPat,
+							     constraint=constraint}}
 		| pat => pat)
-      | lay (Ast.MarkPat(x,_),y, err) = lay (x,y,err)
-      | lay p = lay2 p
+      | lay (Ast.MarkPat(x,_), y, region) = lay (x, y, region)
+      | lay args = lay2 args
 
     val layered = lay
 
@@ -80,4 +80,5 @@ structure AstUtil : ASTUTIL =
     fun quoteExp s = Ast.AppExp{function=Ast.VarExp quoteDcon,argument=Ast.StringExp s}
     fun antiquoteExp e = Ast.AppExp{function=Ast.VarExp antiquoteDcon,argument= e}
 
-  end (* structure *)
+end (* top local (imports) *)
+end (* structure AstUtil *)

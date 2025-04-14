@@ -18,7 +18,7 @@ sig
 
   (* primitive operations on tycons *)
   val tycName : Types.tycon -> Symbol.symbol
-  val tycStamp : Types.tycon -> Stamps.stamp
+  val tycStamp : Types.tycon -> Stamp.stamp
   val tycPath : Types.tycon -> InvPath.path
 
   val tycEntPath : Types.tycon -> EntPath.entPath
@@ -117,7 +117,7 @@ sig
   val dtSibling : int * Types.tycon -> Types.tycon
   val extractDcons: Types.tycon -> Types.datacon list
 
-  val wrapDef : Types.tycon * Stamps.stamp -> Types.tycon
+  val wrapDef : Types.tycon * Stamp.stamp -> Types.tycon
       (* make a tycon into a DEFtyc by "eta-expanding" if necessary *)
 
   val unWrapDef1 : Types.tycon -> Types.tycon option

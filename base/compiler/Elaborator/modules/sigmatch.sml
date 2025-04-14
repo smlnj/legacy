@@ -17,7 +17,7 @@ sig
         entEnv   : Modules.entityEnv,
         statenv  : StaticEnv.staticEnv,
         rpath    : InvPath.path,
-        region   : SourceMap.region}
+        region   : SourceLoc.region}
     -> {resDec : Absyn.dec,
         resStr : Modules.Structure,
         resExp : Modules.strExp}
@@ -30,7 +30,7 @@ sig
         entEnv   : Modules.entityEnv,
         statenv  : StaticEnv.staticEnv,
         rpath    : InvPath.path,
-        region   : SourceMap.region}
+        region   : SourceLoc.region}
     -> {resDec : Absyn.dec,
         resFct : Modules.Functor,
         resExp : Modules.fctExp}
@@ -45,7 +45,7 @@ sig
         epc      : EntPathContext.context,                                
         statenv  : StaticEnv.staticEnv,
 	rpath    : InvPath.path,
-        region   : SourceMap.region}
+        region   : SourceLoc.region}
     -> {resDec : Absyn.dec,
         resStr : Modules.Structure,
         resExp : Modules.strExp}
@@ -57,6 +57,7 @@ struct
 
 local
 
+   structure SL = SourceLoc
    structure EM = ErrorMsg
 
    structure A  = Absyn
@@ -1002,7 +1003,7 @@ end
  *      entEnv   : Modules.entityEnv,
  *      rpath    : InvPath.path,
  *      statenv  : StaticEnv.staticEnv,
- *      region   : SourceMap.region)
+ *      region   : SourceLoc.region)
  *  -> {resDec : Absyn.dec,
  *      resStr : Modules.Structure,
  *      resExp : Modules.strExp}
@@ -1140,7 +1141,7 @@ end handle Match => (A.SEQdec [], ERRORfct, bogusFctExp))
  *      entEnv   : Modules.entityEnv,
  *      rpath    : InvPath.path,
  *      statenv  : StaticEnv.staticEnv,
- *      region   : SourceMap.region}
+ *      region   : SourceLoc.region}
  *  -> {resDec : Absyn.dec,
  *      resFct : Modules.Functor,
  *      resExp : Modules.fctExp}
@@ -1170,7 +1171,7 @@ and matchFct{sign, fct, fctExp, tdepth, entEnv, rpath, statenv, region} =
  *      epc      : EntPathContext.context,
  *      statenv  : StaticEnv.staticEnv,
  *      rpath    : InvPath.path,
- *      region   : SourceMap.region)
+ *      region   : SourceLoc<.region)
  *  -> {resDec : Absyn.dec,
  *      resStr : Modules.Structure,
  *      resExp : Modules.strExp}

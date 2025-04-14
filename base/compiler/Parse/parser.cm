@@ -7,29 +7,28 @@
  *)
 
 Group
-	signature PARSER_CONTROL
-	structure ParserControl
+    signature PARSER_CONTROL
+    structure ParserControl
 
-	signature AST
-	signature ASTUTIL
-	signature SMLFILE
-	signature PPAST
+    signature AST
+    signature ASTUTIL
+    signature SMLFILE
+    signature PPAST
 
-	structure Ast
-	structure PPAst
-	structure AstUtil
-	structure SmlFile
+    structure Ast
+    structure PPAst
+    structure AstUtil
+    structure SmlFile
 
 is
-	ast/ast.sig
-	ast/ast.sml
-	ast/astutil.sig
-	ast/astutil.sml
-	ast/ppast.sig
-	ast/ppast.sml
-
-	lex/tokentable.sml
-	lex/user.sml
+    ast/ast.sig
+    ast/ast.sml
+    ast/astutil.sig
+    ast/astutil.sml
+    ast/ppast.sig
+    ast/ppast.sml
+    lex/tokentable.sml
+    lex/user.sml
 
 #if defined (NO_PLUGINS)
         lex/ml.lex.sml

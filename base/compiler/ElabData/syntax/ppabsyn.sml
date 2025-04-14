@@ -1,6 +1,6 @@
-(* ppabsyn.sml
+(* ElabData/syntax/ppabsyn.sml
  *
- * COPYRIGHT (c) 2018 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2018, 2025 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
 
@@ -8,18 +8,18 @@ signature PPABSYN =
 sig
   val ppPat  : StaticEnv.staticEnv -> PrettyPrint.stream
                -> Absyn.pat * int -> unit
-  val ppExp  : StaticEnv.staticEnv * Source.inputSource option
+  val ppExp  : StaticEnv.staticEnv * Source.source option
                -> PrettyPrint.stream -> Absyn.exp * int -> unit
-  val ppRule : StaticEnv.staticEnv * Source.inputSource option
+  val ppRule : StaticEnv.staticEnv * Source.source option
                -> PrettyPrint.stream -> Absyn.rule * int -> unit
-  val ppVB   : StaticEnv.staticEnv * Source.inputSource option
+  val ppVB   : StaticEnv.staticEnv * Source.source option
                -> PrettyPrint.stream -> Absyn.vb * int -> unit
-  val ppRVB  : StaticEnv.staticEnv * Source.inputSource option
+  val ppRVB  : StaticEnv.staticEnv * Source.source option
                -> PrettyPrint.stream -> Absyn.rvb * int -> unit
-  val ppDec  : StaticEnv.staticEnv * Source.inputSource option
+  val ppDec  : StaticEnv.staticEnv * Source.source option
                -> PrettyPrint.stream -> Absyn.dec * int -> unit
 
-  val ppStrexp : StaticEnv.staticEnv * Source.inputSource option
+  val ppStrexp : StaticEnv.staticEnv * Source.source option
                  -> PrettyPrint.stream -> Absyn.strexp * int -> unit
 
 end (* signature PPABSYN *)
@@ -59,6 +59,8 @@ val internals = ElabDataControl.absynInternals
 
 fun C f x y = f y x
 
+fun region (bounds: int * int) = SL.REGION bounds
+
 val nullFix = INfix(0,0)
 val infFix = INfix(1000000,100000)
 fun strongerL(INfix(_,m),INfix(n,_)) = m >= n
@@ -69,9 +71,9 @@ fun strongerR(INfix(_,m),INfix(n,_)) = n > m
 fun prpos(ppstrm: PP.stream,
           source: SR.source, charpos: int) =
     if (!lineprint) then
-      let val {map, ...} = source
-          val locString = SL.locationToString (SM.charposToLocation (map, charpos))
-       in pps ppstrm locString;
+      let val map = SR.sourcemap source
+          val locString = SL.locationToString (SM.charposToLocation (charpos, map))
+       in PU.pps ppstrm locString
       end
     else PU.ppi ppstrm charpos
 
@@ -423,7 +425,7 @@ fun ppExp (context as (env,source_opt)) ppstrm =
 			       trim rules);
 	       rparen();
 	       closeBox ())
-	  | ppExp' (MARKexp (exp,(s,e)),atom,d) =
+	  | ppExp' (MARKexp (exp, SL.REGION (s,e)), atom, d) =
 	      (case source_opt
 		of SOME source =>
 		     if !internals
@@ -488,7 +490,7 @@ fun ppExp (context as (env,source_opt)) ppstrm =
 			     ppExp'(rator,true,d-1); PP.break ppstrm {nsp=1,offset=2};
 			     ppExp'(rand,true,d-1);
 			    closeBox ()))
-		  | appPrint(MARKexp(exp,(s,e)),l,r,d) =
+		  | appPrint(MARKexp(exp, SL.REGION (s,e)), l, r, d) =
 		      (case source_opt
 			of SOME source =>
 			     if !internals
@@ -701,10 +703,10 @@ and ppDec (context as (env,source_opt)) ppstrm =
 	     ops;
 	   closeBox ())
 
-        | ppDec'(OVLDdec ovldvar,d) =
+        | ppDec' (OVLDdec ovldvar, d) =
 	  (pps "overload "; ppVar ppstrm ovldvar)
 
-        | ppDec'(OPENdec strbs,d) =
+        | ppDec' (OPENdec strbs, d) =
 	  (openHVBox 0;
 	   pps "open ";
 	   PU.ppSequence ppstrm
@@ -715,14 +717,14 @@ and ppDec (context as (env,source_opt)) ppstrm =
             strbs;
 	   closeBox ())
 
-        | ppDec'(MARKdec(dec,(s,e)),d) =
+        | ppDec'(MARKdec (dec, SL.REGION (s, e)), d) =
 	  (case source_opt
 	    of SOME source =>
 	       (pps "MARKdec(";
 		ppDec'(dec,d); pps ",";
-		prpos(ppstrm,source,s); pps ",";
-		prpos(ppstrm,source,e); pps ")")
-	     | NONE => ppDec'(dec,d))
+		prpos (ppstrm, source, s); pps ",";
+		prpos (ppstrm, source, e); pps ")")
+	     | NONE => ppDec' (dec, d))
 
      in ppDec'
     end
@@ -754,7 +756,7 @@ and ppStrexp (context as (statenv,source_opt)) ppstrm =
 	       PP.cut ppstrm;
 	       pps "end";
 	       PP.closeBox ppstrm)
-        | ppStrexp'(MARKstr(body,(s,e)),d) =
+        | ppStrexp' (MARKstr(body, SL.REGION(s,e)), d) =
 	      (case source_opt
 		of SOME source =>
 	           (pps "MARKstr(";
@@ -791,7 +793,7 @@ and ppFctexp (context as (_,source_opt)) ppstrm =
 	     pps "end";
 	     PP.closeBox ppstrm)
 
-	| ppFctexp'(MARKfct(body,(s,e)),d) =
+	| ppFctexp' (MARKfct(body, SL.REGION(s,e)),d) =
 	    (case source_opt
 	      of SOME source =>
 	           (pps "MARKfct(";

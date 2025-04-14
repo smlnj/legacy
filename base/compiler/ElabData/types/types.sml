@@ -7,11 +7,14 @@
 structure Types : TYPES =
 struct
 
-local structure A  = Access
-      structure EP = EntPath
-      structure IP = InvPath
-      structure S  = Symbol
-      structure ST = Stamp
+local
+  structure SL = SourceLoc
+
+  structure A  = Access
+  structure EP = EntPath
+  structure IP = InvPath
+  structure S  = Symbol
+  structure ST = Stamp
 in
 
 type label = S.symbol
@@ -21,8 +24,8 @@ type polysign = bool list
 
 datatype eqprop = YES | NO | IND | OBJ | DATA | ABS | UNDEF
 
-type varSource = S.symbol * SourceMap.region (* the "occurrence" of an overloaded identifier *)
-type litSource = IntInf.int * SourceMap.region (* the "occurrence" of an overloaded literal *)
+type varSource = S.symbol * SL.region (* the "occurrence" of an overloaded identifier *)
+type litSource = IntInf.int * SL.region (* the "occurrence" of an overloaded literal *)
 
 datatype openTvKind
   = META                          (* metavariables:
@@ -103,7 +106,7 @@ and ty
   | POLYty of {sign: polysign, tyfun: tyfun}
   | WILDCARDty
   | UNDEFty
-  | MARKty of ty * SourceMap.region
+  | MARKty of ty * SL.region
 
 and tyfun
   = TYFUN of {arity: int, body: ty}

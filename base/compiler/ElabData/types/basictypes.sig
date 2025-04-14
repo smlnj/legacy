@@ -1,13 +1,13 @@
-(* basictypes.sig
+(* ElabData/types/basictypes.sig
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2019, 2025 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
 
 signature BASICTYPES =
   sig
 
-    val arrowStamp : Stamps.stamp
+    val arrowStamp : Stamp.stamp
     val arrowTycon : Types.tycon
     val --> : Types.ty * Types.ty -> Types.ty
     val isArrowType : Types.ty -> bool

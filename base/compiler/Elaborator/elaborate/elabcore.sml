@@ -9,14 +9,14 @@ sig
 
   val elabABSTYPEdec :
         {abstycs: Ast.db list, withtycs: Ast.tb list, body: Ast.dec} *  (* arg type of Ast.AbstypeDec *)
-        StaticEnv.staticEnv * (Types.tycon -> bool) * InvPath.path * SourceMap.region
+        StaticEnv.staticEnv * (Types.tycon -> bool) * InvPath.path * SourceLoc.region
         -> Absyn.dec * StaticEnv.staticEnv (* * Modules.entityEnv ??? *)
     (* elabABSTYPEdec needs to be defined here because it needs to elaborate the body declaration
      * of the abstype declaration, and this body can include core declarations. *)
 
   val elabDec :
         Ast.dec * StaticEnv.staticEnv * (Types.tycon -> bool)
-        * InvPath.path * SourceMap.region
+        * InvPath.path * SourceLoc.region
         -> Absyn.dec * StaticEnv.staticEnv
 
   val debugging : bool ref
@@ -31,8 +31,9 @@ local (* imports *)
 
   structure Tbl = SymbolHashTable
 
-  structure EM = ErrorMsg
+  structure SL = SourceLoc
   structure SM = SourceMap
+  structure EM = ErrorMsg
 
   structure S = Symbol
   structure F = Fixity
@@ -93,30 +94,30 @@ fun showDec (msg, dec, env) =
 (* ========================================================================================== *)
 (* some specialized error reporting functions *)
 		     
-(* error0 : SM.region * EM.severity * string -> unit *)
+(* error0 : SL.region * EM.severity * string -> unit *)
 (* error0 is EM.error "partially applied" to EM.nullErrorBody (=> empty format) *)
-fun error0 (region: SM.region, severity: EM.severity, msg: string) : unit =
+fun error0 (region: SL.region, severity: EM.severity, msg: string) : unit =
     EM.error region severity msg EM.nullErrorBody
 
 (* error : string -> unit *)
 (* error0 with region = nullRegion and severity = EM.COMPLAIN *)
 fun error (msg: string) : unit =
-    error0 (SM.nullRegion, EM.COMPLAIN, msg)
+    error0 (SL.NULLregion, EM.COMPLAIN, msg)
 
-(* errorRegion : SM.region * string -> unit *)
+(* errorRegion : SL.region * string -> unit *)
 fun errorRegion (region, msg) = error0 (region, EM.COMPLAIN, msg)
 
-(* checkedUnion : SM.region * string -> (TS.tyvarset * TS.tyvarset, region) -> TS.tyvarset *)
+(* checkedUnion : SL.region * string -> (TS.tyvarset * TS.tyvarset, region) -> TS.tyvarset *)
 (* check tyvarset unions for incompatible tyvars, e.g. 'a and ''a in "same scope" *)
-fun checkedUnion (region: SM.region, Where: string)
+fun checkedUnion (region: SL.region, Where: string)
       (tyvarset1: TS.tyvarset, tyvarset2 : TS.tyvarset) : TS.tyvarset =
     case TS.union (tyvarset1, tyvarset2)
       of SOME u => u
        | NONE => (errorRegion (region, "tyvarset union [" ^ Where ^"]"); TS.empty)
 
-(* checkedDiff : SM.region * string -> (TS.tyvarset * TS.tyvarset, region) -> TS.tyvarset *)
+(* checkedDiff : SL.region * string -> (TS.tyvarset * TS.tyvarset, region) -> TS.tyvarset *)
 (* check tyvarset differences for incompatible tyvars, e.g. 'a and ''a in "same scope" *)
-fun checkedDiff (region: SM.region, Where: string)
+fun checkedDiff (region: SL.region, Where: string)
       (tyvarset1: TS.tyvarset, tyvarset2 : TS.tyvarset) : TS.tyvarset =
     case TS.diff (tyvarset1, tyvarset2)
       of SOME u => u
@@ -126,16 +127,16 @@ fun checkedDiff (region: SM.region, Where: string)
 (* ========================================================================================== *)
 (* conditional abstract syntax marking functions for pats, exps and decs *)
 
-(* cMARKpat : AS.pat * SM.region -> AS.pat *)
-fun cMARKpat (pat: AS.pat, region: SM.region) =
+(* cMARKpat : AS.pat * SL.region -> AS.pat *)
+fun cMARKpat (pat: AS.pat, region: SL.region) =
     if !ElabControl.markabsyn then AS.MARKpat (pat, region) else pat
 
-(* cMARKexp : AS.exp * SM.region -> AS.exp *)
-fun cMARKexp (exp: AS.exp, region: SM.region) =
+(* cMARKexp : AS.exp * SL.region -> AS.exp *)
+fun cMARKexp (exp: AS.exp, region: SL.region) =
     if !ElabControl.markabsyn then MARKexp (exp, region) else exp
 
-(* cMARKdec : AS.dec * SM.region -> AS.dec *)
-fun cMARKdec (dec: AS.dec, region: SM.region) =
+(* cMARKdec : AS.dec * SL.region -> AS.dec *)
+fun cMARKdec (dec: AS.dec, region: SL.region) =
     if !ElabControl.markabsyn then MARKdec (dec, region) else dec
 
 
@@ -148,16 +149,16 @@ val minSubnormalReal64 = RealLit.real{isNeg = false, whole="4", frac="9", exp = 
 val minNormalReal64 = RealLit.real{isNeg = false, whole="2", frac="2250738585072014", exp = ~308}
 val maxReal64 = RealLit.real{isNeg = false, whole="1", frac="7976931348623157", exp = 308}
 
-(* substituted inline
+(* bodies substituted inline, so no longer needed
 
-fun mkIntLiteralTy (v : IntInf.int, r : SM.region) : ty =
+fun mkIntLiteralTy (v : IntInf.int, r : SL.region) : ty =
       T.VARty (T.mkTyvar (T.OVLDI [(v, r)]))
 
-fun mkWordLiteralTy (v : IntInf.int, r : SM.region) : ty =
+fun mkWordLiteralTy (v : IntInf.int, r : SL.region) : ty =
       T.VARt (T.mkTyvar (OVLDW [(v, r)]))
 
 (* REAL32: eventually this will be an overload instance *)
-fun mkRealLiteralTy (v : RealLit.t, r : SM.region) : ty = BT.realTy
+fun mkRealLiteralTy (v : RealLit.t, r : SL.region) : ty = BT.realTy
 
 *)
 
@@ -166,9 +167,9 @@ fun mkRealLiteralTy (v : RealLit.t, r : SM.region) : ty = BT.realTy
 (* tyvarset updater functions *)
 (* what do these updater functions do? -- to be rediscovered! *)
 
-(* tyvarsetUpdater -- the type of updater functions. These assign a tyvarset to a hidden
- * ref that is embedded in an absyn structure for a declaration (tyvars components of
- * VB and RVB constructs in particular. *)
+(* tyvarsetUpdater -- the type of updater functions for tyvarsets.
+ * These assign a tyvarset to a hidden ref that is embedded in an absyn structure for a declaration
+ * (tyvars components of VB and RVB constructs in particular. *)
 type tyvarsetUpdater = TS.tyvarset -> unit
 
 (* nullUpdater : tyvarsetUpdater  -- was no_updater! *)
@@ -184,42 +185,60 @@ fun noTyvars (dec, env) = (dec, env, TS.empty, nullUpdater)
 (* [LAZY] types associated with function clauses that are used local to elabFUNdec,
  * and are related to processing lazy function declarations. *)
 
-(* clauseKind: used for communicating information about lazy fun decls
- *  between preprocessing phase (makevar) and the main part of elabFUNdec. *)
+(* clauseKind: used for communicating information about lazy FunDec decs
+ *  between preprocessing phase (fb_folder, formerly makevar) and the main part of elabFUNdec. *)
 datatype clauseKind = STRICT | LZouter | LZinner
 
-(* argTyClause: the argument type of the Ast.Clause data constructor.
-   An Ast.Fb (function binding) contains a list of these clauses, and a boolean flag for lazy.
-   The pats field contains a list of "partially parsed" patterns of type Ast.pat Ast.fixitem --
-   these constitute the LHS of a clause, while th exp field contains the Ast.exp RHS.
-   The partially parsed list of (curried) parameters is represented as a pat fixitem list (pats).
-   The function name (the subject of the parent fb) is extracted
-   by the elabFUNdec#makevar#parse' function at line ~1317.
-   The LHS of an Ast fundec clause is a list of par fixitems. The name
-   of the declared function must be extracted from the head of this lhs list of fixitems. *)
-type argTyClause =  {pats: pat fixitem list, resultty: ty option, exp:exp}
+(* clauseTy: the argument type, or contents, of the Ast.Clause data constructor.
+   This is defined here as documentation of the input for clause elaboration. The type does not
+   appear in the code at the moment.
+   An Ast.Fb (recursive function binding, a list of which is found in the FunDec declaration
+   variant) contains a list of these clauses, plus a boolean flag specifying whether the function
+   being declared is lazy.
+   The pats field contains a list of "partially parsed" patterns of type Ast.pat Ast.fixitem,
+   which constitute the LHS of a clause, while the exp field contains the RHS expression of the clause.
+   The LHS of a clause is a partially parsed list of (curried) parameters is represented as
+   a pat fixitem list (pats) that were produced by parsing corresponding atomic pats (apats in ml.grm).
+   The function name (the subject of the parent fb) is extracted by the parsePatFixitems function
+   defined around line 1391 (elabFUNdec#makevar#parsePatFixitems. *)
 
-(* clauseTy_ast: the Ast clause record produced by parseClause *)
-type clauseTy_ast = {kind: clauseKind, argpats: Ast.pat Ast.fixitem list,
-	             resultty: Ast.ty option, exp: Ast.exp, funsym: S.symbol}
+type clauseTy =  {pats: pat fixitem list, resultty: ty option, exp:exp}
 
-(* clauseTy_absyn: the Absyn record for a clause, produced by ??? *)
+(* clauseTy_ast: the Ast clause record produced by parseClause,
+ * not yet elaborated, but with LHS fully parsed, i.e., no remaining FlatAppPats and funsym determined.
+ * Note that funsyn and resultTy (if SOME) and number of argpats should be consistent across
+ * the clauses of a given function dec. Perhaps the common elements, funsym, resultTy (if SOME) 
+ * should be factored out of the clauses. kind is different; it will be the same (STRICT) for all clauses
+ * of a strict function, but kinds of the clauses of a lazy function will vary between LZouter and LZinner. *)
+type clauseTy_ast = {kind: clauseKind,
+		       (* for potentially lazy function declarations, presumably the same
+			* value for all clauses of a given function. *)
+		     funsym: S.symbol,
+		       (* name of the function being defined. Presumabley the same for all clauses
+			* of a given function. This is checked. *)
+		     argpats: Ast.pat list,
+		       (* LHS function argument patterns, fully parsed; function is curried if more than 1.
+			* The number of argpats should be the same for all clauses of a function dec. *)
+	             resultty: Ast.ty option, (* optional result type specification *)
+		     exp: Ast.exp}            (* the clause RHS expression *)
+
+(* clauseTy_absyn: the Absyn record for a clause produced by elabClause 
+   When the pats list has length > 1, the function is curried. *)
 type clauseTy_absyn = {pats : AS.pat list, resultty: T.ty option, exp : AS.exp}
 
-(* Defn of fixitem tycon from structure Ast:
-
-   tyvar is a symbol, optionally marked
-
-   type 'a fixitem = {item: 'a,  ('a -> pat or 'a -> exp)
-                      fixity: S.symbol option, (* FIX: Bad label. When is it NONE? *)
-		      region: SM.region} 
+(* Defn of fixitem tycon from structure Ast, repeated here for refernce.
+   fixitems are produced by the parser (ml.grm.sml) for atomic patterns and atomic expressions.
+ 
+   ('a -> pat or 'a -> exp)
+   type 'a fixitem = {item: 'a,
+                      fixity: S.symbol option, (* FIX: Bad field label. SOME iff item is a variable  *)
+		      region: SL.region} 
 
    Where 'a will be instantiated to either Ast.pat (for pat reparsing) or Ast.exp (for exp reparsing).
 *)
   
 (* ========================================================================================== *)
-(* some utility functions not defined in ElabUtil *)
-
+(* some utility functions not defined in ElabUtil -- though they could be moved there! *)
 
 (* stripExpAbs: AS.exp -> AS.exp
  * strip MARKexp and CONSTRAINTexp wrappers around an expression *)
@@ -246,8 +265,8 @@ local
     (* mkCoreExp : [name:]string -> [env:]SE.staticEnv -> AS.exp *)
     fun mkCoreExp name env = AS.VARexp (ref (CoreAccess.getVar env [name]), [])
 in
-    val mkAssignExp : AS.exp = mkCoreExp "assign"  (* AS.exp for ":=" operator *)
-    val mkBangExp : AS.exp   = mkCoreExp "deref"   (* AS.exp for "!" operator *) 
+    val mkAssignExp : SE.staticEnv -> AS.exp = mkCoreExp "assign"  (* AS.exp for ":=" operator *)
+    val mkBangExp : SE.staticEnv -> AS.exp   = mkCoreExp "deref"   (* AS.exp for "!" operator *) 
 end
 
 
@@ -257,7 +276,7 @@ end
 (**** ABSTRACT TYPE DECLARATIONS (should go away) ****)
 fun elabABSTYPEdec({abstycs: Ast.db list, withtycs: Ast.tb list, body: Ast.dec},
 		    env: SE.staticEnv, isFree: (T.tycon -> bool),
-		    rpath: IP.path, region: SM.region) =
+		    rpath: IP.path, region: SL.region) =
   let val (datatycs, withtycs, _, env1) =
           ET.elabDATATYPEdec({datatycs=abstycs,withtycs=withtycs}, env,
                              [], EE.empty, isFree, rpath, region)
@@ -276,6 +295,9 @@ fun elabABSTYPEdec({abstycs: Ast.db list, withtycs: Ast.tb list, body: Ast.dec},
   end (* function elabABSTYPEdec *)
 
 
+exception FreeOrVars
+(* used when creating a hash table in the OrPat case *)
+
 (* ELABORATE GENERAL (core) DECLARATIONS -- the main elaboration function *)
 and elabDec (dec, env, isFree, rpath, region) =
 
@@ -290,8 +312,60 @@ let
     (* newVALvar : S.symbol -> V.var *)
     fun newVALvar (sym: S.symbol) = V.mkVALvar (sym, A.namedAcc sym)
 
+    (* PATTERN parsing and elaboration **********************************************************)
 
-    (* LAZY: utilities for lazy sml translation *)
+    (* apply_pat : Ast.pat * Ast.pat -> Ast.pat
+     * Returned pat is always an AppPat (marked if both arguments were marked) *)
+    fun apply_pat (c as MarkPat(_,SL.REGION(l1,r1)), p as MarkPat(_,SL.REGION(l2,r2))) =
+	  MarkPat (AppPat {constr=c, argument=p}, SL.REGION(Int.min(l1,l2),Int.max(r1,r2)))
+      | apply_pat (c, p) = AppPat {constr=c, argument=p}
+
+    (* tuple_pat : Ast.pat * Ast.pat -> Ast.pat
+     * Returned pat is always a TuplePat (marked if both args were marked).
+     * Actually a pattern pairing function, taking 2 pats and producing a 2 element TuplePat. *)
+    fun tuple_pat (a as Ast.MarkPat(_,SL.REGION(l,_)), b as Ast.MarkPat(_,SL.REGION(_,r))) =
+	  Ast.MarkPat (Ast.TuplePat[a,b],SL.REGION(l,r))
+      | tuple_pat (a,b) = Ast.TuplePat[a,b]
+
+    (* parseFlatApp : Ast.pat Ast.fixitem list * SE.staticEnv * SL.region -> Ast.pat *)
+    val parseFlatApp = Precedence.parse {apply=apply_pat, pair=tuple_pat}
+
+    (* patCompleteParse : pat * region -> pat *)
+    (* do we need to add an env argument? *)					
+    fun patCompleteParse (pat: Ast.pat, region: SL.region) =
+        (case pat
+	   of Ast.MarkPat (pat', region') => MarkPat (patCompleteParse (pat', region'), region')
+	        (* preserve the orignial Marked region *)
+	    | Ast.ListPat pats => Ast.ListPat (map patCompleteParse pats)
+	        let fun f p => patCompleteParse (p, region)
+		 in Ast.ListPat (map f pats)
+		end
+	    | Ast.TuplePat pats =>
+	        let fun f p => patCompleteParse (p, region)
+		 in Ast.TuplePat (map f pats)
+		end
+	    | Ast.VectorPat pats =>
+	        let fun f p => patCompleteParse (p, region)
+		 in Ast.VectorPat (map f pats)
+		end
+	    | Ast.OrPat pats =>
+	        let fun f p => patCompleteParse (p, region)
+		 in Ast.OrPat (map f pats)
+		end
+	    | Ast.RecordPat {def, flexibility} => 
+	        let fun f (s,p) => (s, patCompleteParse (p, region))
+		 in Ast.RecordPat {def = map f def, flexibility = flexibility}
+		end
+	    | Ast.AppPat {constr, argument} =>
+	        Ast.AppPat {constr = patCompleteParse (constr, region), patCompleteParse (argument, region)}
+	    | Ast.LayeredPat {varPat, expPat} =>
+	        Ast.LayeredPat {varPat = patCompleteParse (varPat, region),
+				expPat = patCompleteParse (expPat, region)}
+	    | Ast.FlatAppPat patFixitems =>
+	        parseFlatApp (patFixitems, env, region)
+	    | _ => pat	
+
+    (* LAZY: utilities for lazy sml translation **************************************************)
 
     (* will one forcingFun do, or should new ones be generated with
      * different bound variables for each use? (DBM) *)
@@ -370,8 +444,8 @@ let
 
     (**** EXCEPTION DECLARATIONS ****)
 
-    (* elabEb : Ast.eb * SE.staticEnv * SM.region -> AS.eb * S.symbol * SE.staticEnv * TS.tyvarset *)
-    fun elabEb (eb: Ast.eb, env: SE.staticEnv, region: SM.region) =
+    (* elabEb : Ast.eb * SE.staticEnv * SL.region -> AS.eb * S.symbol * SE.staticEnv * TS.tyvarset *)
+    fun elabEb (eb: Ast.eb, env: SE.staticEnv, region: SL.region) =
 	case eb
 	  of Ast.EbGen{exn=ename,etype} =>
 	       let val (ety, evt, etyOp, const) =
@@ -437,30 +511,10 @@ let
 	end
 
 
-    (**** PATTERN parsing and elaboration ****)
-
-    (* apply_pat : Ast.pat * Ast.pat -> Ast.pat
-     * Returned pat is always an AppPat (marked if both arguments were marked) *)
-    fun apply_pat (c as MarkPat(_,(l1,r1)), p as MarkPat(_,(l2,r2))) =
-	  MarkPat (AppPat {constr=c, argument=p}, (Int.min(l1,l2),Int.max(r1,r2)))
-      | apply_pat (c, p) = AppPat {constr=c, argument=p}
-
-    (* tuple_pat : Ast.pat * Ast.pat -> Ast.pat
-     * Returned pat is always a TuplePat (marked if both args were marked).
-     * Actually a pattern pairing function, taking 2 pats and producing a 2 element TuplePat. *)
-    fun tuple_pat (a as Ast.MarkPat(_,(l,_)), b as Ast.MarkPat(_,(_,r))) =
-	  Ast.MarkPat (Ast.TuplePat[a,b],(l,r))
-      | tuple_pat (a,b) = Ast.TuplePat[a,b]
-
-    (* patParse : Ast.pat Ast.fixitem list * SE.staticEnv * SM.region -> Ast.pat *)
-    val patParse = Precedence.parse {apply=apply_pat, pair=tuple_pat}
-
-    exception FreeOrVars (* used when creating a hash table in the OrPat case *)
-
-    (* elabPat : Ast.pat * SE.staticEnv * SM.region -> AS.pat * TS.tyvarset
+    (* elabPat : Ast.pat * SE.staticEnv * SL.region -> AS.pat * TS.tyvarset
      * The only case that can introduce new members of the tyvarset is Ast.ConstraintPat, where
      * they can come from the type constraint. *)
-    fun elabPat (pat: Ast.pat, env: SE.staticEnv, region: SM.region) : AS.pat * TS.tyvarset =
+    fun elabPat (pat: Ast.pat, env: SE.staticEnv, region: SL.region) : AS.pat * TS.tyvarset =
     let val union = checkedUnion (region, "elabPat") in
     case pat
       of Ast.WildPat => (WILDpat, TS.empty)
@@ -610,13 +664,13 @@ let
 	    in (cMARKpat (pat', region), tyvarset)
 	   end
 
-       | Ast.FlatAppPat pats => elabPat (patParse (pats, env), env, region)
+       | Ast.FlatAppPat pats => elabPat (parseFlatApp (pats, env, region), env, region)
 
     end (* fun elabPat *)
 
-    (* elabPatFields : [fields:](S.symbol * Ast.pat) list, [env:]SE.staticEnv, [region:]SM.region)
+    (* elabPatFields : [fields:](S.symbol * Ast.pat) list, [env:]SE.staticEnv, [region:]SL.region)
                     -> (S.symbol * Absyn.pat) list * TS.tyvarset *)
-    and elabPatFields (fields: (S.symbol * Ast.pat) list, env: SE.staticEnv, region: SM.region) =
+    and elabPatFields (fields: (S.symbol * Ast.pat) list, env: SE.staticEnv, region: SL.region) =
 	let fun folder ((label,pat),(fields, tyvarset1)) =
 	      let val (pat', tyvarset2) = elabPat (pat, env, region)
 	       in ((label, pat') :: fields, checkedUnion (region, "elabPatFields") (tyvarset2, tyvarset1))
@@ -624,8 +678,8 @@ let
          in foldl folder ([],TS.empty) fields
 	end
 
-    (* elabPatList : Ast.pat list * SE.staticEnv * SM.region -> AS.pat list * TS.tyvarset *)
-    and elabPatList(pats: Ast.pat list, env:SE.staticEnv, region:region) =
+    (* elabPatList : Ast.pat list * SE.staticEnv * SL.region -> AS.pat list * TS.tyvarset *)
+    and elabPatList(pats: Ast.pat list, env:SE.staticEnv, region: SL.region) =
 	let fun folder (ast_pat, (pats_acc, tyvarset_acc)) =
 		let val (pat', tyvarset_inc) = elabPat (ast_pat, env, region)
 		 in (pat' :: pats_acc,
@@ -636,13 +690,13 @@ let
 
     (**** EXPRESSIONS ****)
 
-    (* expParse : Ast.exp Ast.fixitem list * SE.staticEnv * SM.region -> Ast.exp *)
+    (* expParse : Ast.exp Ast.fixitem list * SE.staticEnv * SL.region -> Ast.exp *)
     val expParse = Precedence.parse
 		     {apply = (fn(f,a) => AppExp{function=f,argument=a}),
 		      pair = (fn (a,b) => TupleExp[a,b])}
 
-    (* elabExp : Ast.exp * SE.staticEnv * SM.region -> Absyn.exp * TS.tyvarset * tyvarsetUpdater *)
-    fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: region)
+    (* elabExp : Ast.exp * SE.staticEnv * SL.region -> Absyn.exp * TS.tyvarset * tyvarsetUpdater *)
+    fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 		: (Absyn.exp * TS.tyvarset * tyvarsetUpdater) =
         let val union = checkedUnion (region, "elabExp") in
  	(case exp
@@ -812,10 +866,10 @@ let
 					 cMARKexp (VARexp (ref v,[]),region))], T.UNDEFty)
 		end,
 		TS.empty, nullUpdater)
-	   | Ast.FlatAppExp items => elabExp (expParse (items,env), env, region))
+	   | Ast.FlatAppExp items => elabExp (expParse (items, env, region), env, region))
     end (* elabExp *)
 
-    (* elabELabel : (S.symbol * Ast.exp) list * SE.staticEnv * SM.region
+    (* elabELabel : (S.symbol * Ast.exp) list * SE.staticEnv * SL.region
                     -> (S.symbol * AS.exp) list * TS.tyvarset * tyvarsetUpdater
     * should be called "elabFields" *)
     and elabExpFields (ast_fields, env, region) =
@@ -829,7 +883,7 @@ let
 	   in (les1, tyvarset, updater)
 	  end
 
-    (* elabExpList : Ast.exp list * SE.staticEnv * SM.region
+    (* elabExpList : Ast.exp list * SE.staticEnv * SL.region
                      -> AS.exp list * TS.tyvarset * tyvarsetUpdater *)
     and elabExpList (ast_exps, env, region) =
 	let fun folder (exp, (exps, tyvarset, updates)) =
@@ -843,7 +897,7 @@ let
 	 in (exps, tyvarset'', update')
 	end
 
-    (* elabMatch : Ast.rule list * SE.staticEnv * SM.region
+    (* elabMatch : Ast.rule list * SE.staticEnv * SL.region
                    -> AS.rule list * TS.tyvarset * tyvarsetUpdater *)
     and elabMatch (rules,env,region) =
 	let fun folder (rule, (rules_acc, tyvarset_acc, updaters_acc)) =
@@ -870,9 +924,9 @@ let
 
     (**** SIMPLE DECLARATIONS ****)
 
-    (* elabDec' : Ast.dec * SE.staticEnv * IP.path * SM.region
+    (* elabDec' : Ast.dec * SE.staticEnv * IP.path * SL.region
 		  ->  AS.dec * SE.staticEnv * TS.tyvarset * tyvarsetUpdater *)
-    and elabDec' (dec: Ast.dec, env: SE.staticEnv, rpath: IP.path, region: SM.region)
+    and elabDec' (dec: Ast.dec, env: SE.staticEnv, rpath: IP.path, region: SL.region)
 		: (AS.dec * SE.staticEnv * TS.tyvarset * tyvarsetUpdater) =
 	(case dec
 	  of Ast.TypeDec tbs =>
@@ -961,7 +1015,7 @@ let
 
     (**** OVERLOADING ****)
 
-    (* elabOVERLOADdec : (S.symbol * Ast.exp list) * StaticEnv.env * IP.path * SM.region 
+    (* elabOVERLOADdec : (S.symbol * Ast.exp list) * StaticEnv.env * IP.path * SL.region 
                          -> AS.dec * StaticEnv.env * TS.tyvarset * updaterTy *)
     and elabOVERLOADdec ((id,exps), env, rpath, region) =
 	(* exps are simple variable paths, with monomorphic types that
@@ -1012,7 +1066,7 @@ let
         end
 
     (****  VALUE DECLARATIONS ****)
-    (* elabVB : Ast.vb * tyvarset * SE.staticEnv * SM.region
+    (* elabVB : Ast.vb * tyvarset * SE.staticEnv * SL.region
                 -> AS.dec * tyvarset * tyvarsetUpdater *)
     and elabVB (Ast.MarkVb (vb, region), etvs: TS.tyvarset, env: SE.staticEnv, _) =
           (* pass through MarkVb, replacing the region parameter *)
@@ -1084,7 +1138,7 @@ let
 	       updater)
 	  end
 
-    (* elabVALdec : Ast.vb list * T.tyvar list * SE.staticEnv * IP.path * SM.region
+    (* elabVALdec : Ast.vb list * T.tyvar list * SE.staticEnv * IP.path * SL.region
                     -> AS.dec * SE.staticEnv * TS.tyvarset * tyvarsetUpdater *)
     and elabVALdec (vbs: Ast.vb list, etvs: Ast.tyvar list, env, rpath, region) =
 	  let val etvs: T.tyvar list = ET.elabTyvarList (etvs, region)
@@ -1098,7 +1152,7 @@ let
 	   in (SEQdec decs, EU.bindVARp pats, TS.empty, updater)
 	  end
 
-    (* elabRVB : Ast.rvb * SE.staticEnv * SM.region
+    (* elabRVB : Ast.rvb * SE.staticEnv * SL.region
                  -> {match : ?, ty : T.ty?, name : S.symbol} * tyvarset * tyvarsetUpdater *)
     and elabRVB (MarkRvb(rvb,region), env, _ (* region *)) =
 	  let val ({ match, ty, name }, tvs, u) = elabRVB (rvb, env, region)
@@ -1134,7 +1188,7 @@ let
 	     | _ => (errorRegion (region, "fn expression required on rhs of val rec");
 		     ({match = dummyFNexp, ty = NONE, name = var}, TS.empty, nullUpdater)))
 
-    (* elabVALRECstrict : Ast.rvb list * TS.tyvarset * SE.staticEnv * SM.region
+    (* elabVALRECstrict : Ast.rvb list * TS.tyvarset * SE.staticEnv * SL.region
                           -> AS.dec * SE.staticEnv * TS.tyvarset (* empty *) * tyvarsetUpdater *)
     and elabVALRECstrict (rvbs, etvs, env, region) =
 	let val union = checkedUnion (region, "elabVALRECstrict")
@@ -1266,7 +1320,7 @@ let
 	    (absyn, env', TS.empty, updt)  (* TS.empty OK? *)
 	end (* fun elabVALREClazy *)
 
-    (* elabVALRECdec : Ast.rvb list * <etvs> * SE.staticEnv * IP.path * SM.region
+    (* elabVALRECdec : Ast.rvb list * <etvs> * SE.staticEnv * IP.path * SL.region
                        -> <return type of elabVALRECstrict> *)
     and elabVALRECdec (rvbs: rvb list, etvs, env, rpath:IP.path, region) =
 	let val etvs = TS.mkTyvarset (ET.elabTyvarList (etvs, region))
@@ -1277,7 +1331,7 @@ let
 	    else elabVALRECstrict (rvbs,etvs,env,region)
 	end
 
-    (* elabDOdec : [exp:]Ast.exp * [env:]SE.staticEnv * [region:]SM.region
+    (* elabDOdec : [exp:]Ast.exp * [env:]SE.staticEnv * [region:]SL.region
                    -> AS.dec * SE.staticEnv * TS.tyvarset * tyvarsetUpdater *)
     and elabDOdec (exp, env, region) =
 	let val union = checkedUnion (region, "elabDOdec")  (* checked union of tyvarsets *)
@@ -1291,126 +1345,190 @@ let
 	 in (DOdec absyn_exp, SE.empty, TS.empty, updater)
 	end
 
-    (* elabFUNdec : Ast.fb list * tyvar list * SE.staticEnv * IP.path * SM.region
+    (* elabFUNdec : Ast.fb list * tyvar list * SE.staticEnv * IP.path * SL.region
                     -> AS.dec * SE.staticEnv * TS.tyvarset * tyvarsetUpdater *)
     (* The fbs and etvs are the arguments of an Ast.FunDec constructor (function dec),
      *   while env, rpath, region provide the context. *)
     and elabFUNdec (fbs: Ast.fb list, etvs: Ast.tyvar list, env: SE.staticEnv, rpath: IP.path,
-		    region: SM.region) =
+		    region: SL.region) =
 	let val etvs: TS.tyvarset = TS.mkTyvarset (ET.elabTyvarList (etvs, region))
 
-            (* specialized checking (for incompatible tyvars) versions of TS.union and TS.diff *)
+           (* specialized checking (for incompatible tyvars) versions of TS.union and TS.diff *)
             val union = checkedUnion (region, "elabFUNdec")  (* checked union of tyvarsets *)
             val diff = checkedDiff (region, "elabFUNdec")  (* checked diff of tyvarsets *)
 
-            (* makevar: SM.region
-	                -> (Ast.fb * <ctx?>)
-	                -> <<((v, clauses, fbregion)::lcl, SE.bind (funSym, B.VALbind funVar, env'))>>
-	       parse the function header to determine the function name *)
-	    fun makevar _ (MarkFb (fb, fbregion), ctx) = makevar fbregion (fb,ctx)
-	      | makevar fbregion (Fb (clauses_fb, lazyp: bool), (lcl, env')) =
+            (* fb_folder: SL.region
+	                -> (Ast.fb * ((symbol * clauseTy_ast * region) list * SE.staticEnv)
+	                -> ((symbol * clauseTy_ast list * region) list * SE.staticEnv)
+	       parse the function header (clause LHS) to determine the function name and to separate
+	       and parse the argument patterns. 
+	       fb_folder is a folder function to be folded over the fbs list. *)
+	    fun fb_folder _ (MarkFb (fb, fbregion)) = fb_folder fbregion fb
+	      | fb_folder fbregion (Fb (clauses_fbl: clauseTy list, lazyp: bool),
+				  (clauses_cum: (symbol * clauseTy_ast list * SL.region) list,  env': SE.staticEnv)) =
 		 let 
 		     (* getfix : S.symbol option -> F.fixity *)
 		     (* returns NONfix for NONE, other wise, the sym, which is produced by the
 			Symbol.var'n'fix function, should be in the fixity name space *)
 		     fun getfix (SOME sym) = LU.lookFix (env, sym)
-		       | getfix NONE = F.NONfix
-
-                     (* ensureNonfix : Ast.pat Ast.fixitem -> Ast.pat *)
-		     (* check that the "fixity" symbol is not NONfix and return the item of the fixitem;
-                      * otherwise report an error. That is, enforce that it is an INfix symbol.
-		      * For non-variable patterns, fixity is NONE and getfix will return NONfix, 
-		      * so an error will be reported. *)
-		     fun ensureInfix ({item: Ast.pat, fixity: S.symbol option, region: SM.region} : 'a Ast.fixitem)
-			              : Ast.pat =
-			 (case getfix fixity  (* fixity: symbol option *)
-			   of F.NONfix =>
-			        errorRegion (region, "infix operator required, or delete parentheses")
-			    | _ => ();
-			  item)
+		       | getfix NONE = F.NONfix  (* associated item is not a variable pattern *)
 
                      (* ensureNonfix : Ast.pat Ast.fixitem -> Ast.pat *)
 		     (* For non-variable patterns, fixity is NONE and getfix will return NONfix. For
-                      * variable patterns, where the variable is an infix, an error is reported *)
+                      * variable patterns, an error occurs if the variable is an infix *)
 		     fun ensureNonfix ({item: Ast.pat, 
 					fixity: S.symbol option,
-					region: SM.region}: Ast.pat Ast.fixitem) : Ast.pat =
-			 (case (getfix fixity, fixity)
-			   of (F.NONfix, _) => ()
-			    | (_, SOME sym) =>
-			       errorRegion (region,
-				 ("infix operator \"" ^ S.name sym ^
-				  "\" used without \"op\" in fun dec"))
-			    | _ => bug "ensureNonfix";
-			  item)
+					region: SL.region}: Ast.pat Ast.fixitem) : Ast.pat =
+			 (case fixity
+			    of NONE => () (* OK *)
+			     | SOME symbol =>
+			         (case LU.lookFix (env, symbol)
+				    of (F.NONfix, _) => ()  (* OK *)
+				     | _ => errorRegion (region, String.concat ["infix operator \"",  S.name sym,
+										"\" used without \"op\" in fun dec"]));
+			  item)  (* without further parsing, just outer fixitem stripped off *)
 
-		     (* getname : Ast.pat * SM.region -> S.symbol
-	              * Get the "name" of a simple VARpat (optionally MARKed; fails and reports error
-                      * if applied to other pats *)
-		     fun getname (MarkPat (pat, region),_) = getname (pat,region)
-		       | getname (VarPat [v], _) = v
+		     (* getname : Ast.pat * SL.region -> S.symbol
+	              * Get the "name" of a simple VARpat (optionally MARKed);
+		      * fails and reports error if applied to other, compound, pats *)
+		     fun getname (MarkPat (pat, region),_) = getname (pat,region) (* ignore MarkPat *)
+		       | getname (VarPat [v], _) = v  (* path of a VarPat must be singleton (simple variable),
+						       * then return the variable symbol *)
 		       | getname (_, region) =
                            (errorRegion (region, "illegal function symbol in clause");
 			    EU.bogusID)
 
-	    (* Two pass "parsing" of Fb-clause LHS patterns (presented as pat fixitem list),
-	    where the first pass, parsePatFixitems, checks for the case where
-	    the lhs is an infix function application. The second pass is
-	    parsePatFixitems0 and it checks that there are more than one fixitems
-	    (need both a function variable.  The problem being solved is that the LHS
-	    of a Fb clause is a list of pattern fixitems that needs to be analyzed to 
-	    find the name (funSym) of the function being declared and bound. *)
+                     (* stripMarkPat : Ast.pat -> Ast.pat *)
+		     (* strips MarkPats even if nested, ignoring region *)
+                     fun stripMarkPat (Ast.MarkPat (pat, _)) = stripMarkPat pat
+		       | stripMarkPat pat = pat
 
-		     (* parsePats0 : Ast.pat Ast.fixitem list -> (S.symbol * Ast.pat list *)
-		        (* The argument is the LHS of a clause (the "pats" field). The symbol returned
-		         * is the name of the function being declared, and an error is reported if we
-		         * can't find it. *)
-   	             fun parsePatFixitems0 ({item=FlatAppPat [a,b as {region,...},c],...} :: rest) =
-			   (* first item is a FlatAppPat triple of patterns, the middle one must
-			    * be the infix function name. *)
-			   (getname (ensureInfix b, region),
-			    tuple_pat (ensureNonfix a, ensureNonfix c)
-			     :: map ensureNonfix rest)
-		       | parsePatFixitems0 [{item,region,...}] = 
-			   (* only one fixitem on LHS of the clause! no argument patterns! *)
-			   (errorRegion (region, "can't find function arguments in clause");
-			    (getname(item,region), [WildPat]))  (* dummy returned value for error recovery *)
-		       | parsePatFixitems0 ((a as {region,...}) :: rest) =
+
+		     (* stripMarkFixitem: Ast.pat Ast.fixitem -> Ast.pat Ast.fixitem *)
+		     (* stripping a MarkPat from the fixitem pat while preserving the fixitem region *)
+		     fun stripMarkFixitem ({item, fixity, region}: patfixitem) : patfixitem
+ 			   {item = stripMarkPat pat, fixity=fixity, region=region}
+
+	    (* Multi-pass "parsing" of Fb-clause LHS patterns (presented as pat fixitem list),
+	       where the first pass, parsePatFixitems, checks for the case where
+	       the lhs is an infix function application. The second pass is
+	       parsePatFixitems0 and it checks that there are more than one fixitems
+	       (need both a function variable.  The problem being solved is that the LHS
+	       of a Fb clause is a list of pattern fixitems that needs to be analyzed to 
+	       find the name (funSym) of the function being declared and bound. *)
+	    (* NOTE: patfixitems are produced by the apat productions in the ml.grm grammar. *)
+
+		     (* parsePatFixitems : patfixitem list ->  S.symbol * Ast.pat list *)
+		        (* "Parse" a clause LHS, i.e., a list of pattern fixitems (derived from
+			   parsing the apats (atomic patterns) representing the LHS of a clause
+			   in the grammar.
+			   We first check whether a 3 element
+			 * patfixitem list should be parsed as an infix application
+			 * (of a datacon or the defined function variable)
+			 * Note. The resulting Ast.pat list may contain pats that need further parsing,
+			   i.e. FlatAppPats *)
+
+  	             fun parsePatFixitems (first as {item = Ast.FlatAppPat fixitems, fixity = NONE, region} :: rest) =
+			   (* First "arg" item is FlatAppPat that can represent an arbitrarily compicated
+			      pattern application term. But it's top function symbol, say f,  will be the funsym for
+			      the clause. Thus we parse (parseFlatApp) first and deconstruct it to get the 
+			      function symbol f and we add f's argument to the checked rest.  The parsed FlatAppPat
+			      can turn out to be a variable pat (fixitems is a singleton, which should be a variable
+			      item.  Otherwise complain.
+			      Note that the FlatAppPat first was parsed as a paranthesized sequence of apats *)
+			      (* Is the parsed FlatAppPat an AppPat or a VarPat or something else? *)
+			      (* missing the possibility that the next clause (clause 2) may apply after parsing
+				 firt. Need to call parsePatFixitems recursively on the new list, knowing
+				 that the new parsed pat is not a FlatAppPat. *)
+			      (case stripMarkPat (parseFlatApp (fixitems, env, region))
+			       (* need to strip Mark, if any, to be safe. Can this happen? *)
+			         of Ast.AppPat {constr = Ast.VarPat [path], argument} =>  (* first parses to AppPat *)
+				       (case path
+				          of [f] => (f, {item = argument, fixity = NONE, region = region}
+							:: map ensureNonfix rest)
+					   | _ => EM.errorRegion (region, "function symbol is not a variable"))
+				       (v, argument :: (map ensureNonfix rest))
+				  | Ast.VarPat [path] =>
+				       (case path
+				          of [f] => (f, {item = argument, fixity = NONE, region = region}
+							:: map ensureNonfix rest)
+					   | _ => EM.errorRegion (region, "function symbol is not a variable"))
+				  | pat =>  (* not a variable, nor an AppPat *)
+				       parsePatFixitems ({item = pat, fixity = NONE, region = region} :: rest))
+
+ 			   (* The first patfixitem is a FlatAppPat of a triple of patfixitems,
+			    * so the middle one (#item b) could be an infix function variable. 
+			    * From the grammar (ml.grm), we know that the pats are all patfixitems
+			    * because the LHS of a Clause is a list of apats which parse to patfixitems.
+			    * Apply parseFlatApp to the first patfixitem to determine its structure:
+			    *  1: it parses to a VarPat [v]. Then v is the candidate funsym.
+			          Could further check that env(v) is a variable, not a constructor.
+			       2: it parses to a VarPat (path) where path has length > 1. This is
+			          an error.
+			       3: It parses to an AppPat (p, argp) in which case we look at p as above
+			          as a candidate funsym.  If it qualifies, add argp to the remaining 
+				  arguments patterns (items).
+			       4: If it parses to any other pattern (maybe except ConstraintPat, which
+			          we could strip down to its base pat) we keep the resulting pat and
+				  check whether the next (2nd) item (VarPat) is an infix symbol, in which
+				  case that symbol is the funsym.
+			       5. If we can't verify a funsym from this analysis, we look at the next
+			          pat to see if it is a variable, and thus a funsym candidate, if it turns
+			          out to be an infix variable.
+			    *)
+
+			 | parsePatFixitems [{a :: b as {fixity = SOME f,...} :: c :: rest]] =
+		           (* The "args" apat listfixitems of length >= 3 and b (the second fixitem)
+			      is an variable item (#item b is a VarPat, possibly Marked).
+			    * Check if f (b's symbol) is infix. If so, its arguments will be
+			      Ast.Tuple [#item a, #item c], checking that they are NONfix
+			      (#item a and #item x better not be infix variable items!).
+                            * Add argument tuple pat [a, c] to the checked rest to construct the true clause
+			    * arguments.
+			    * If f is NONfix? Then "a" should be NONfix variable fixitem from which we
+			    * obtain the function symbol. *)
+			   (case LU.lookFix f (* we already have the (fixity) symbol f for fixitem b *)
+			     of INfix _ => (f,
+					    Ast.TuplePat [ensureNonfix a, ensureNonfix b] :: map ensureNonfix rest)
+			      | NONfix =>
+				   (getName (a, region),
+				    ensureNonfix b :: ensureNonfix c :: (map ensureNonfix rest)))
+
+			 | parsePatFixitems [{item,region,...}] =  (* only one apat in clause LHS -> Error! *)
+			   (* only one pseudo-arg apat, and it is not compound because it is not a FlatAppPat!
+			    * (because the only compound (AppPat) patterns the parser produces are FlatAppPats)
+                            * Thus the item must be a variable pattern representing the function name,
+			    * which implies there are no argument patterns! *)
+			   (errorRegion (region, "missing function arguments in LHS of a clause");
+			    (bogusFunSym, nil))  (* dummy value returned for potential error recovery *)
+
+			 | parsePatFixitems ((a as {region,...}) :: rest) =  (* rest is not null, at least 2 apats *)
 			   (* first item is not a FlatAppPat triple, so it must be the NONfix function name *)
 			   (getname (ensureNonfix a, region),
 			    map ensureNonfix rest)
-		       | parsePatFixitems0 nil = bug "parsePatFixitems0: no fixitems"
 
-		     (* parsePatFixitems : Ast.pat Ast.fixitem list ->  S.symbol * Ast.pat list *)
-			(* parse a list of pattern fixitems using parsePatFixitems0, after first checking
-			 * whether a 3 element pattern list should be parsed as an infix
-			 * constructor application. *)
-		     fun parsePatFixitems ({item=MarkPat(pat,_), region, fixity}::rest) =
-			   (* strip off a MarkPat from the first pattern while updating region,
-			      then recurse on the pat wrapped in a new fixitem *)
-			   parsePatFixitems ({item=pat,region=region,fixity=fixity}::rest)
-		       | parsePatFixitems (pats as [a as {region=ra,...}, b as {item, fixity, region}, c]) =
-			   (* pats contains exactly three fixitems, which may represent an infix application *)
-			   (case getfix fixity
-			      of F.NONfix => parsePatFixitems0 pats  (* not an infix application *)
-			       | _ => (getname (item,region),
-				       [tuple_pat(ensureNonfix a, ensureNonfix c)]))
-		       | parsePatFixitems pats = parsePatFixitems0 pats
+
+			 | parsePatFixitems nil = bug "parsePatFixitems0: no fixitems - empty LHS in clause?"
 
 		     (* parseClause : Ast.clause -> clauseTy_ast *)
 		     (* kind is set to STRICT by default *)
-		     fun parseClause (Ast.Clause {pats, resultty, exp}: Ast.clause) =
-			 let val (funsym, argpats) = parsePatFixitems pats
+		     fun parseClause (Ast.Clause {pats, resultty, exp}: Ast.clause) : clauseTy_ast =
+		         let val (funsym, argpats: Ast.pat list) = parsePatFixitems (map stripMarkItem pats)
 			  in {kind = STRICT, funsym = funsym, argpats = argpats,
-			      resultty = resultty, exp = exp}
+			      resultty = resultty, exp = exp}  (* resultty and exp come directly from the 
+								  Ast.clause argument *)
 			 end
 
-		     val (clauses: clauseTy_ast list, funSym: S.symbol) =
+		     (* clauses, funSym : symbol*)
+		     (* funSym is defined as the funsym of the first clause *)
+		     (* note difference between "funsym" and "funSym" as defined above.  Each clause has
+		      * its "funsym", while funSym should be the name of the function being declared in the
+		      * current fb. *)
+		     val (ast_clauses: clauseTy_ast list, funSym: S.symbol) =
                          case map parseClause clauses_fb
-			   of nil => bug "elabcore:no clauses"
+			   of nil => bug "elabDec'#elabFUNdec#fb_folder: no fb clauses"
 			    | (clauses as ({funsym,...}::_)) => (clauses, funsym)
 
-		     (* note difference between "funsym" and "funSym" as defined above. *)
 		     val _ = if List.exists (fn {funsym,...}: clauseTy_ast => not (S.eq (funsym, funSym)))
 					    clauses
 			     then  errorRegion (fbregion, "clauses do not all have same function name")
@@ -1419,8 +1537,7 @@ let
 		     (* create funVar: V.var from the funSym symbol *)
 		     val funVar: V.var = newVALvar funSym    (* was "val v = newVALvar var" *)
 
-		     (* number of curried argument patterns
-		      * checking that this number is the same for all clauses *)
+		     (* checking that the number of curried argument patterns is the same for all clauses *)
 		     val argcount : int =
 			 case clauses
 			   of ({argpats,...}) :: rest =>
@@ -1475,19 +1592,19 @@ let
 				   argpats = map VarPat outerargs,
 				   exp = curryApp (VarExp[lazySym], map VarExp outerargs)}
 
-			   in ((localVar, innerclauses, fbregion) :: (funVar, [outerclause], fbregion) :: lcl,
+			   in ((localVar, innerclauses, fbregion) :: (funVar, [outerclause], fbregion) :: clauses_cum,
 			       SE.bind(funSym, B.VALbind funVar, SE.bind (lazySym, B.VALbind localVar, env')))
 			  end
-		     else ((funVar, clauses, fbregion) :: lcl, SE.bind (funSym, B.VALbind funVar, env'))
-		 end (* fun makevar *)
+		     else ((funVar, clauses, fbregion) :: clauses_cum, SE.bind (funSym, B.VALbind funVar, env'))
+		 end (* fun fb_folder *)
 
-	    val (fundecs, env') = foldl (makevar region) ([], SE.empty) fbs
+	    val (fundecs, env') = foldl (fb_folder region) ([]: (S.symbol * clauseTy_ast * SL.region) list , SE.empty) fbs
 
 	    val env'' = SE.atop (env', env)
 
-            (* elabClause : clauseTy_ast * SM.region
+            (* elabClause : clauseTy_ast * SL.region
 	       		    -> clauseTy_absyn * TS.tyvarset * tyvarsetUpdater *)
-	    fun elabClause ({kind, argpats, resultty, exp, funsym}: clauseTy_ast, region: SM.region) =
+	    fun elabClause ({kind, argpats, resultty, exp, funsym}: clauseTy_ast, region: SL.region) =
 		let val (pats, tyvarset_pats) = elabPatList (argpats, env, region)
                     val nenv = SE.atop (EU.bindVARp pats, env'')
 		    val (exp_as, tyvarset_exp, updater_exp) = elabExp (exp, nenv, region)
@@ -1515,9 +1632,9 @@ let
 			   in (clause::clauses_acc, union (tyvarset_inc, tyvarset_acc),
 			       updater_inc::updaters_acc)
 			  end
-		    val (clauses', tyvarset', updaters') =
+		    val (clauses_cum, tyvarset', updaters') =
 			  foldl folder ([], TS.empty, []) clauses
- 		 in ((var, rev clauses', region) :: fs,
+ 		 in ((var, rev clauses_cum, region) :: fs,
 		     union (tyvarset, tyvarset),
 		     updaters' @ updaters)
 		end
@@ -1535,9 +1652,9 @@ let
 		    app (fn f => f down_tyvarset) updaters
 		end
 
-	    (* makefb : V.var * clauseTy_absyn list * SM.region -> fbTy1 *)
+	    (* makefb : V.var * clauseTy_absyn list * SL.region -> fbTy1 *)
             (* checks that the var: V.var is a VALvar; defines tyvars field to be tyvarsetRef *)
-	    fun makefb (var as V.VALvar{ ... }: V.var, clauses: clauseTy_absyn list, region: SM.region) =
+	    fun makefb (var as V.VALvar{ ... }: V.var, clauses: clauseTy_absyn list, region: SL.region) =
 		  {var = var, clauses = clauses, tyvars = tyvarsetRef, region = region}
 	      | makefb _ = bug "makeFUNdec.makefb"  (* if var is not VALvar *)
 
@@ -1555,9 +1672,9 @@ let
 	end (* function elabFUNdec *)
 
     (* elabSEQdec:  [ast_decs:]Ast.decl list * [env_base:]SE.staticEnv * [rpath:]IP.path
-                    * [region:]SM.region)
+                    * [region:]SL.region)
                     -> AS.decl * SE.staticEnv * TS.tyvarset * updaterTy (?) *)
-    and elabSEQdec (ast_decs: Ast.dec list, env_base: SE.staticEnv, rpath: IP.path, region: SM.region) =
+    and elabSEQdec (ast_decs: Ast.dec list, env_base: SE.staticEnv, rpath: IP.path, region: SL.region) =
 	let fun folder (ast_dec, (decs_acc, env_acc, tyvarset_acc, updaters_acc)) =
 		  let val (dec, env_inc, tyvarset_inc, updater_inc) =
 			   elabDec' (ast_dec, SE.atop(env_acc,env_base), rpath, region)

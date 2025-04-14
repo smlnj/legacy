@@ -20,7 +20,7 @@ Group  (* exports *)
 	signature INVPATH
 	signature CONVERTPATHS
 	signature LAMBDA_VAR
-	signature STAMPS	
+	signature STAMP	
 	signature ENT_PATH
 	signature VARCON
 	signature MODULES
@@ -56,7 +56,7 @@ Group  (* exports *)
 	structure InvPath
 	structure ConvertPaths
 	structure LambdaVar
-	structure Stamps
+	structure Stamp
 	structure StampMap
 	structure EntPath
 	structure VarCon

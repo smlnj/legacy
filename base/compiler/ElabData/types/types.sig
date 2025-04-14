@@ -13,14 +13,14 @@ type polysign (* = bool list *)
 
 datatype eqprop = YES | NO | IND | OBJ | DATA | ABS | UNDEF
 
-type varSource = Symbol.symbol * SourceMap.region
-type litSource = IntInf.int * SourceMap.region
+type varSource = Symbol.symbol * SourceLoc.region
+type litSource = IntInf.int * SourceLoc.region
 
 (*
 and ovldSource
-  = OVAR of Symbol.symbol * SourceMap.region	(* overloaded variable occurrence *)
-  | OINT of IntInf.int * SourceMap.region	(* overloaded int literal occurrence *)
-  | OWORD of IntInf.int * SourceMap.region	(* overloaded word literal occurrence *)
+  = OVAR of Symbol.symbol * SourceLoc.region	(* overloaded variable occurrence *)
+  | OINT of IntInf.int * SourceLoc.region	(* overloaded int literal occurrence *)
+  | OWORD of IntInf.int * SourceLoc.region	(* overloaded word literal occurrence *)
 *)
 datatype openTvKind
   = META
@@ -64,7 +64,7 @@ and tyckind
   | ABSTRACT of tycon
   | DATATYPE of
      {index: int,
-      stamps: Stamps.stamp vector,
+      stamps: Stamp.stamp vector,
       root : EntPath.entVar option,    (* the root field used by type spec only *)
       freetycs: tycon list,            (* tycs derived from functor params *)
       family : dtypeFamily,
@@ -76,7 +76,7 @@ and tyckind
 and tycon
   = GENtyc of gtrec
   | DEFtyc of
-      {stamp : Stamps.stamp,
+      {stamp : Stamp.stamp,
        tyfun : tyfun,
        strict: bool list,
        path  : InvPath.path}
@@ -94,7 +94,7 @@ and ty
   | IBOUND of int
   | CONty of tycon * ty list
   | POLYty of {sign: polysign, tyfun: tyfun}
-  | MARKty of ty * SourceMap.region
+  | MARKty of ty * SourceLoc.region
   | WILDCARDty
   | UNDEFty
 
@@ -117,10 +117,9 @@ and dtmember =
      sign: Access.consig}
 
 and dtypeFamily =
-  {mkey: Stamps.stamp,
-   members: dtmember vector,
-   properties: PropList.holder}
-
+    {mkey: Stamp.stamp,
+     members: dtmember vector,
+     properties: PropList.holder}
 
 and stubinfo =
     {owner : PersStamps.persstamp,
@@ -133,7 +132,7 @@ and stubinfo =
  * to recursive types where this assumption breaks.  (Is there a way of
  * fixing this? -M.) *)
 and gtrec =
-    {stamp : Stamps.stamp,
+    {stamp : Stamp.stamp,
      arity : int,
      eq    : eqprop ref,
      kind  : tyckind,

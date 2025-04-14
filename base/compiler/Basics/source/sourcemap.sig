@@ -109,6 +109,7 @@ sig
   (* This adds a new line to the lines list and increments the line count,
    * mutating the sourcemap. *)
 
+(*
   val resynch : sourcemap -> SourceLoc.charpos * SourceLoc.charpos * int * int
                              * string option
 		          -> unit
@@ -116,5 +117,5 @@ sig
    * WARNING: there should no longer be any #line directives in SML source code!
    * Is there any remaining ancient NoWeb code?  I think not.
    *)
-
+*)
 end (* signature SOURCE_MAP *)

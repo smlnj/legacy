@@ -9,6 +9,15 @@
 structure MLParser : SMLNJ_PARSER =
 struct
 
+local (* imports *)
+
+  structure CI = CompInfo
+  structure SL = SourceLoc
+  structure SM = SourceMap
+  structure SR = Source
+  structure EM = ErrorMsg
+
+in
     structure LrVals = MLLrValsFun(structure Token = LrParser.Token)
     structure Lex = MLLexFun(structure Tokens = LrVals.Tokens)
     structure P = JoinWithArg(
@@ -16,36 +25,35 @@ struct
 	structure Lex = Lex
 	structure LrParser = LrParser)
 
-  (* the following two functions are also defined in build/computil.sml *)
-    val addLines = Stats.addStat(Stats.makeStat "Source Lines")
-
-    structure CI = CompInfo
-    structure SL = SourceLoc
-    structure S = Source
-    structure EM = ErrorMsg
-
     datatype parseResult = datatype ParseResult.parseResult
 
     exception AbortLex
 
+    (* the following two functions are also defined in build/computil.sml *)
+    val addLines = Stats.addStat(Stats.makeStat "Source Lines")
+
     val dummyEOF = LrVals.Tokens.EOF(0,0)
     val dummySEMI = LrVals.Tokens.SEMICOLON(0,0)
 
-    fun parse (source : S.source) =
-	let val sourceStream = S.instream source
-	    val sourcemap = S.sourcemap source
-	    val interactive = S.interactive source
+    fun parse (source : SR.source) =
+	let val sourceStream = SR.instream source
+	    val sourcemap = SR.sourcemap source
+	    val interactive = SR.interactive source
 
-	    fun parseerror (msg, p1, p2) =
-	        EM.error (SL.REGION(p1, p2)) EM.COMPLAIN msg EM.nullErrorBody
+	    (* err : (int * int) -> EM.severity -> string -> EM.bodyPrinter -> unit *)
+            (* to match the arg type expected by P.parse in oneparse *)
+            fun err (lo: int, hi: int) = EM.error (SL.REGION (lo, hi))
+
+            (* parseerror : string * int * int -> unit *)
+	    (* where int = P.pos = SourceLoc.charpos *) 			     
+	    fun parseerror (msg: string, p1: int, p2: int) : unit =
+	        EM.errorRegion (SL.REGION (p1, p2), msg)
 	    
 	    val lexarg =
 		{comLevel = ref 0,
-		 sourceMap = sourcemap,
 		 charlist = ref (nil : string list),
 		 stringtype = ref false,
 		 stringstart = ref 0,
-		 err = EM.error,
 		 brack_stack = ref (nil: int ref list)}
 
 	    val doprompt = ref true
@@ -77,19 +85,23 @@ struct
 		      then EOF
 		      else
 			let val _ = prompt := !ParserControl.secondaryPrompt;
-			    val initialLinePos = SourceMap.lastLinePos sourcemap
-			    val (result, lexer'') = P.parse(lookahead, !lexer', parseerror, err)
-			    val linesRead = SourceMap.newlineCount sourcemap
-					     (initialLinePos, SourceMap.lastLinePos sourcemap)
+			    val initialLinePos = SM.lastLinePos sourcemap
+			    val (result, lexer'') =
+				P.parse (lookahead, !lexer', parseerror, err)
+			    val linesRead =
+				SM.newlineCount
+				   (sourcemap,
+				    SourceLoc.REGION (initialLinePos, SM.lastLinePos sourcemap))
 			 in addLines linesRead;
 			    lexer' := lexer'';
 			    if CI.errors() then ERROR else PARSE result
 			end
 		end handle LrParser.ParseError => ABORT
 			   | AbortLex => ABORT
-		  (* oneparse *)
+		(* oneparse *)
 
 	 in oneparse
 	end (* parse *)
 
+end (* top local (imports *)
 end (* structure MLParser *)

@@ -1,6 +1,6 @@
-(* modules.sig
+(* ElabData/modules/modules.sig
  *
- * COPYRIGHT (c) 2017 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2017, 2025 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
 
@@ -76,7 +76,7 @@ and fctClosure (* realization for functors *)
   = CLOSURE of {param : EntPath.entVar, body : strExp, env : entityEnv}
 
 and stampExp
-  = (* CONST of Stamps.stamp  (* an existing stamp *)
+  = (* CONST of Stamp.stamp  (* an existing stamp *)
   | *) GETSTAMP of strExp
   | NEW                (* generate a new stamp *)
 
@@ -144,7 +144,7 @@ withtype stubinfo =
 and elements = (Symbol.symbol * spec) list
 
 and sigrec =
-    {stamp      : Stamps.stamp,
+    {stamp      : Stamp.stamp,
      name       : Symbol.symbol option,
      closed     : bool,
      fctflag    : bool,
@@ -155,12 +155,12 @@ and sigrec =
      stub       : stubinfo option}
 
 and envrec =
-    {stamp : Stamps.stamp,
+    {stamp : Stamp.stamp,
      env   : entityEnv,
      stub  : stubinfo option}
 
 and strEntity =
-    {stamp    : Stamps.stamp,
+    {stamp    : Stamp.stamp,
      entities : entityEnv,
      properties: PropList.holder, (* lambdaty *)
      rpath    : InvPath.path,
@@ -173,7 +173,7 @@ and strrec =
      prim   : PrimopId.str_prim_info}
 
 and fctEntity =
-    {stamp    : Stamps.stamp,
+    {stamp    : Stamp.stamp,
      closure  : fctClosure,
      properties: PropList.holder, (* lambdaty *)
      tycpath  : Types.tycpath option,

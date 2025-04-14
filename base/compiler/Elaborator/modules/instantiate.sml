@@ -42,7 +42,7 @@ sig
           entEnv   : Modules.entityEnv,
           tdepth   : DebIndex.depth,	(* # of enclosing fct abstractions? *)
           rpath    : InvPath.path,
-          region   : SourceMap.region}
+          region   : SourceLoc.region}
 	 -> {rlzn: Modules.strEntity,
              tycpaths: Types.tycpath list}
 
@@ -52,7 +52,7 @@ sig
           entEnv   : Modules.entityEnv,
           tycpath  : Types.tycpath,
           rpath    : InvPath.path,
-          region   : SourceMap.region}
+          region   : SourceLoc.region}
 	 -> {rlzn: Modules.strEntity,
              abstycs: Types.tycon list,
              tyceps: EntPath.entPath list}
@@ -63,7 +63,7 @@ sig
           entEnv   : Modules.entityEnv,
           srcRlzn  : Modules.strEntity,
           rpath    : InvPath.path,
-          region   : SourceMap.region}
+          region   : SourceLoc.region}
 	 -> {rlzn: Modules.strEntity,
              abstycs: Types.tycon list,
              tyceps: EntPath.entPath list}
@@ -85,6 +85,7 @@ struct
 local (* imports *)
 
   structure EM = ErrorMsg
+  structure SL = SourceLoc
   structure SM = SourceMap
 
   structure PU = PrintUtil
@@ -138,7 +139,7 @@ fun debugType(msg: string, tyc: T.tycon) =
 (* error_found : bool ref *)
 val error_found = ref false
 
-(* error: SM.region -> EM.severity -> string -> unit *)
+(* error: SL.region -> EM.severity -> string -> unit *)
 fun error region severity message =
       (error_found := true;
        EM.error region severity ("Instantiate: " ^ message) EM.nullErrorBody)
@@ -670,7 +671,7 @@ exception ExploreInst of IP.path
 
 (* THIS COMMENT OBSOLETE *)
 (***************************************************************************
- * buildStrClass : slot * int * M.entityEnv * SM.region -> unit
+ * buildStrClass : slot * int * M.entityEnv * SL.region -> unit
  *
  * The slot argument is assumed to contain an InitialStr.
  * This function computes the equivalence class of the structure
@@ -708,7 +709,7 @@ exception ExploreInst of IP.path
 
 (* ASSERT: this_slot is an InitialStr *)
 fun buildStrClass (this_slot: slot, classDepth: int,
-                   entEnv: M.entityEnv, region: SM.region) : unit =
+                   entEnv: M.entityEnv, region: SL.region) : unit =
 let val class = ref ([this_slot] : slot list) (* the equivalence class *)
     val classDef = ref (NONE : (M.strDef * int) option)
     val minDepth = ref infinity
@@ -968,7 +969,7 @@ exception INCONSISTENT_EQ
    * equivalence class *)
 
 (******************************************************************************
- * buildTycClass: int * slot * entityEnv * instKind * rpath * SM.region -> unit
+ * buildTycClass: int * slot * entityEnv * instKind * rpath * SL.region -> unit
  *
  * This function deals with exploration of type nodes in the instance
  * graph.  It is similar to the buildStrClass function above, but it is
@@ -989,7 +990,7 @@ exception INCONSISTENT_EQ
  *******************************************************************************)
 
 (* ASSERT: this_slot is an InitialTycon *)
-fun buildTycClass (cnt, this_slot, entEnv, instKind, rpath, region: SM.region) =
+fun buildTycClass (cnt, this_slot, entEnv, instKind, rpath, region: SL.region) =
   let val class = ref ([] : slot list)
       val classDef = ref (NONE : (tycInst * int) option)
       val minDepth = ref infinity
@@ -1245,7 +1246,7 @@ fun buildTycClass (cnt, this_slot, entEnv, instKind, rpath, region: SM.region) =
 val buildTycClass = wrap "buildTycClass" buildTycClass
 *)
 
-(* sigToInst: M.Signature * M.entityEnv * instKind * IP.path * SM.region
+(* sigToInst: M.Signature * M.entityEnv * instKind * IP.path * SL.region
  *            -> <ErrorStr> * ? list * ? list * int *)
 fun sigToInst (M.ERRORsig, entEnv, instKind, rpath, region) = (ErrorStr,[],[],0)
   | sigToInst (sign, entEnv, instKind, rpath, region) =
@@ -1322,7 +1323,7 @@ fun get_stamp_info instance =
        | _ => bug "get_stamp_info"
 
 
-(* instToStr : instance * M.entityEnv * instKind * int * ? * IP.path * SM.region
+(* instToStr : instance * M.entityEnv * instKind * int * ? * IP.path * SL.region
  *             -> M.strEntity *)
 fun instToStr (instance, entEnv, instKind, cnt, addRes, rpath: IP.path, region)
               : M.strEntity =
@@ -1644,7 +1645,7 @@ and getTkFct{sign as M.FSIG{paramvar, paramsig, bodysig, ...}, entEnv, rpath} =
 		(case (SPL.sigBoundeps psg, SPL.sigBoundeps bsg)
 		  of (SOME x, SOME y) => (x, y)
 		   | (_, z) =>
-                     let val region=SourceMap.nullRegion
+                     let val region = SL.NULLregion
 			 val (rlzn, _, _, args, _) =
                              instGeneric {sign=paramsig, entEnv=entEnv,
 					  rpath=rpath,
@@ -1686,7 +1687,7 @@ and getTkFct{sign as M.FSIG{paramvar, paramsig, bodysig, ...}, entEnv, rpath} =
 
   | getTkFct _ = TKind.TKCfun([], TKind.TKCseq [])
 
-(* instGeneric : M.signature * M.entityEnv * <instKind> * IP.path * SM.region
+(* instGeneric : M.signature * M.entityEnv * <instKind> * IP.path * SL.region
  *               -> M.realization * <tycs> * ? * ? * <tyceps>
  * the generic instantiation function *)
 and instGeneric {sign, entEnv, instKind, rpath, region} = 
@@ -1774,7 +1775,7 @@ fun getTycPaths {sign as M.SIG sr, rlzn : M.strEntity, entEnv} =
                   let val (_, _, _, all_eps, _) =
                         instGeneric {sign=sign, entEnv=entEnv, rpath=IP.IPATH[],
                                      instKind=INST_PARAM DebIndex.top,
-                                     region=SourceMap.nullRegion}
+                                     region = SL.NULLregion}
                                      (*
                                       * We use DI.top temporarily,
                                       * the tycpath result is discarded

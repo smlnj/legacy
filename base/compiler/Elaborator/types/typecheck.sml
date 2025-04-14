@@ -7,12 +7,12 @@
 signature TYPECHECK =
 sig
 
-  val decType : StaticEnv.staticEnv * Absyn.dec * int * bool * SourceMap.region
+  val decType : StaticEnv.staticEnv * Absyn.dec * int * bool * SourceLoc.region
                 -> Absyn.dec
-    (* decType(senv,dec,tdepth,toplev,,region):
+    (* decType (senv,dec,tdepth,toplev,,region):
          senv: the context static environment
          dec: the declaration to be type checked
-         tdepth: abstraction depth of lambda-bound type variables
+         tdepth: abstraction depth of lambda-bound? type variables
          region: source region of dec
      *)
   val debugging : bool ref
@@ -30,8 +30,10 @@ struct
 local (* imports *)
 
   structure CI = CompInfo
+  structure SL = SourceLoc
   structure SM = SourceMap
   structure EM = ErrorMsg
+
   structure SE = StaticEnv
   structure DI = DebIndex
   structure A = Access
@@ -85,7 +87,7 @@ fun message(msg,mode: Unify.unifyFail) =
 fun mkDummy0 () = BasicTypes.unitTy
 
 (*
- * decType : SE.staticEnv * AS.dec * bool * SM.region -> AS.dec
+ * decType : SE.staticEnv * AS.dec * bool * SL.region -> AS.dec
  *)
 fun decType(env,dec,tdepth,toplev,region) =
 let
@@ -114,10 +116,10 @@ fun ppTypeDebug (msg,ty) =
 fun ppTyvarDebug tv =
   ED.withInternals(fn () => debugmsg (PPType.tyvarPrintname tv))
 
-fun ppRegion ppstrm ((l,u): SourceMap.region) =
-    (PP.string ppstrm (Int.toString l);
+fun ppRegion ppstrm (SL.REGION (lo, hi): SL.region) =
+    (PP.string ppstrm (Int.toString lo);
      PP.string ppstrm "-";
-     PP.string ppstrm (Int.toString u))
+     PP.string ppstrm (Int.toString hi))
 
 fun ppModeErrorMsg ppstrm (mode: Unify.unifyFail) =
     if !showCulprits then
@@ -146,9 +148,9 @@ fun ppModeErrorMsg ppstrm (mode: Unify.unifyFail) =
 (* setup for recording FLEX tyvars and checking that they are eventually
  * resolved to exact record types. This is to prevent the leakage of
  * unresolved flex record types into the middle end. *)
-val flexTyVars : (T.tyvar * SM.region) list ref = ref nil
+val flexTyVars : (T.tyvar * SL.region) list ref = ref nil
 
-fun registerFlex (x as (tv : T.tyvar, region: SM.region)) =
+fun registerFlex (x as (tv : T.tyvar, region: SL.region)) =
     flexTyVars := x :: !flexTyVars
 
 fun checkFlex (): unit =
@@ -170,9 +172,7 @@ fun checkFlex (): unit =
         else app check1 (!flexTyVars)
     end
 
-(* managing source locations (srcloc = SourceMap.region) *)
-
-val nullRegion = SourceMap.nullRegion
+(* managing source locations (srcloc = SL.region) *)
 
 (* translating a marked type to its origin srcloc *)
 (* We need to worry about immediately nested MARKty's, where a wider
@@ -180,7 +180,7 @@ val nullRegion = SourceMap.nullRegion
  * first rule. *)
 fun tyToLoc (MARKty(t as MARKty _,region)) = tyToLoc t
   | tyToLoc (MARKty(ty,region)) = region
-  | tyToLoc _ = SourceMap.nullRegion
+  | tyToLoc _ = SL.NULLregion
 
 fun unifyErr{ty1,name1,ty2,name2,message=m,region,kind,kindname,phrase} =
     (unifyTy(ty1, ty2, tyToLoc ty1, tyToLoc ty2); true) handle Unify(mode) =>
@@ -403,7 +403,7 @@ fun generalizePat(pat: pat, userbound: tyvar list, occ: occ, tdepth,
 	!tvs
     end
 
-fun applyType(ratorTy: ty, randTy: ty) : ty =
+fun applyType (ratorTy: ty, randTy: ty) : ty =
   let val resultType = mkMETAty()
    in unifyTy(ratorTy, (randTy --> resultType), tyToLoc ratorTy, tyToLoc randTy);
       resultType
@@ -415,8 +415,8 @@ fun stripMarksVar (MARKpat(p as VARpat _, reg)) = p
       CONSTRAINTpat(stripMarksVar p, ty)
   | stripMarksVar p = p
 
-(* patType : AS.pat * int * SM.region -> AS.pat * T.ty *)
-fun patType(pat: AS.pat, depth: int, region: SM.region) : AS.pat * T.ty =
+(* patType : AS.pat * int * SL.region -> AS.pat * T.ty *)
+fun patType (pat: AS.pat, depth: int, region: SL.region) : AS.pat * T.ty =
     case pat
       of AS.WILDpat => (pat,mkMETAtyBounded depth)
        | AS.MARKpat (p,region') => patType(p,depth,region')
@@ -424,7 +424,7 @@ fun patType(pat: AS.pat, depth: int, region: SM.region) : AS.pat * T.ty =
 	      (typ := mkMETAtyBounded depth; (pat,MARKty(!typ, region)))
 			             (* multiple occurrence due to or-pat *)
        | AS.VARpat (VALvar{typ, ...}) => (pat, MARKty(!typ, region))
-       | AS.NUMpat (src, {ival, ty}) => (pat, oll_push(ival, src, ty, EM.error region))
+       | AS.NUMpat (src, {ival, ty}) => (pat, oll_push (ival, ty, src, region))
        | AS.STRINGpat _ => (pat,MARKty(stringTy, region))
        | AS.CHARpat _ => (pat,MARKty(charTy, region))
        | AS.RECORDpat {fields,flex,typ} =>
@@ -451,9 +451,9 @@ fun patType(pat: AS.pat, depth: int, region: SM.region) : AS.pat * T.ty =
 		     (mkMETAtyBounded depth) ntys
             in (VECTORpat(npats,nty),
 	    	MARKty(CONty(vectorTycon,[nty]), region))
-           end handle Unify(mode) => (
-	     EM.errorRegion (region, (message("vector pattern type failure",mode)))
-	     (pat,WILDCARDty)))
+           end handle Unify(mode) =>
+		 (EM.errorRegion (region, (message ("vector pattern type failure",mode)));
+		  (pat,WILDCARDty)))
        | AS.ORpat (p1, p2) =>
            let val (p1, ty1) = patType(p1, depth, region)
   	       val (p2, ty2) = patType(p2, depth, region)
@@ -468,7 +468,7 @@ fun patType(pat: AS.pat, depth: int, region: SM.region) : AS.pat * T.ty =
                 * for the type variables in ty. (ZHONG)  It cannot fail.
                 *)
                val nty = mkMETAtyBounded depth
-               val _ = unifyTy(nty, ty, nullRegion, nullRegion)
+               val _ = unifyTy(nty, ty, SL.NULLregion, SL.NULLregion)
             in (CONpat(dcon, insts), MARKty(ty, region))
            end
        | AS.APPpat (dcon as DATACON{typ,rep,...},_,arg) =>
@@ -545,17 +545,18 @@ in
 	    in (VARexp(r, insts), MARKty(ty, region))
 	   end
        | VARexp(varref as ref(OVLDvar _),_) =>
- 	   (exp, olv_push (varref, region, EM.error region))
+
+ 	 (exp, olv_push (varref, region))
        | VARexp(r as ref ERRORvar, _) => (exp, WILDCARDty)
        | CONexp(dcon as DATACON{typ,...},_) =>
            let val (ty,insts) = instantiatePoly typ
             in (CONexp(dcon, insts), MARKty(ty, region))
            end
-       | NUMexp(src, {ival, ty}) => (exp, oll_push(ival, src, ty, EM.error region))
+       | NUMexp(src, {ival, ty}) => (exp, oll_push (ival, ty, src, region))
 (* REAL32: overload real literals *)
-       | REALexp _ => (exp,MARKty(realTy, region))
-       | STRINGexp _ => (exp,MARKty(stringTy, region))
-       | CHARexp _ => (exp,MARKty(charTy, region))
+       | REALexp _ => (exp, MARKty(realTy, region))
+       | STRINGexp _ => (exp, MARKty(stringTy, region))
+       | CHARexp _ => (exp, MARKty(charTy, region))
        | RECORDexp fields =>
            let fun h(l,exp') =
                     let val (nexp,nty) = expType(exp',occ,tdepth,region)

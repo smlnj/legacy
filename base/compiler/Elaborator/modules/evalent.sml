@@ -19,12 +19,14 @@ struct
 
 local (* imports *)
 
+  structure SL = SourceLoc
+  structure SM = SourceMap
   structure EM = ErrorMsg
 
+  structure SP = Stamp
   structure SS = SpecialSymbols
   structure EP = EntPath
   structure IP = InvPath
-  structure S = SourceMap
  
   structure LV = LambdaVar
 
@@ -67,7 +69,7 @@ fun evalTyc (entv, tycExp, entEnv, epc, rpath) =
 	  (case kind of
 	       T.DATATYPE{index=0, stamps, freetycs, family, root=NONE, stripped} =>
                let val viztyc = MU.transTycon entEnv
-                   val nstamps = Vector.map (fn _ => LV.mkStamp ()) stamps
+                   val nstamps = Vector.map (fn _ => SP.fresh ()) stamps
                    val nst = Vector.sub(nstamps,0)
                    val nfreetycs = map viztyc freetycs
                    val _ = EPC.bindTycPath (epc, nst, entv)
@@ -100,7 +102,7 @@ fun evalTyc (entv, tycExp, entEnv, epc, rpath) =
                end
 	     | _ => bug "unexpected GENtyc in evalTyc")
         | M.FORMtyc (T.DEFtyc{stamp,tyfun=T.TYFUN{arity, body},strict,path}) =>
-          let val newstamp = LV.mkStamp()
+          let val newstamp = SP.fresh()
 	      (* tycId=stamp (this should perhaps be more abstract some day) *)
 	      val _ = EPC.bindTycPath (epc, newstamp, entv)
 	      val newbody = MU.transType entEnv body
@@ -157,7 +159,7 @@ and evalStr(strExp, depth, epc, entsv, entEnv, rpath) =
                   evalStr(strExp, depth, epc, entsv, entEnv, rpath)
                 val {rlzn=rlzn, abstycs=abstycs, tyceps=tyceps} =
                   I.instAbstr{sign=sign, entEnv=entEnv, srcRlzn=srcRlzn,
-                              rpath=rpath, region=S.nullRegion}
+                              rpath=rpath, region=SL.NULLregion}
 
                 (* because the abstraction creates a bunch of new stamps,
                    we have to bind them to the epcontext.
@@ -193,7 +195,7 @@ and evalFct (fctExp, depth, epc, entEnv) =
 
         | M.LAMBDA {param, body} =>
             let val clos = M.CLOSURE{param=param, body=body, env=entEnv}
-	     in ({stamp = LV.mkStamp (),
+	     in ({stamp = SP.fresh (),
 		  closure=clos,
 		  properties = PropList.newHolder (),
 		  (*lambdaty=ref NONE,*)
@@ -210,8 +212,8 @@ and evalFct (fctExp, depth, epc, entEnv) =
                       val {rlzn=paramEnt, tycpaths=paramTps} =
                         I.instParam{sign=paramsig, entEnv=entEnv,
                                     rpath=rpath', tdepth=depth,
-                                    region=S.nullRegion}
-                      val entEnv' = EE.mark (LV.mkStamp, EE.bind(param, M.STRent paramEnt,
+                                    region = SL.NULLregion}
+                      val entEnv' = EE.mark (SP.fresh, EE.bind(param, M.STRent paramEnt,
                                                  entEnv))
                       val (bodyRlzn,_) =
                           evalStr(body, DebIndex.next depth, epc, NONE, entEnv', IP.empty)
@@ -220,7 +222,7 @@ and evalFct (fctExp, depth, epc, entEnv) =
                    in T.TP_FCT(paramTps, bodyTps)
                   end
 
-             in ({stamp = LV.mkStamp (),
+             in ({stamp = SP.fresh (),
 		  closure=clos,
 		  properties = PropList.newHolder (),
 		  (* lambdaty=ref NONE, *)
@@ -239,7 +241,7 @@ and evalFct (fctExp, depth, epc, entEnv) =
 
 and evalApp (fctRlzn : Modules.fctEntity, argRlzn, depth, epc, rpath) =
       let val {closure = M.CLOSURE{param, body, env}, tycpath, ...} = fctRlzn
-	  val nenv = EE.mark (LV.mkStamp, EE.bind(param, M.STRent argRlzn, env))
+	  val nenv = EE.mark (SP.fresh, EE.bind(param, M.STRent argRlzn, env))
           val  _ = debugmsg ("[Inside EvalAPP] ......")
        in case (body, tycpath)
            of (M.FORMstr (M.FSIG{paramsig, bodysig, ...}), SOME tp) =>
@@ -252,7 +254,7 @@ and evalApp (fctRlzn : Modules.fctEntity, argRlzn, depth, epc, rpath) =
 
                    val {rlzn=rlzn, abstycs=abstycs, tyceps=tyceps} =
                      I.instFmBody {sign=bodysig, entEnv=nenv, tycpath=resTp,
-                                   rpath=rpath, region=S.nullRegion}
+                                   rpath=rpath, region=SL.NULLregion}
 
                    fun h (T.GENtyc gt, ep) =
                        EPC.bindTycLongPath (epc, MI.tycId gt, ep)
@@ -300,7 +302,7 @@ and evalDec(dec, depth, epc, entEnv, rpath) =
         | M.SEQdec decs =>
             let fun h (dec, entEnv0) =
                     evalDec(dec, depth, epc, entEnv0, rpath)
-             in EE.mark (LV.mkStamp, foldl h entEnv decs)
+             in EE.mark (SP.fresh, foldl h entEnv decs)
             end
         (*
          * The following may be wrong, but since ASSERTION! the bound symbols
@@ -315,7 +317,7 @@ and evalDec(dec, depth, epc, entEnv, rpath) =
 
 and evalStp (stpExp, depth, epc, entEnv) =
       case stpExp
-        of M.NEW             => LV.mkStamp ()
+        of M.NEW             => SP.fresh ()
          | M.GETSTAMP strExp => #stamp (#1 (evalStr(strExp, depth, epc, NONE,
 						 entEnv, IP.empty)))
 

@@ -1,4 +1,4 @@
-(* overload.sml
+(* Elaborator/types/overload.sml
  *
  * COPYRIGHT (c) 2018 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
@@ -13,8 +13,8 @@ signature OVERLOAD =
    *	resolve -- resolve the overloadings in the environment
    *)
     val new : unit -> {
-	    pushv : VarCon.var ref * SourceMap.region * ErrorMsg.complainer -> Types.ty,
-	    pushl : IntInf.int * string * Types.ty * ErrorMsg.complainer -> Types.ty,
+	    pushv : VarCon.var ref * SourceLoc.region -> Types.ty,
+	    pushl : IntInf.int * Types.ty * string * SourceLoc.region -> Types.ty,
 	    resolve : StaticEnv.staticEnv -> unit
 	  }
 
@@ -23,20 +23,25 @@ signature OVERLOAD =
   end  (* signature OVERLOAD *)
 
 structure Overload : OVERLOAD =
-  struct
+struct
 
+local (* imports *)
+
+  structure SL = SourceLoc
+  structure EM = ErrorMsg
+
+  structure BT = BasicTypes
+  structure TU = TypesUtil
+  structure ED = ElabDebug
+  structure PP = PrettyPrint
+  structure PU = PPUtil
+  structure Ty = Types
+  structure VC = VarCon
+  structure OLV = OverloadVar
+			
+in
     val debugging = ElabControl.ovlddebugging
 
-    structure EM = ErrorMsg
-    structure BT = BasicTypes
-    structure TU = TypesUtil
-    structure ED = ElabDebug
-    structure PP = PrettyPrint
-    structure PU = PPUtil
-    structure Ty = Types
-    structure VC = VarCon
-    structure OLV = OverloadVar
-			
     fun bug msg = ErrorMsg.impossible("Overload: "^msg)
 
     fun debugMsg (msg: string) = ED.debugMsg debugging msg
@@ -44,32 +49,37 @@ structure Overload : OVERLOAD =
     val ppType = PPType.ppType StaticEnv.empty
     fun debugPPType (msg, ty) = ED.debugPrint debugging (msg, ppType, ty)
 
+    (* var_info: information about overloaded variables *)
+    type var_info = VC.var ref * Ty.tyvar * SL.region
+
   (* information about overloaded literals; once the type has been resolved, we use this
    * information to check that the literal value is within range for its type.
+   * The 3rd and 4th fields of the tuple are used in error messages when the value
+   * is out of range.
    *)
-    type num_info = IntInf.int * string * Ty.ty * ErrorMsg.complainer
+    type lit_info = IntInf.int * Ty.ty * string * SL.region
 
   (* overloaded functions *)
     fun new () =
 	let (* the overloaded variable and literal stacks *)
-	  val overloadedvars = ref (nil: (VC.var ref * Ty.tyvar * ErrorMsg.complainer) list)
-	  val overloadedlits = ref (nil: num_info list)
+	  val overloadedvars = ref (nil: var_info list)
+	  val overloadedlits = ref (nil: lit_info list)
 				   
 	  (* push an overloaded variable onto the var list *)
-	  fun pushvar (varref as ref(VC.OVLDvar{name,variants}), region, err) =
+	  fun pushvar (varref as ref(VC.OVLDvar{name,variants}), region) =
 	      let val tyvar = ref(Ty.OVLDV{eq=false,sources=[(name,region)]})
 		  val scheme = OLV.symToScheme name
 		  val schemeInst = TU.applyTyfun(scheme,[Ty.VARty tyvar])
 	      in
 		  debugMsg ">>ovld-push";
-		  overloadedvars := (varref,tyvar,err) :: !overloadedvars;
+		  overloadedvars := (varref,tyvar,region) :: !overloadedvars;
 		  debugPPType("<<ovld-push "^Symbol.name name, schemeInst);
 		  schemeInst
 	      end
 	    | pushvar _ = bug "Overload.push"
 
           (* push an overloaded literal onto the lit list *)
-	  fun pushlit (info as (_,_,ty,_)) =
+	  fun pushlit (info as (_, ty, _, _)) =
 	      (overloadedlits := info :: !overloadedlits;
 	       ty)
 
@@ -84,7 +94,7 @@ structure Overload : OVERLOAD =
 	     * operators like +, -, and * ). These orderings are established by the
 	     * order they appear in the overload declaration.
 	     *)
-	    let fun resolveOVLDvar(varref as ref(VC.OVLDvar{name,variants}), context, err) =
+	    let fun resolveOVLDvar(varref as ref(VC.OVLDvar{name,variants}), context, region) =
 		    let val contextTy = TU.headReduceType(Ty.VARty context)
 			val defaultTy = OLV.defaultTy name
 			val (defaultVar :: _) = variants
@@ -96,22 +106,23 @@ structure Overload : OVERLOAD =
 			   (varref := defaultVar;
 			    tyvar := Ty.INSTANTIATED defaultTy)
 			 | _ =>
-			   (case OverloadVar.resolveVar(name,contextTy,variants)
+			   (case OverloadVar.resolveVar (name,contextTy,variants)
 			     of SOME var => varref := var
 			     |  NONE => 
-				err EM.COMPLAIN "overloaded variable not defined at type"
-				    (fn ppstrm =>
-					(PPType.resetPPType();
-					 PP.newline ppstrm;
-					 PP.string ppstrm "symbol: ";
-					 PU.ppSym ppstrm name;
-					 PP.newline ppstrm;
-					 PP.string ppstrm "type: ";
-					 PPType.ppType env ppstrm (Ty.VARty context))))
+				EM.error region EM.COMPLAIN
+				   "overloaded variable not defined at context type"
+				   (fn ppstrm =>
+				       (PPType.resetPPType();
+					PP.newline ppstrm;
+					PP.string ppstrm "symbol: ";
+					PU.ppSym ppstrm name;
+					PP.newline ppstrm;
+					PP.string ppstrm "type: ";
+					PPType.ppType env ppstrm (Ty.VARty context))))
 		    end (* fun resolveOVLDvar *)
 
 	        (* resolve overloaded literals *)
-	        fun resolveOVLDlit (value, _, Ty.VARty tyvar, _) =
+	        fun resolveOVLDlit (value, Ty.VARty tyvar, _, _) =
 		    (case !tyvar
 		      of Ty.OVLDI _ =>
 			 (tyvar := Ty.INSTANTIATED BT.intTy)  (* default *)
@@ -125,11 +136,11 @@ structure Overload : OVERLOAD =
 	     * been resolved, because literal resolution does not follow
 	     * instance chains.
 	     *)
-	        fun checkLitRange (value, src, ty, err) =
+	        fun checkLitRange ((value, ty, src, region): lit_info) =
 		    if TU.numInRange(value, ty)
 		    then ()
-		    else err EM.COMPLAIN
-			     (concat["literal '", src, "' is too large for type "])
+		    else EM.error region EM.COMPLAIN
+			     (String.concat["literal '", src, "' is too large for type "])
 			     (fn ppstrm => PPType.ppType env ppstrm ty)
 
 	        val overloadedLits = rev (!overloadedlits)
@@ -143,4 +154,5 @@ structure Overload : OVERLOAD =
 	    {pushv = pushvar, pushl = pushlit, resolve = resolve}
 	 end (* new *)
 
-  end (* structure Overload *)
+end (* top local (imports *)
+end (* structure Overload *)

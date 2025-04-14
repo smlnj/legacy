@@ -14,21 +14,21 @@
 structure Ast : AST =
 struct
 
-    structure S = Symbol
+    structure SL = SourceLoc
     structure SM = SourceMap
-    open Symbol Fixity
+    structure S = Symbol
+    structure F = Fixity
 
-  (* to mark positions in files *)
-    type srcpos = int  (* character position from beginning of stream (base 0) *)
-    type region = srcpos * srcpos   (* start and end position of region *)
+    (* to mark positions in files *)
+    type srcpos = SL.charpos  (* character position from beginning of stream (base 1) *)
 
-  (* symbolic path (Modules.spath) *)
-    type path = symbol list
+    (* "raw" symbolic path as symbol list (corresponds to Modules.spath) <> SymPath.path *)
+    type path = S.symbol list
 
-    type 'a fixitem = {item: 'a, fixity: S.symbol option, region: SM.region}
+    type 'a fixitem = {item: 'a, fixity: S.symbol option, region: SL.region}
       (* item will be either an exp or a pat. fixity is SOME only when the exp or pat
        * is an identifier (id in sml.grm), in which case the symbol is the identifier
-       * translated to the fixity name space. *)
+       * symbol translated to the fixity name space. *)
       (* FIX 1: "fixity" is a rather poor name for this field.
        * FIX 2: This type has some redundancy, since symbol option part is SOME iff
        * the item exp/pat part is a variable, in which case the "var" flavor of the
@@ -36,6 +36,19 @@ struct
        * a static env, to determine the "fixity" of that variable/symbol. Thus the 
        * symbol option component is not needed. Thus the simpler version would be 
        * just "type 'a fixitem = {item: 'a, region: SM.region}, where 'a = pat or exp. *)
+
+  (* Alternatively
+     -- replace "fixity" field name with "symbol" and define two non-polymorphic types:
+
+    ...
+    withtype patfixitem = {item: pat, symbol: S.symbol option, region: SL.region}
+    and expfixitem = {item: exp, symbol: S.symbol option, region: SL.region}
+   
+    But should not do this because then there would have to be two versions of the
+    precedence parser!  Better to have a single, polymorphic, precedence parser, or
+    we could encapsulate the precedence parser in a functor that would take the item
+    type as a parameter.
+  *)
 
   (* integer/word literal; the string is the literal as it appeared in the source
    * and the int is the value of the literal.
@@ -67,10 +80,10 @@ struct
       | RealExp of real_lit		(* floating point coded by its string *)
       | StringExp of string		(* string *)
       | CharExp of string		(* char *)
-      | RecordExp of (symbol * exp) list (* record *)
+      | RecordExp of (S.symbol * exp) list (* record *)
       | ListExp of exp list	        (*  [list,in,square,brackets] *)
       | TupleExp of exp list		(* tuple (derived form) *)
-      | SelectorExp of symbol		(* selector of a record field *)
+      | SelectorExp of S.symbol		(* selector of a record field *)
       | ConstraintExp of {expr:exp,constraint:ty}
 					(* type constraint *)
       | HandleExp of {expr:exp, rules:rule list}
@@ -82,7 +95,7 @@ struct
       | OrelseExp of exp * exp		(* orelse (derived form) *)
       | WhileExp of {test:exp,expr:exp}
 					(* while (derived form) *)
-      | MarkExp of exp * region		(* mark an expression *)
+      | MarkExp of exp * SL.region		(* mark an expression *)
       | VectorExp of exp list   	(* vector *)
 
     (* RULE for case functions and exception handler *)
@@ -96,7 +109,7 @@ struct
       | WordPat of literal			(* word literal *)
       | StringPat of string			(* string *)
       | CharPat of string			(* char *)
-      | RecordPat of {def:(symbol * pat) list, flexibility:bool}
+      | RecordPat of {def:(S.symbol * pat) list, flexibility:bool}
 						(* record *)
       | ListPat of pat list			(* [list,in,square,brackets] *)
       | TuplePat of pat list			(* tuple *)
@@ -104,8 +117,8 @@ struct
       | AppPat of {constr:pat,argument:pat}	(* constructor application *)
       | ConstraintPat of {pattern:pat,constraint:ty}
 						(* constraint *)
-      | LayeredPat of {varPat:pat,expPat:pat} (* as patterns *)
-      | MarkPat of pat * region			(* mark a pattern *)
+      | LayeredPat of {varPat:pat,expPat:pat}   (* as patterns *)
+      | MarkPat of pat * SL.region		(* mark a pattern *)
       | VectorPat of pat list			(* vector pattern *)
       | OrPat of pat list			(* or-pattern *)
 
@@ -117,46 +130,46 @@ struct
 	       | AppStr of path * (strexp * bool) list	(* application (external) *)
 	       | AppStrI of path * (strexp * bool) list	(* application (internal) *)
 	       | LetStr of dec * strexp			(* let in structure *)
-	       | MarkStr of strexp * region		(* mark *)
+	       | MarkStr of strexp * SL.region		(* mark *)
 
     (* FUNCTOR EXPRESSION *)
     and fctexp = VarFct of path * fsigexp sigConst	(* functor variable *)
 	       | BaseFct of {				(* definition of a functor *)
-		    params	   : (symbol option * sigexp) list,
+		    params	   : (S.symbol option * sigexp) list,
 		    body	   : strexp,
 		    constraint : sigexp sigConst}
 	       | LetFct of dec * fctexp
 	       | AppFct of path * (strexp * bool) list * fsigexp sigConst
 							(* application *)
-	       | MarkFct of fctexp * region     	(* mark *)
+	       | MarkFct of fctexp * SL.region     	(* mark *)
 
-    (* WHERE SPEC *) and wherespec = WhType of symbol list * tyvar
-    list * ty | WhStruct of symbol list * symbol list
+    (* WHERE SPEC *) and wherespec = WhType of S.symbol list * tyvar
+    list * ty | WhStruct of S.symbol list * S.symbol list
 
     (* SIGNATURE EXPRESSION *)
-    and sigexp = VarSig of symbol			(* signature variable *)
+    and sigexp = VarSig of S.symbol			(* signature variable *)
 	       | AugSig of sigexp * wherespec list	(* sig augmented with where specs *)
 	       | BaseSig of spec list			(* basic signature (sig...end) *)
-	       | MarkSig of sigexp * region 		(* mark *)
+	       | MarkSig of sigexp * SL.region 		(* mark *)
 
     (* FUNCTOR SIGNATURE EXPRESSION *)
-    and fsigexp = VarFsig of symbol		(* funsig variable *)
-		| BaseFsig of {param: (symbol option * sigexp) list, result:sigexp}
+    and fsigexp = VarFsig of S.symbol		(* funsig variable *)
+		| BaseFsig of {param: (S.symbol option * sigexp) list, result:sigexp}
 						(* basic funsig *)
-		| MarkFsig of fsigexp * region	(* mark *)
+		| MarkFsig of fsigexp * SL.region	(* mark *)
 
     (* SPECIFICATION FOR SIGNATURE DEFINITIONS *)
-    and spec = StrSpec of (symbol * sigexp * path option) list  (* structure *)
-	     | TycSpec of ((symbol * tyvar list * ty option) list * bool) (* type *)
-	     | FctSpec of (symbol * fsigexp) list		(* functor *)
-	     | ValSpec of (symbol * ty) list	                (* value *)
+    and spec = StrSpec of (S.symbol * sigexp * path option) list  (* structure *)
+	     | TycSpec of ((S.symbol * tyvar list * ty option) list * bool) (* type *)
+	     | FctSpec of (S.symbol * fsigexp) list		(* functor *)
+	     | ValSpec of (S.symbol * ty) list	                (* value *)
 	     | DataSpec of {datatycs: db list, withtycs: tb list} (* datatype *)
-	     | DataReplSpec of symbol * path                    (* datatype replication *)
-	     | ExceSpec of (symbol * ty option) list	        (* exception *)
+	     | DataReplSpec of S.symbol * path                    (* datatype replication *)
+	     | ExceSpec of (S.symbol * ty option) list	        (* exception *)
 	     | ShareStrSpec of path list			(* structure sharing *)
 	     | ShareTycSpec of path list			(* type sharing *)
 	     | IncludeSpec of sigexp			        (* include specif *)
-	     | MarkSpec of spec * region		        (* mark a spec *)
+	     | MarkSpec of spec * SL.region		        (* mark a spec *)
 
     (* DECLARATIONS (let and structure) *)
     and dec = ValDec of (vb list * tyvar list)		(* values *)
@@ -165,7 +178,7 @@ struct
 	    | FunDec of (fb list * tyvar list)		(* recurs functions *)
 	    | TypeDec of tb list			(* type dec *)
 	    | DatatypeDec of {datatycs: db list, withtycs: tb list} (* datatype dec *)
-	    | DataReplDec of symbol * path              (* dt replication *)
+	    | DataReplDec of S.symbol * path              (* dt replication *)
 	    | AbstypeDec of {abstycs: db list, withtycs: tb list, body: dec} (* abstract type *)
 	    | ExceptionDec of eb list			(* exception *)
 	    | StrDec of strb list			(* structure *)
@@ -175,66 +188,66 @@ struct
 	    | LocalDec of dec * dec			(* local dec *)
 	    | SeqDec of dec list			(* sequence of dec *)
 	    | OpenDec of path list			(* open structures *)
-	    | OvldDec of symbol * exp list     	        (* overloading (internal; restricted) *)
-	    | FixDec of {fixity: fixity, ops: symbol list}  (* fixity *)
-	    | MarkDec of dec * region		        (* mark a dec *)
+	    | OvldDec of S.symbol * exp list            (* overloading (internal; restricted) *)
+	    | FixDec of {fixity: F.fixity, ops: S.symbol list}  (* fixity *)
+	    | MarkDec of dec * SL.region		        (* mark a dec *)
 
     (* VALUE BINDINGS *)
     and vb = Vb of {pat: pat, exp: exp, lazyp: bool}
-	   | MarkVb of vb * region
+	   | MarkVb of vb * SL.region
 
     (* RECURSIVE VALUE BINDINGS *)
-    and rvb = Rvb of {var: symbol, fixity: (symbol * region) option,
+    and rvb = Rvb of {var: S.symbol, fixity: (S.symbol * SL.region) option,
 		      exp: exp, resultty: ty option, lazyp: bool}
-	    | MarkRvb of rvb * region
+	    | MarkRvb of rvb * SL.region
 
-    (* RECURSIVE FUNCTIONS BINDINGS *)
-    and fb = Fb of clause list * bool (* bool indicates whether lazy *)
-	   | MarkFb of fb * region
+    (* RECURSIVE FUNCTION BINDING *)
+    and fb = Fb of clause list * bool (* bool = true => lazy *)
+	   | MarkFb of fb * SL.region
 
     (* CLAUSE: a definition for a single pattern in a function binding *)
     and clause = Clause of {pats: pat fixitem list, resultty: ty option, exp:exp}
 
     (* TYPE BINDING *)
-    and tb = Tb of {tyc : symbol, def : ty, tyvars : tyvar list}
-	   | MarkTb of tb * region
+    and tb = Tb of {tyc : S.symbol, def : ty, tyvars : tyvar list}
+	   | MarkTb of tb * SL.region
 
     (* DATATYPE BINDING *)
-    and db = Db of {tyc : symbol, tyvars : tyvar list,
-		    rhs : (symbol * ty option) list, lazyp : bool}
-	   | MarkDb of db * region
+    and db = Db of {tyc : S.symbol, tyvars : tyvar list,
+		    rhs : (S.symbol * ty option) list, lazyp : bool}
+	   | MarkDb of db * SL.region
 
     (* EXCEPTION BINDING *)
-    and eb = EbGen of {exn: symbol, etype: ty option} (* Exception definition *)
-	   | EbDef of {exn: symbol, edef: path}	  (* defined by equality *)
-	   | MarkEb of eb * region
+    and eb = EbGen of {exn: S.symbol, etype: ty option} (* Exception definition *)
+	   | EbDef of {exn: S.symbol, edef: path}	  (* defined by equality *)
+	   | MarkEb of eb * SL.region
 
     (* STRUCTURE BINDING *)
-    and strb = Strb of {name: symbol,def: strexp,constraint: sigexp sigConst}
-	     | MarkStrb of strb * region
+    and strb = Strb of {name: S.symbol,def: strexp,constraint: sigexp sigConst}
+	     | MarkStrb of strb * SL.region
 
     (* FUNCTOR BINDING *)
-    and fctb = Fctb of {name: symbol,def: fctexp}
-	     | MarkFctb of fctb * region
+    and fctb = Fctb of {name: S.symbol,def: fctexp}
+	     | MarkFctb of fctb * SL.region
 
     (* SIGNATURE BINDING *)
-    and sigb = Sigb of {name: symbol,def: sigexp}
-	     | MarkSigb of sigb * region
+    and sigb = Sigb of {name: S.symbol,def: sigexp}
+	     | MarkSigb of sigb * SL.region
 
     (* FUNSIG BINDING *)
-    and fsigb = Fsigb of {name: symbol,def: fsigexp}
-	      | MarkFsigb of fsigb * region
+    and fsigb = Fsigb of {name: S.symbol,def: fsigexp}
+	      | MarkFsigb of fsigb * SL.region
 
     (* TYPE VARIABLE *)
-    and tyvar = Tyv of symbol
-	      | MarkTyv of tyvar * region
+    and tyvar = Tyv of S.symbol
+	      | MarkTyv of tyvar * SL.region
 
     (* TYPES *)
     and ty
       = VarTy of tyvar			(* type variable *)
-      | ConTy of symbol list * ty list	(* type constructor application *)
-      | RecordTy of (symbol * ty) list 	(* record *)
+      | ConTy of S.symbol list * ty list	(* type constructor application *)
+      | RecordTy of (S.symbol * ty) list 	(* record *)
       | TupleTy of ty list		(* tuple *)
-      | MarkTy of ty * region	        (* mark type *)
+      | MarkTy of ty * SL.region        (* mark type *)
 
 end (* structure Ast *)

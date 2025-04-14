@@ -11,7 +11,7 @@ sig
   exception Unbound
 
   val empty : entityEnv
-  val mark : ((unit->Stamps.stamp) * entityEnv) -> entityEnv
+  val mark : ((unit->Stamp.stamp) * entityEnv) -> entityEnv
   val bind : entVar * Modules.entity * entityEnv -> entityEnv
   val atop : entityEnv * entityEnv -> entityEnv
   val atopSp : entityEnv * entityEnv -> entityEnv
