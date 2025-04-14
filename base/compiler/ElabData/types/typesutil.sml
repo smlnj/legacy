@@ -750,8 +750,6 @@ structure TypesUtil : TYPESUTIL =
 	      List.exists (fn (_,p) => refutable p) fields
 	  | APPpat (dcon, _, arg) =>
 	      dconRefutable dcon orelse refutable arg
-	  | INFIXpat (dcon, _, arg1, arg2) =>
-	      dconRefutable dcon orelse refutable arg1 orelse refutable arg2
 	  | VECTORpat (pats, _) =>
 	      List.exists refutable pats
 	  | LAYEREDpat (p1, p2) => refutable p1 orelse refutable p2
