@@ -747,11 +747,13 @@ structure TypesUtil : TYPESUTIL =
 	  | WILDpat => false
 	  | CONpat (dcon, tyvars) => dconRefutable dcon
 	  | RECORDpat {fields, ...} =>
-	    List.exists (fn (_,p) => refutable p) fields
+	      List.exists (fn (_,p) => refutable p) fields
 	  | APPpat (dcon, _, arg) =>
-	    dconRefutable dcon orelse refutable arg
+	      dconRefutable dcon orelse refutable arg
+	  | INFIXpat (dcon, _, arg1, arg2) =>
+	      dconRefutable dcon orelse refutable arg1 orelse refutable arg2
 	  | VECTORpat (pats, _) =>
-	    List.exists refutable pats
+	      List.exists refutable pats
 	  | LAYEREDpat (p1, p2) => refutable p1 orelse refutable p2
 	  | CONSTRAINTpat (p, _ ) => refutable p
 	  | MARKpat (p, _) => refutable p
@@ -776,10 +778,10 @@ structure TypesUtil : TYPESUTIL =
       | isValue (CHARexp _) = true
       | isValue (FNexp _) = true
       | isValue (RECORDexp fields) =
-	foldr (fn ((_,exp),x) => x andalso (isValue exp)) true fields
+	  foldr (fn ((_,exp),x) => x andalso (isValue exp)) true fields
       | isValue (SELECTexp(_, e)) = isValue e
       | isValue (VECTORexp (exps, _)) =
-	foldr (fn (exp,x) => x andalso (isValue exp)) true exps
+	  foldr (fn (exp,x) => x andalso (isValue exp)) true exps
       | isValue (SEQexp nil) = true
       | isValue (SEQexp [e]) = isValue e
       | isValue (SEQexp _) = false
