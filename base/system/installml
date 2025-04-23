@@ -17,6 +17,7 @@ cd "$here"
 SIZE_OPT="-64"
 CLEAN=false
 CLEAN_CM=false
+INSTALL_BOOTFILES=no
 STEM=sml
 # Process command-line arguments
 #
@@ -25,6 +26,9 @@ while [ "$#" != "0" ] ; do
     case $arg in
     -32) SIZE_OPT=$arg ;;
     -64) SIZE_OPT=$arg ;;
+    -boot)
+      INSTALL_BOOTFILES=yes
+      ;;
     -clean)
 	CLEAN=true
 	;;
@@ -73,6 +77,21 @@ if [ -f "$twoup/bin/.arch-n-opsys" ]; then
     eval $ARCH_N_OPSYS
   else
     echo "$this: Cannot determine architecture/os."
+    exit 1
+  fi
+fi
+
+if [ x"$INSTALL_BOOTFILES" = xyes ] ; then
+  BOOTARCHIVE="$twoup"/boot."$ARCH"-unix.tgz
+  BOOTFILES=sml.boot."$ARCH"-unix
+  if [ -d $BOOTFILES ] ; then
+    if [ -f "$BOOTARCHIVE" ] ; then
+      echo "$this: removing existing boot-file archive"
+      rm -f "$BOOTARCHIVE"
+    fi
+    tar -czf "$BOOTARCHIVE" $BOOTFILES
+  else
+    echo "$this: The directory $BOOTFILES is missing."
     exit 1
   fi
 fi
