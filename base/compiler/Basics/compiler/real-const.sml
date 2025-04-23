@@ -14,6 +14,14 @@ structure RealConst : sig
 	ty : 'ty		(* the "type" of the value *)
       }
 
+    (* some standard constants *)
+    val zero : bool * 'ty -> 'ty t      (* +/-0.0, where zero true is -0.0 *)
+    val one : 'ty -> 'ty t              (* 1.0 *)
+    val m_one : 'ty -> 'ty t            (* -1.0 *)
+    val nan : 'ty -> 'ty t              (* some quiet NaN *)
+    val posInf : 'ty -> 'ty t           (* positive infinity *)
+    val negInf : 'ty -> 'ty t           (* negative infinity *)
+
     val toString : 'ty t -> string
 
     val fmt : ('ty -> string) -> 'ty t -> string
@@ -24,6 +32,13 @@ structure RealConst : sig
   end = struct
 
     type 'ty t = {rval : RealLit.t, ty : 'ty}
+
+    fun zero (sgn, ty) = {rval = RealLit.zero sgn, ty = ty}
+    fun one ty = {rval = RealLit.one, ty = ty}
+    fun m_one ty = {rval = RealLit.m_one, ty = ty}
+    fun nan ty = {rval = RealLit.nan, ty = ty}
+    fun posInf ty = {rval = RealLit.posInf, ty = ty}
+    fun negInf ty = {rval = RealLit.negInf, ty = ty}
 
     fun toString {rval, ty} = RealLit.toString rval
 

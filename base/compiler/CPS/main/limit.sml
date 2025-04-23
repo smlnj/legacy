@@ -1,13 +1,13 @@
 (* limit.sml
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (https://www.smlnj.org)
  * All rights reserved.
  *)
 
 signature LIMIT =
   sig
 
-  (* returns list of function and mapping from function names to pairs of allocation
+  (* returns list of functions and mapping from function names to pairs of allocation
    * amount and number of instructions.
    *)
     val nolimit : CPS.function list -> CPS.function list * (CPS.lvar -> (int * int))
@@ -39,18 +39,19 @@ structure Limit : LIMIT =
 	      (* end case *))
 	  } end
 
-  (* size of RAW64BLKOCK or FCONT in ml-value-sized words *)
-    val record64Sz = if Target.is64
-	  then fn n => n + 1
-	  else fn n => n + n + 2
+    (* size of real in words *)
+    val real64Sz = if Target.is64 then 1 else 2
+
+    (* size of RAW64BLKOCK or FCONT in ml-value-sized words *)
+    fun record64Sz n = real64Sz * (n + 1)
 
     val seqHdrSz = 3		(* size of sequence header object *)
     val storeListSz = 2		(* size of store list entry *)
 
-  (* extra alignment for 64-bit data *)
+    (* extra alignment for 64-bit data *)
     val raw64Pad = if Target.is64 then 0 else 1
 
-  (* path now counts instructions as well as allocations, for polling *)
+    (* path now counts instructions as well as allocations, for polling *)
     fun path escapes fl = let
 	  exception Limit'
 	  val b : cexp LambdaVar.Tbl.hash_table = LambdaVar.Tbl.mkTable(32,Limit')
@@ -82,6 +83,12 @@ structure Limit : LIMIT =
 	    | g (d, PURE(P.PURE_ARITH{kind=P.FLOAT 64,...},_,_,_,e)) = g(d+3, e)
 	    | g (d, PURE(P.INT_TO_REAL{to=64,...},_,_,_,e)) = g(d+3, e)
 *)
+            | g (d, PURE(P.BITS_TO_REAL _, _, _, _, e)) = (* 8 bytes of scratch space *)
+                g(d + real64Sz, e)
+            | g (d, PURE(P.REAL_TO_BITS _, _, _, _, e)) =
+                if Target.is64
+                  then g(d + real64Sz, e) (* scratch *)
+                  else g(d + 5, e) (* possible alignment + scratch + boxed word64 *)
 	    | g (d, PURE(P.WRAP(P.INT sz), _, _, _, e)) =
 		if (sz = Target.mlValueSz)
 		  then g(d + 2, e)

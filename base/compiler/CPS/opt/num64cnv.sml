@@ -12,7 +12,7 @@ structure Num64Cnv : sig
 
   (* eliminate 64-bit literals and operations on a 32-bit machine.  This function
    * does not rewrite its argument if either the target is a 64-bit machine or
-   * the  no 64-bit operations were detected.
+   * no 64-bit operations were detected.
    *)
     val elim : CPS.function -> CPS.function
 

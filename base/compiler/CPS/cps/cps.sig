@@ -112,6 +112,8 @@ signature CPS =
 	  | EXTEND_INF of int                   (* sign extend: intN -> IntInf.int *)
 	  | TRUNC_INF of int                    (* IntInf.int -> wordN *)
 	  | INT_TO_REAL of {from: int, to: int}
+          | BITS_TO_REAL of int                 (* bitcast from word to real *)
+          | REAL_TO_BITS of int                 (* bitcast from real to word *)
 	  | SUBSCRIPTV
 	  | GETTAG | MKSPECIAL | CAST | GETCON | GETEXN
 	  | BOX | UNBOX

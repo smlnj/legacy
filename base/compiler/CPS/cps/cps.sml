@@ -96,6 +96,8 @@ structure CPS : CPS =
 	  | EXTEND_INF of int
 	  | TRUNC_INF of int
 	  | INT_TO_REAL of {from: int, to: int}
+          | BITS_TO_REAL of int                 (* bitcast from word to real *)
+          | REAL_TO_BITS of int                 (* bitcast from real to word *)
 	  | SUBSCRIPTV
 	  | GETTAG | MKSPECIAL | CAST | GETCON | GETEXN
 	  | BOX | UNBOX
