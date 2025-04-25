@@ -24,13 +24,8 @@ structure FRepToReal64 : sig
 
     datatype float_rep = datatype FloatRep.float_rep
 
-(* the following should be in the Unsafe structure *)
     (* bitcast a Word64.word to a Real64.real *)
-    fun fromBits (b : Word64.word) : real = let
-          val r : real ref = InlineT.cast(ref b)
-          in
-            !r
-          end
+    val fromBits = InlineT.Real64.fromBits
 
 (* the following should be part of the WORD signature *)
     (* count the leading zeros in a Word64.word value *)

@@ -19,13 +19,7 @@ structure Real64Imp : REAL =
     fun *+ (a:real,b,c) = a*b+c
     fun *- (a:real,b,c) = a*b-c
 
-(* TODO: this function should be defined in InlineT *)
-    (* bitcast a Word64.word to a Real64.real *)
-    fun fromBits (b : Word64.word) : real = let
-          val r : real ref = InlineT.cast(ref b)
-          in
-            !r
-          end
+    val fromBits = InlineT.Real64.fromBits
     val toBits = InlineT.Real64.toBits
 
     val op == = InlineT.Real64.==

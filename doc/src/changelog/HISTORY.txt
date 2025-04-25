@@ -105,12 +105,23 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //////////////////////////////////////////////////////////////////////
 
 //====================================================================
-== Recent updates
+//== Recent updates
+
+//====================================================================
+== Version 110.99.8; 2025/04/25
 
 //--------------------------------------------------------------------
 [2025-04-25]::
-Fixed {issue-base}/355[`Word8.toLargeInt` produces incorrect
-results on 32-bit platforms] by using the primitive `Word8.word`
+Changed the handling of word/real bitcasts to fix {issue-base}/354[
+Issue #354 (Problem with `Real.fromString` on 32-bit systems)].
+These are now handled when generating **MLRisc** code.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
+[2025-04-25]::
+Fixed {issue-base}/355[Issue #355 (`Word8.toLargeInt` produces incorrect
+results on 32-bit platforms)] by using the primitive `Word8.word`
 to `IntInf.int` conversion directly (it is unclear why this
 was not already the case).
 +
