@@ -108,6 +108,15 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
+[2025-04-25]::
+Fixed {issue-base}/355[`Word8.toLargeInt` produces incorrect
+results on 32-bit platforms] by using the primitive `Word8.word`
+to `IntInf.int` conversion directly (it is unclear why this
+was not already the case).
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2025-02-19]::
 Fixed {issue-base}/347[Issue #347 (`Unsafe.cast` causes Compiler bug)
 by removing code that treated the `CAST` operator as a transparent

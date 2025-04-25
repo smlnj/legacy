@@ -98,6 +98,8 @@ gforge bug tracker.
 | [.bugid]#351#
 | {pull-base}/351[Fix `Word8Buffer.contents` to return an object with `ByteVector` representation]
 | n.a.
+| [.bugid]#355#[`Word8.toLargeInt` produces incorrect results on 32-bit platforms]
+| n.a.
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]
