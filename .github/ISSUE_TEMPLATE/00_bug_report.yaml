@@ -32,18 +32,16 @@ body:
       label: Version
       description: What version of SML/NJ are you using?
       options:
-        - "110.99.7.1 (Latest)"
-        - "110.99.6.1"
+        - "110.99.8 (Latest)"
+        - "110.99.7"
+        - "110.99.6"
         - "110.99.5"
         - "110.99.4"
         - "110.99.3"
         - "110.99.2"
         - "110.99.1"
         - "110.99"
-        - "110.98.1"
-        - "110.98"
-        - "110.97"
-        - "Pre-110.97"
+        - "Pre-110.99"
     validations:
       required: true
   - type: checkboxes
