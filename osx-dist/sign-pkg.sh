@@ -18,7 +18,7 @@ usage() {
 }
 
 if [ $# != "1" ] ; then
-  usage
+  usage 1
 fi
 PKG=$1
 
@@ -34,7 +34,7 @@ case x"$SIGNER" in
   xnone) SIGN=none ;;
   *)
     echo "$CMD [Warning]: unknown user, so package will not be signed!"
-    SIGN=none
+    exit 1
   ;;
 esac
 
