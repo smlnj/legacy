@@ -105,9 +105,9 @@ structure FRepToReal64 : sig
     (* powers of 5 from 5^0 to 5^25 *)
     val pow5TblSz = 26
     (* NOTE: on 64-bit machines, this table can be represented as a `word vector` *)
-    val pow5Tbl : W64.word vector = let
+    val pow5Tbl : Word64.word vector = let
           fun gen (0, _) = []
-            | gen (i, n : W64.word) = n :: gen(i-1, 0w5 * n)
+            | gen (i, n : Word64.word) = n :: gen(i-1, 0w5 * n)
           in
             Vector.fromList(gen(pow5TblSz, 0w1))
           end
