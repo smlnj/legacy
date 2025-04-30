@@ -272,6 +272,12 @@ structure FRepToReal64 : sig
               else n - W.fromLarge x
           end
 
+(*+DEBUG*)
+    fun w128ToString (hi, lo) = concat[
+	    "(", W64.fmt StringCvt.DEC hi, ", ", W64.fmt StringCvt.DEC lo, ")"
+	  ]
+(*-DEBUG*)
+
     val kMantissaBits = 52
     val kExpBits = 11
     val kExpBias = 1023
@@ -445,13 +451,17 @@ structure FRepToReal64 : sig
           val base2 = base * pow5TblSz
           val offset = base2 - i
           val mul = Vector.sub(pow5InvSplit2Tbl, base) (* 1 / 5^{base2} *)
+(*+DEBUG*)
+val _ = print(concat["computeInvPow5: mul = ", w128ToString mul, "\n"])
           in
             if offset = 0
               then mul
               else let
                 val m = W.toLarge(Vector.sub(pow5Tbl, offset))
                 val (hi1, lo1) = umul128(m, #1 mul - 0w1)
+val _ = print(concat["  (hi1, lo1) = ", w128ToString (hi1, lo1), "\n"])
                 val (hi2, lo2) = umul128(m, #2 mul)
+val _ = print(concat["  (hi2, lo2) = ", w128ToString (hi2, lo2), "\n"])
                 val sum = hi1 + lo2
                 val hi2 = if sum < hi1 then hi2+0w1 (* overflow into hi2 *) else hi2
                 val delta = W.fromInt(pow5Bits base2 - pow5Bits i)
@@ -522,10 +532,7 @@ structure FRepToReal64 : sig
                   val pow5 = computeInvPow5 (~e10)
                   val _ = (
                         print(concat["j = ", Int.toString j, "\n"]);
-                        print(concat[
-                            "pow5 = (", W64.fmt StringCvt.DEC (#1 pow5),
-                            ", ", W64.fmt StringCvt.DEC (#2 pow5), ")\n"
-                          ]))
+                        print(concat["pow5 = ", w128ToString pow5, "\n"]))
 (*-DEBUG*)
                   val m2 = mulShift64(m10, computeInvPow5(~e10), W.fromInt j)
                   val trailingZeros = multipleOfPowerOf5(m10, W.fromInt(~e10))
@@ -614,4 +621,4 @@ print(concat["bits = 0x", W64.toString bits, "\n"]);
   end
 
 val one = FloatRep.Normal{sign=false,nDigits=1,digits=[1],exp=0};
-val threeOne = FloatRep.Normal{digits=[1,3],exp= ~1,nDigits=2, sign=false};
+val onePtThree = FloatRep.Normal{digits=[1,3],exp= ~1,nDigits=2, sign=false};
