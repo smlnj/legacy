@@ -336,9 +336,10 @@ structure FRepToReal64 : sig
 
     (* powers of 5 from 5^0 to 5^25 *)
     val pow5TblSz = 26
-    val pow5Tbl = let
+    (* NOTE: on 64-bit machines, this table can be represented as a `word vector` *)
+    val pow5Tbl : W64.word vector = let
           fun gen (0, _) = []
-            | gen (i, n) = n :: gen(i-1, 0w5 * n)
+            | gen (i, n : W64.word) = n :: gen(i-1, 0w5 * n)
           in
             Vector.fromList(gen(pow5TblSz, 0w1))
           end
@@ -427,7 +428,7 @@ structure FRepToReal64 : sig
             if (offset = 0)
               then mul
               else let
-                val m = W.toLarge(Vector.sub(pow5Tbl, offset))
+                val m = Vector.sub(pow5Tbl, offset)
                 val (hi1, lo1) = umul128 (m, #1 mul)
                 val (hi2, lo2) = umul128 (m, #2 mul)
                 val sum = hi1 + lo2
@@ -452,12 +453,19 @@ structure FRepToReal64 : sig
           val offset = base2 - i
           val mul = Vector.sub(pow5InvSplit2Tbl, base) (* 1 / 5^{base2} *)
 (*+DEBUG*)
-val _ = print(concat["computeInvPow5: mul = ", w128ToString mul, "\n"])
+val _ = print(concat[
+	    "computeInvPow5: base = ", Int.toString base,
+	    ", base2 = ", Int.toString base2,
+	    ", offset = ", Int.toString offset,
+	    "\n"
+	  ])
+val _ = print(concat["  mul = ", w128ToString mul, "\n"])
           in
             if offset = 0
               then mul
               else let
-                val m = W.toLarge(Vector.sub(pow5Tbl, offset))
+                val m = Vector.sub(pow5Tbl, offset)
+val _ = print(concat["  m = ", W64.fmt StringCvt.DEC m, "\n"])
                 val (hi1, lo1) = umul128(m, #1 mul - 0w1)
 val _ = print(concat["  (hi1, lo1) = ", w128ToString (hi1, lo1), "\n"])
                 val (hi2, lo2) = umul128(m, #2 mul)
@@ -534,7 +542,7 @@ val _ = print(concat["  (hi2, lo2) = ", w128ToString (hi2, lo2), "\n"])
                         print(concat["j = ", Int.toString j, "\n"]);
                         print(concat["pow5 = ", w128ToString pow5, "\n"]))
 (*-DEBUG*)
-                  val m2 = mulShift64(m10, computeInvPow5(~e10), W.fromInt j)
+                  val m2 = mulShift64(m10, pow5, W.fromInt j)
                   val trailingZeros = multipleOfPowerOf5(m10, W.fromInt(~e10))
                   in
                     (m2, e2, trailingZeros)
