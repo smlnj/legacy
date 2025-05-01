@@ -6,6 +6,9 @@ We will continue to fix bugs and make minor improvements while
 the main development branch matures.  We will also backport
 additions to the **SML/NJ Library** and other components.
 
+The latest legacy version is [110.99.8](https://smlnj.org/dist/working/110.99.8),
+which was released on April 25, 2025.
+
 ## Documentation
 
 - The [SML Basis Library](https://smlfamily.github.io/Basis/index.html)
@@ -17,9 +20,17 @@ additions to the **SML/NJ Library** and other components.
 
 ## Installation
 
-**SML/NJ** is available in several ways: we distribute installer packages for
-**macOS** and **Windows**, it is also available from many package managers,
-and you can build it from the sources and pre-compiled binfiles.
+**SML/NJ** is available in several ways
+
+* we distribute installer packages for **macOS** and **Windows**
+
+* it is available from many package managers for **Linux**, **macOS**,
+  and **Windows**.
+
+* you can build it from the distribution files using the `config/install.sh`
+  script
+
+* you can build it from the **GitHub** repository
 
 ### Linux
 
@@ -56,7 +67,42 @@ via standard package managers.
 | [![WinGet](https://img.shields.io/winget/v/SMLNJ.SMLNJ.Legacy?logo=winget)](https://winstall.app/apps/SMLNJ.SMLNJ.Legacy) | `winget install -e --id SMLNJ.SMLNJ.Legacy` |
 | [![Chocolatey](https://img.shields.io/chocolatey/v/smlnj?logo=chocolatey)](https://community.chocolatey.org/packages/smlnj) | `choco install smlnj` |
 
-## Building from Source
+## Building from the Distribution Files
+
+On **Linux**, **macOS**, and other **Unix**-like platforms, it is possible to
+build the system from the distributed tar files.  Let `VERSION` be the version
+that you want to install (*e.g.*, `110.99.8`).
+
+1. Start by creating an installation directory
+
+    ``` console
+    % mkdir smlnj
+    % cd smlnj
+    ```
+
+2. Download the `config.tgz` file for the version that you want to install
+   using **curl** (or **wget**).
+
+    ``` console
+    % curl -O https://smlnj.org/dist/working/$VERSION/config.tgz
+    ```
+
+3. Unpack the `config.tgz` file.
+
+    ``` console
+    % tar -xzf config.tgz
+    ```
+
+4. Run the installation script
+
+    ``` console
+    % config/install.sh -default $SIZE
+    ```
+  where `SIZE` is either 32 or 64.  Note that the **x86-64** (aka **amd64**)
+  is the only 64-bit architecture supported by the legacy version of **SML/NJ**.
+
+
+## Building from the **GitHub** Repository
 
 The preferred way to build the system is to follow the installation
 instructions for your platform.  If, however, you want to compile the
@@ -65,20 +111,20 @@ current source from **GitHub**, the following steps should usually work.
 1. Start with a fresh clone of the repository (let `ROOT` be the
    root directory of the clone.
 
-    ``` sh
+    ``` console
     % git clone git@github.com:smlnj/legacy.git $ROOT
     ```
 
 2. Configure and install the corresponding release in the `$ROOT`:
 
-    ``` sh
+    ``` console
     % cd $ROOT
     % config/install.sh
     ```
 
 3. Use this compiler to recompile from sources
 
-    ``` sh
+    ``` console
     % cd base/system
     % ./cmb-make ../../bin/sml
     % ./makeml
