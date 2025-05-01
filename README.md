@@ -6,6 +6,34 @@ We will continue to fix bugs and make minor improvements while
 the main development branch matures.  We will also backport
 additions to the **SML/NJ Library** and other components.
 
+## Installation
+
+SML/NJ is available from many package managers.
+
+### Linux
+
+| Package Manager | Installation Command |
+| --- | --- |
+| [![Arch Linux package](https://img.shields.io/archlinux/v/extra/x86_64/smlnj?logo=archlinux&label=arch)](https://archlinux.org/packages/extra/x86_64/smlnj/) | `pacman -S smlnj` |
+| [![Debian Unstable](https://img.shields.io/debian/v/smlnj?logo=debian)](https://packages.debian.org/sid/smlnj) | `apt install smlnj` |
+| [![Gentoo](https://img.shields.io/badge/gentoo-110.99.6.1-blue?logo=gentoo)](https://packages.gentoo.org/packages/dev-lang/smlnj) | `emerge --ask dev-lang/smlnj` |
+| [![Nixpkgs Unstable](https://img.shields.io/badge/nixpkgs-110.99.7.1-blue?logo=nixos)](https://search.nixos.org/packages?channel=unstable&show=smlnj&from=0&size=1&sort=relevance&type=packages&query=smlnj) | `nix-shell -p smlnj` |
+| [![Ubuntu Unstable](https://img.shields.io/ubuntu/v/smlnj?logo=ubuntu)](https://launchpad.net/ubuntu/plucky/+package/smlnj) | `apt install smlnj` |
+| [![openSUSE](https://img.shields.io/badge/opensuse-110.99.5-blue?logo=suse)](https://software.opensuse.org/package/smlnj) | `zypper install smlnj` |
+
+### MacOS
+
+| Package Manager | Installation Command |
+| --- | --- |
+| [![Homebrew](https://img.shields.io/badge/homebrew-110.99.8-blue?logo=homebrew)](https://formulae.brew.sh/cask/smlnj) | `brew install --cask smlnj` |
+
+### Windows
+
+| Package Manager | Installation Command |
+| --- | --- |
+| [![WinGet](https://img.shields.io/winget/v/SMLNJ.SMLNJ.Legacy?logo=winget)](https://winstall.app/apps/SMLNJ.SMLNJ.Legacy) | `winget install -e --id SMLNJ.SMLNJ.Legacy` |
+| [![Chocolatey](https://img.shields.io/chocolatey/v/smlnj?logo=chocolatey)](https://community.chocolatey.org/packages/smlnj) | `choco install smlnj` |
+
 ## Building from Source
 
 The preferred way to build the system is to follow the installation
