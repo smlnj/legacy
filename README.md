@@ -11,12 +11,16 @@ which was released on April 25, 2025.
 
 ## Documentation
 
-- The [SML Basis Library](https://smlfamily.github.io/Basis/index.html)
-  - Reference for the SML '97 language, which **SML/NJ** implements
-- The [SML of NJ Library](https://www.smlnj.org/doc/smlnj-lib/index.html)
-  - Additional libraries packaged alongside **SML/NJ**
-- [Standard ML of New Jersey Wiki](https://github.com/smlnj/.github/wiki)
-  - This wiki documents the implementation of **SML/NJ**
+- The [**SML/NJ** web site](https://smlnj.org)
+
+- The [**SML Basis Library**](https://smlfamily.github.io/Basis/index.html)
+  Specification of the **SML '97 Basis Library**, which **SML/NJ** supports
+
+- The [**SML of NJ Library**](https://www.smlnj.org/doc/smlnj-lib/index.html)
+  Documentation for the additional libraries included in **SML/NJ**
+
+- The [Standard ML of New Jersey Wiki](https://github.com/smlnj/.github/wiki)
+  This wiki documents the implementation of **SML/NJ**
 
 ## Installation
 
@@ -49,7 +53,9 @@ are often out of date.
 
 ### MacOS
 
-We distribute installer packages for both **macOS** on both 32-bit and 64-bit Intel hardware
+We distribute installer packages for both **macOS** on both
+[32-bit](https://smlnj.org/dist/working/110.99.8/smlnj-x86-110.99.8.pkg) and
+and [64-bit](https://smlnj.org/dist/working/110.99.8/smlnj-amd64-110.99.8.pkg) Intel hardware
 (for an Arm version, see the [development version](https://github.com/smlnj/smlnj).
 It is also available from [Homebrew](https://brew.sh).
 
@@ -59,8 +65,9 @@ It is also available from [Homebrew](https://brew.sh).
 
 ### Windows
 
-We distribute a 32-bit MSI package for **Windows**, but it is also available
-via standard package managers.
+We distribute a
+[32-bit MSI package](https://smlnj.org/dist/working/110.99.8/smlnj-110.99.8.msi)
+for **Windows**, but it is also available via standard package managers.
 
 | Package Manager | Installation Command |
 | --- | --- |
