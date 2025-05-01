@@ -17,7 +17,9 @@ additions to the **SML/NJ Library** and other components.
 
 ## Installation
 
-SML/NJ is available from many package managers.
+**SML/NJ** is available in several ways: we distribute installer packages for
+**macOS** and **Windows**, it is also available from many package managers,
+and you can build it from the sources and pre-compiled binfiles.
 
 ### Linux
 
