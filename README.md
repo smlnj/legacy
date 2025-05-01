@@ -6,6 +6,15 @@ We will continue to fix bugs and make minor improvements while
 the main development branch matures.  We will also backport
 additions to the **SML/NJ Library** and other components.
 
+## Documentation
+
+- The [SML Basis Library](https://smlfamily.github.io/Basis/index.html)
+  - Reference for the SML '97 language, which SML/NJ implements
+- The [SML of NJ Library](https://www.smlnj.org/doc/smlnj-lib/index.html)
+  - Additional libraries packaged alongside SML/NJ
+- [Standard ML of New Jersey Wiki](https://github.com/smlnj/.github/wiki)
+  - This wiki documents the implementation of SML/NJ
+
 ## Installation
 
 SML/NJ is available from many package managers.
