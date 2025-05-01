@@ -9,17 +9,21 @@ additions to the **SML/NJ Library** and other components.
 ## Documentation
 
 - The [SML Basis Library](https://smlfamily.github.io/Basis/index.html)
-  - Reference for the SML '97 language, which SML/NJ implements
+  - Reference for the SML '97 language, which **SML/NJ** implements
 - The [SML of NJ Library](https://www.smlnj.org/doc/smlnj-lib/index.html)
-  - Additional libraries packaged alongside SML/NJ
+  - Additional libraries packaged alongside **SML/NJ**
 - [Standard ML of New Jersey Wiki](https://github.com/smlnj/.github/wiki)
-  - This wiki documents the implementation of SML/NJ
+  - This wiki documents the implementation of **SML/NJ**
 
 ## Installation
 
 SML/NJ is available from many package managers.
 
 ### Linux
+
+Note that for the latest version of **SML/NJ**, you should build from source
+(as described below), since the versions available from **Linux** package managers
+are often out of date.
 
 | Package Manager | Installation Command |
 | --- | --- |
@@ -32,11 +36,18 @@ SML/NJ is available from many package managers.
 
 ### MacOS
 
+We distribute installer packages for both **macOS** on both 32-bit and 64-bit Intel hardware
+(for an Arm version, see the [development version](https://github.com/smlnj/smlnj).
+It is also available from [Homebrew](https://brew.sh).
+
 | Package Manager | Installation Command |
 | --- | --- |
 | [![Homebrew](https://img.shields.io/badge/homebrew-110.99.8-blue?logo=homebrew)](https://formulae.brew.sh/cask/smlnj) | `brew install --cask smlnj` |
 
 ### Windows
+
+We distribute a 32-bit MSI package for **Windows**, but it is also available
+via standard package managers.
 
 | Package Manager | Installation Command |
 | --- | --- |
