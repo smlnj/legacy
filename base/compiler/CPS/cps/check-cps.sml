@@ -176,13 +176,16 @@ structure CheckCPS : sig
                   checkArg (cxt, fn () => "switch " ^ v2s v, v);
                   List.app (fn ce => checkExp (cxt', ce)) cases
                 end
-            | CPS.BRANCH(tst, args, id, ce1, ce2) => (
-                checkArgs (
-                  cxt,
-                  fn () => concat["if ", app2str (PP.branchToString tst, args)],
-                  args);
-                checkExp (bind(cxt, id, Label), ce1);
-                checkExp (bind(cxt, id, Label), ce2))
+            | CPS.BRANCH(tst, args, id, ce1, ce2) => let
+                val cxt' = bind(cxt, id, Label)
+                in
+                  checkArgs (
+                    cxt,
+                    fn () => concat["if ", app2str (PP.branchToString tst, args)],
+                    args);
+                  checkExp (cxt', ce1);
+                  checkExp (cxt', ce2)
+                end
             | CPS.SETTER(p, args, ce) => (
                 checkArgs (
                   cxt,

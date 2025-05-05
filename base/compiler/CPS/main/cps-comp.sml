@@ -49,6 +49,7 @@ functor CPSCompFn (
             say "\n"; e)
           else e
 
+    (* invariant checking for CPS *)
     fun check s e = (
           if !Control.CG.checkCPS
             then CheckCPS.check (s, e)

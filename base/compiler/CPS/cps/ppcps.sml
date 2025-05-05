@@ -132,7 +132,7 @@ structure PPCps : PPCPS =
       | pureToString (P.COPY_INF i) = concat ["copy_", cvtParam i, "_inf"]
       | pureToString (P.EXTEND_INF i) =  concat ["extend_", cvtParam i, "_inf"]
       | pureToString (P.INT_TO_REAL{from, to}) =
-	  concat ["int", cvtParam from, "_real", cvtParam to]
+	  concat ["int", cvtParam from, "_to_real", cvtParam to]
       | pureToString (P.BITS_TO_REAL sz) = "bits_to_real" ^ cvtParam sz
       | pureToString (P.REAL_TO_BITS sz) = concat ["real", cvtParam sz, "_to_bits"]
       | pureToString P.SUBSCRIPTV = "subscriptv"

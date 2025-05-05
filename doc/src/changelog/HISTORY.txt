@@ -111,6 +111,13 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Version 110.99.8; 2025/04/25
 
 //--------------------------------------------------------------------
+[2025-05-05]::
+Fixed an issue where trailing zeros were being included for the
+`GEN` mode float-point to string conversions.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2025-04-25]::
 Changed the handling of word/real bitcasts to fix {issue-base}/354[
 Issue #354 (Problem with `Real.fromString` on 32-bit systems)].
