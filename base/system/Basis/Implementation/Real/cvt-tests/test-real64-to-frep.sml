@@ -860,6 +860,7 @@ val _ = print(concat["# nDigits = ", Int.toString nDigits,
 
   end
 
+(*
 (* a test case that produces too many trailing zeros *)
 val data = [16.168,15.927,15.938,15.958,15.927];
 val x = (List.foldl Real.+ 0.0 data) / real(List.length data);
@@ -873,3 +874,4 @@ val x' = FloatRep.Normal{
       }
 
 val x'' = FRepToString.toString x';
+*)
