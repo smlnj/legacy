@@ -7,10 +7,10 @@ REM
 REM Script to build the MSI installer for SML/NJ on Windows.
 REM
 
-if "%SMLNJ_HOME%"=="" (echo Please set the SMLNJ_HOME environment variable && goto :EOF)
-if NOT EXIST %SMLNJ_HOME%\sml.boot.x86-win32 (echo Please expand the boot.x86-win32.tgz file to the root of your SMLNJ source tree && goto :EOF)
-
 set WIN_DIST_DIR=%CD%
+set SMLNJ_HOME=%CD%\smlnj
+
+if NOT EXIST %SMLNJ_HOME%\sml.boot.x86-win32 (echo Please expand the boot.x86-win32.tgz file to the root of your SMLNJ source tree && goto :EOF)
 
 chdir %SMLNJ_HOME%
 
@@ -24,12 +24,11 @@ REM
 
 echo build MSI package
 setlocal
-SET SCRIPTDIR=%WIN_DIST_DIR%/WinSetup
+SET SCRIPTDIR=%SMLNJ_HOME%\config\WinSetup
 
 %SCRIPTDIR%\GenerateWixFile.exe %SMLNJ_HOME%\lib
 %SCRIPTDIR%\candle.exe lib.wxs %SCRIPTDIR%\smlnj.wxs
 @if ERRORLEVEL 1 (echo Candle failed & goto :EOF)
-%SCRIPTDIR%\light.exe -out smlnj.msi lib.wixobj smlnj.wixobj %SCRIPTDIR%\wixui.wixlib -loc %SCRIPTDIR%\WixUI_en-us.wxl %SCRIPTDIR%\sca.wixlib
+%SCRIPTDIR%\light.exe -out %WIN_DIST_DIR%\smlnj.msi lib.wixobj smlnj.wixobj %SCRIPTDIR%\wixui.wixlib -loc %SCRIPTDIR%\WixUI_en-us.wxl %SCRIPTDIR%\sca.wixlib
 
 chdir %WIN_DIST_DIR%
-
