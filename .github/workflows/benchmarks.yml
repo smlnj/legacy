@@ -1,0 +1,49 @@
+
+name: SML/NJ Benchmarking Suite
+
+on:
+  workflow_dispatch:
+    inputs:
+      benchmarks:
+        description: The benchmarks to run
+        required: false
+        default: FP LIST ARRAY BIGNUM CML FUNCTOR CLASSIC SMLNJ MLTON LARCENY SCHEME
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-22.04
+          - ubuntu-24.04
+          - macos-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clone the benchmarking suite
+        run: |
+          git clone https://github.com/smlnj/benchmarks.git
+
+      - name: Compile SML/NJ
+        run: |
+          ./config/install.sh
+
+      - name: Run the benchmarking suite
+        run: |
+          export PATH="$PWD/bin:$PATH"
+          cd benchmarks && ./bin/run.sh ${{ github.event.inputs.benchmarks }}
+
+      - name: Upload benchmark reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-report-${{ matrix.os }}
+          path: benchmarks/reports/REPORT-*.json
+
+      - name: Upload benchmark logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-logs-${{ matrix.os }}
+          path: benchmarks/LOG-*
