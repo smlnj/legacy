@@ -46,6 +46,12 @@ structure FRepToReal64 : sig
               else n - W.fromLarge x
           end
 
+(*+DEBUG**
+    fun w128ToString (hi, lo) = concat[
+	    "(", W64.fmt StringCvt.DEC hi, ", ", W64.fmt StringCvt.DEC lo, ")"
+	  ]
+**-DEBUG*)
+
     val kMantissaBits = 52
     val kExpBits = 11
     val kExpBias = 1023
@@ -298,10 +304,7 @@ structure FRepToReal64 : sig
                   val pow5 = computeInvPow5 (~e10)
                   val _ = (
                         print(concat["j = ", Int.toString j, "\n"]);
-                        print(concat[
-                            "pow5 = (", W64.fmt StringCvt.DEC (#1 pow5),
-                            ", ", W64.fmt StringCvt.DEC (#2 pow5), ")\n"
-                          ]))
+                        print(concat["pow5 = ", w128ToString pow5, "\n"]))
 **-DEBUG*)
                   val m2 = mulShift64(m10, computeInvPow5(~e10), W.fromInt j)
                   val trailingZeros = multipleOfPowerOf5(m10, W.fromInt(~e10))

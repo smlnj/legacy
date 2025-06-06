@@ -242,15 +242,7 @@ structure FRepToReal64 : sig
 
     datatype float_rep = datatype FloatRep.float_rep
 
-(* the following should be in the Unsafe structure *)
     (* bitcast a Word64.word to a Real64.real *)
-(*
-    fun fromBits (b : Word64.word) : real = let
-          val r : real ref = InlineT.cast(ref b)
-          in
-            !r
-          end
-*)
     val fromBits = Unsafe.Real64.castFromWord
 
 (* the following should be part of the WORD signature *)
@@ -307,7 +299,8 @@ structure FRepToReal64 : sig
             0wx54544554, 0wx04055545, 0wx10041000, 0wx00400414, 0wx40010000,
             0wx41155555, 0wx00000454, 0wx00010044, 0wx40000000, 0wx44000041,
             0wx50454450, 0wx55550054, 0wx51655554, 0wx40004000, 0wx01000001,
-            0wx00010500, 0wx51515411, 0wx05555554, 0wx00000000
+            0wx00010500, 0wx51515411, 0wx05555554, 0wx50411500, 0wx40040000,
+            0wx05040110, 0wx00000000
           ]
 
     val pow5Split2Tbl : (Word64.word * Word64.word) vector = #[
@@ -460,6 +453,7 @@ val _ = print(concat[
 	    "\n"
 	  ])
 val _ = print(concat["  mul = ", w128ToString mul, "\n"])
+(*-DEBUG*)
           in
             if offset = 0
               then mul
@@ -630,3 +624,9 @@ print(concat["bits = 0x", W64.toString bits, "\n"]);
 
 val one = FloatRep.Normal{sign=false,nDigits=1,digits=[1],exp=0};
 val onePtThree = FloatRep.Normal{digits=[1,3],exp= ~1,nDigits=2, sign=false};
+
+(* this example is from Issue #360 *)
+val ex360 = FloatRep.Normal{
+        sign=false, nDigits=18, exp= ~18,
+        digits=[5,0,1,7,8,2,3,0,3,1,8,0,0,0,0,0,5,5]
+      };
