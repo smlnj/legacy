@@ -68,6 +68,12 @@ gforge bug tracker.
 | Issue
 | Description
 | Gforge Bug
+| [.bugid]#356#
+| {issue-base}/356[Problem with `Real.fromString` evaluating non-whole number strings on 32-bit systems]
+| n.a.
+| [.bugid]#360#
+| {issue-base}/360[Incorrect values returned by `Real.fromString` on strings with many digits]
+| n.a.
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]
