@@ -1,3 +1,9 @@
+(* test-from-string.sml
+ *
+ * COPYRIGHT (c) 2025 The Fellowship of SML/NJ (https://smlnj.org)
+ * All rights reserved.
+ *)
+
 structure ScanUtil : sig
 
     type prefix_pat = {

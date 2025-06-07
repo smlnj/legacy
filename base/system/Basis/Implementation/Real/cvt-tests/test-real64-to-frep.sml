@@ -1,3 +1,8 @@
+(* test-real64-to-frep.sml
+ *
+ * COPYRIGHT (c) 2025 The Fellowship of SML/NJ (https://smlnj.org)
+ * All rights reserved.
+ *)
 
 structure FloatRep : sig
 

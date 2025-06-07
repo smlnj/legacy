@@ -64,36 +64,56 @@ structure FloatRep : sig
       | Normal of decimal_rep
       | Subnormal of decimal_rep
 
-    fun mkDecimalRep (digits, exp) : decimal_rep =  {
-            sign = false,
-            nDigits = List.length digits,
-            digits = digits,
-            exp = exp
+    (* limits for a particular IEEE floating-point representation *)
+    type limits = {
+        minSubnormal : decimal_rep,     (* representation of smallest subnormal *)
+        minNormal : decimal_rep,        (* representation of smallest normal *)
+        maxNormal : decimal_rep,        (* representation of largest normal *)
+        maxDigits : int                 (* maximum number of digits allowed *)
+      }
+
+    local
+      (* given a list of digits `[d0, d1, ..., dn]` and an exponent `e`
+       * representing the number "d0 . d1 ... dn × 10^e", return the corresponding
+       * decimal_rep value.
+       *)
+      fun mkDecimalRep (digits, e) : decimal_rep = let
+            val nd = List.length digits
+            in {
+              sign = false,
+              nDigits = nd,
+              digits = digits,
+              exp = e - (nd - 1) (* shift decimal point right *)
+            } end
+    in
+
+    (* limits for 32-bit floats
+     * (see https://en.wikipedia.org/wiki/Single-precision_floating-point_format)
+     *)
+    val limits32 = {
+            minSubnormal = (* 0000 0001 == 1.4012984643 × 10^−45 *)
+              mkDecimalRep ([1,4,0,1,2,9,8,4,6,4,3], ~45),
+            minNormal = (* 0080 0000 == 1.1754943508 × 10^−38 *)
+              mkDecimalRep ([1,1,7,5,4,9,4,3,5,0,8], ~38),
+            maxNormal = (* 7f7f ffff == 3.4028234664 × 10^38*)
+              mkDecimalRep ([3,4,0,2,8,2,3,4,6,6,4], 38),
+            maxDigits = 9
           }
 
-    (* the decimal representation of the minimum 32-bit subnormal number *)
-    val minSubnormal32 = (* 0000 0001 *)
-          mkDecimalRep ([1,4,0,1,2,9,8,4,6,4,3], ~45)
+    (* limits for 64-bit floats
+     * (see https://en.wikipedia.org/wiki/Double-precision_floating-point_format)
+     *)
+    val limits64 = {
+            minSubnormal = (* 0000 0000 0000 0001 == 4.9406564584124654 × 10^−324 *)
+              mkDecimalRep ([4,9,4,0,6,5,6,4,5,8,4,1,2,4,6,5,4], ~324),
+            minNormal = (* 0010 0000 0000 0000 == 2.2250738585072014 × 10^−308 *)
+              mkDecimalRep ([2,2,2,5,0,7,3,8,5,8,5,0,7,2,0,1,4], ~308),
+            maxNormal = (* 7fef ffff ffff ffff == 1.7976931348623157 × 10^308 *)
+              mkDecimalRep ([1,7,9,7,6,9,3,1,3,4,8,6,2,3,1,5,7], 308),
+            maxDigits = 17
+          }
 
-    (* the decimal representation of the minimum 32-bit normal number *)
-    val minNormal32 = (* 0080 0000 *)
-          mkDecimalRep ([1,1,7,5,4,9,4,3,5,0,8], ~38)
-
-    (* the decimal representation of the maximum 32-bit normal number *)
-    val maxNormal32 = (* 7f7f ffff *)
-          mkDecimalRep ([3,4,0,2,8,2,3,4,6,6,4], 38)
-
-    (* the decimal representation of the minimum 64-bit subnormal number *)
-    val minSubnormal64 = (* 0000 0000 0000 0001 *)
-          mkDecimalRep ([4,9,4,0,6,5,6,4,5,8,4,1,2,4,6,5,4], ~324)
-
-    (* the decimal representation of the minimum 64-bit normal number *)
-    val minNormal64 = (* 0010 0000 0000 0000 *)
-          mkDecimalRep ([2,2,2,5,0,7,3,8,5,8,5,0,7,2,0,1,4], ~324)
-
-    (* the decimal representation of the maximum 64-bit normal number *)
-    val maxNormal64 = (* 7fef ffff ffff ffff *)
-          mkDecimalRep ([1,7,9,7,6,9,3,1,3,4,8,6,2,3,1,5,7], 292)
+    end (* local *)
 
     (* unsigned "<" comparison *)
     fun uLT (dr1 : decimal_rep, dr2 : decimal_rep) = let
@@ -121,29 +141,44 @@ structure FloatRep : sig
     (* normalize a `decimal_rep` value for a precision that is specified by
      * the minimum sub-normal, minimum normal, and maximum normal values.
      *)
-    fun normalizeDecimalRep (minSubNormal, minNormal, maxNormal) (f : decimal_rep) = let
+    fun normalizeDecimalRep (limits : limits) (f : decimal_rep) = let
           fun trimLeadingZeros (n, 0::ds) = trimLeadingZeros (n+1, ds)
             | trimLeadingZeros arg = arg
           (* remove leading zeros from digits *)
           val (nz1, digits) = trimLeadingZeros (0, #digits f)
+          (* remove any excess digits so that we do not exceed the
+           * max limit; the result list of digits is in reverse order
+           * and the number of removed digits
+           *)
+(* FIXME: we should probably round the result when doing this trimming.  We
+ * already have rounding code in the `roundAndNormalize` function in the
+ * `FRepToString` structure. Perhaps we can factor out a common utility function.
+ *)
+          val (rDigits, nr) = let
+                fun limitDigits (_, [], nr, rds) = (rds, nr)
+                  | limitDigits (0, _::r, nr, rds) = limitDigits(0, r, nr+1, rds)
+                  | limitDigits (n, d::r, nr, rds) = limitDigits(n-1, r, nr, d::rds)
+                in
+                  limitDigits (#maxDigits limits, digits, 0, [])
+                end
           (* remove trailing zeros from digits *)
-          val (nz2, rDigits) = trimLeadingZeros (0, List.rev digits)
+          val (nz2, rDigits) = trimLeadingZeros (0, rDigits)
           val f' = {
                   sign = #sign f,
-                  nDigits = #nDigits f - nz1 - nz2,
+                  nDigits = #nDigits f - nz1 - nr - nz2,
                   digits = List.rev rDigits,
-                  exp = #exp f + nz2
+                  exp = #exp f + nr + nz2
                 }
           in
             if (#nDigits f' = 0) then Zero(#sign f')
-            else if uLT(f', minSubNormal) then Zero(#sign f')
-            else if uLT(f', minNormal) then Subnormal f'
-            else if uLT(maxNormal, f') then Inf(#sign f')
+            else if uLT(f', #minSubnormal limits) then Zero(#sign f')
+            else if uLT(f', #minNormal limits) then Subnormal f'
+            else if uLT(#maxNormal limits, f') then Inf(#sign f')
             else Normal f'
           end
 
-    fun normalize (minSubNormal, minNormal, maxNormal) = let
-          val normalizeDRep = normalizeDecimalRep (minSubNormal, minNormal, maxNormal)
+    fun normalize limits = let
+          val normalizeDRep = normalizeDecimalRep limits
           in
             fn (Normal f) => normalizeDRep f
              | (Subnormal f) => normalizeDRep f
@@ -151,10 +186,10 @@ structure FloatRep : sig
           end
 
     (* Normalize a `float_rep` value for 32-bit IEEE floating-point. *)
-    val normalize32 = normalize (minSubnormal32, minNormal32, maxNormal32)
+    val normalize32 = normalize limits32
 
     (* Normalize a `float_rep` value for 64-bit IEEE floating-point. *)
-    val normalize64 = normalize (minSubnormal64, minNormal64, maxNormal64)
+    val normalize64 = normalize limits64
 
     fun toDecimalApprox arg = let
           fun toDA (cls, {sign, nDigits, digits, exp}) =
@@ -214,7 +249,7 @@ structure FloatRep : sig
   end
 (* frep-to-real64.sml
  *
- * COPYRIGHT (c) 2024 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2024 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *
  * Conversion of the `FloatRep.float_rep` representation to
@@ -265,6 +300,8 @@ structure FRepToReal64 : sig
           end
 
 (*+DEBUG*)
+    fun assert (false, msg) = raise Fail("Assertion Failure: " ^ msg)
+      | assert (true, _) = ()
     fun w128ToString (hi, lo) = concat[
 	    "(", W64.fmt StringCvt.DEC hi, ", ", W64.fmt StringCvt.DEC lo, ")"
 	  ]
@@ -400,9 +437,16 @@ structure FRepToReal64 : sig
      * bits.  We assume that 0 < dist < 64.
      *)
     fun shiftRight128 (lo, hi, dist) =
+(assert (dist < 0w64, "dist < 0w64");
           W64.orb (W64.<<(hi, 0w64 - dist), W64.>>(lo, dist))
+)
 
+    (* compute `(m*mul) >> 128` *)
     fun mulShift64 (m : Word64.word, mul : (Word64.word * Word64.word), j : word) = let
+val _ = print(concat[
+        "mulShift64 (", W64.fmt StringCvt.DEC m, ", ", w128ToString mul, ", ",
+        W.fmt StringCvt.DEC j, ")\n"
+      ])
           val (hi1, _) = umul128 (m, #1 mul)
           val (hi2, lo2) = umul128 (m, #2 mul)
           val sum = hi1 + lo2
@@ -512,6 +556,7 @@ val _ = print(concat["  (hi2, lo2) = ", w128ToString (hi2, lo2), "\n"])
                    * To that end, we use the DOUBLE_POW5_SPLIT table.
                    *)
                   val j = e2 - e10 - ceilLog2Pow5 e10 + kPow5BitCount
+(*DEBUG*)val _ = assert(j >= 0, "j >= 0")
                   val m2 = mulShift64 (m10, computePow5 e10, W.fromInt j)
                   (* We also compute if the result is exact; i.e.,
                    *   [m10 * 10^e10 / 2^e2] == m10 * 10^e10 / 2^e2.
@@ -533,6 +578,7 @@ val _ = print(concat["  (hi2, lo2) = ", w128ToString (hi2, lo2), "\n"])
 (*+DEBUG*)
                   val pow5 = computeInvPow5 (~e10)
                   val _ = (
+                        print(concat["e2 = ", Int.toString e2, "\n"]);
                         print(concat["j = ", Int.toString j, "\n"]);
                         print(concat["pow5 = ", w128ToString pow5, "\n"]))
 (*-DEBUG*)
@@ -555,7 +601,7 @@ val _ = print(concat["  (hi2, lo2) = ", w128ToString (hi2, lo2), "\n"])
            *)
           val shift = if (ieee_e2 = 0) then 1 else ieee_e2
           val shift = shift - e2 - kExpBias - kMantissaBits
-          (* assert(shift >= 0) *)
+(*DEBUG*)val _ = assert(shift >= 0, "shift >= 0");
 (*+DEBUG*)
           val _ = print(concat["shift = ", Int.toString shift, "\n"])
 (*-DEBUG*)
@@ -585,7 +631,7 @@ val _ = print(concat["  (hi2, lo2) = ", w128ToString (hi2, lo2), "\n"])
                 print(concat["roundUp = ", Bool.toString roundUp, "\n"]);
                 print(concat["ieee_e2 = ", Int.toString ieee_e2, "\n"]))
 (*-DEBUG*)
-          (* assert(ieee_m2 <= (1 << (kMantissaBits + 1))) *)
+(*DEBUG*)val _ = assert(ieee_m2 <= W64.<<(0w1, W.fromInt(kMantissaBits + 1)), "ieee_m2 <= (1 << (kMantissaBits + 1))");
           val ieee_m2 = W64.andb(ieee_m2, W64.<<(0w1, W.fromInt kMantissaBits) - 0w1)
           val ieee_e2 = if (ieee_m2 = 0w0) andalso roundUp
                 (* Due to how the IEEE represents +/-Infinity, we don't need to
@@ -622,11 +668,42 @@ print(concat["bits = 0x", W64.toString bits, "\n"]);
 
   end
 
+val frepToReal = FRepToReal64.cvt o FloatRep.normalize64;
+
+fun normalize (sgn, digits, exp) = FloatRep.normalize64 (
+      FloatRep.Normal{
+          sign=sgn, nDigits=List.length digits, exp=exp, digits=digits
+        })
+
 val one = FloatRep.Normal{sign=false,nDigits=1,digits=[1],exp=0};
 val onePtThree = FloatRep.Normal{digits=[1,3],exp= ~1,nDigits=2, sign=false};
 
-(* this example is from Issue #360 *)
-val ex360 = FloatRep.Normal{
+(* these examples are from Issue #360; the first one works and the second
+ * produces an incorrect result.
+ *)
+val ex360a = FloatRep.Normal{
+        sign=false, nDigits=17, exp= ~17,
+        digits=[5,0,1,7,8,2,3,0,3,1,8,0,0,0,0,0,5]
+      };
+val ex360b = FloatRep.Normal{
         sign=false, nDigits=18, exp= ~18,
         digits=[5,0,1,7,8,2,3,0,3,1,8,0,0,0,0,0,5,5]
       };
+
+(* Edge cases *)
+(* just below smallest subnormal *)
+val t1 = normalize(false, [4,9,4,0,6,5,6,4,5,8,4,1,2,4,6,5,3], ~324-16);
+(* smallest subnormal *)
+val t2 = normalize(false, [4,9,4,0,6,5,6,4,5,8,4,1,2,4,6,5,4], ~324-16);
+(* largest subnormal *)
+val t3 = normalize(false, [2,2,2,5,0,7,3,8,5,8,5,0,7,2,0,0,9], ~308-16);
+(* just above largest subnormal *)
+val t4 = normalize(false, [2,2,2,5,0,7,3,8,5,8,5,0,7,2,0,1], ~308-16);
+(* just below smallest normal *)
+val t5 = normalize(false, [2,2,2,5,0,7,3,8,5,8,5,0,7,2,0,1,3], ~308-16);
+(* smallest normal *)
+val t8 = normalize(false, [2,2,2,5,0,7,3,8,5,8,5,0,7,2,0,1,4], ~308-16);
+(* largest normal *)
+val t7 = normalize(false, [1,7,9,7,6,9,3,1,3,4,8,6,2,3,1,5,7], 308-16);
+(* just above largest normal *)
+val t7 = normalize(false, [1,7,9,7,6,9,3,1,3,4,8,6,2,3,1,5,8], 308-16);
