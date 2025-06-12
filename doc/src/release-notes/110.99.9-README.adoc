@@ -74,6 +74,9 @@ gforge bug tracker.
 | [.bugid]#360#
 | {issue-base}/360[Incorrect values returned by `Real.fromString` on strings with many digits]
 | n.a.
+| [.bugid]#362#
+| {issue-base}/362[`Real.fromString` on negative inf/infinity returns positive infinity]
+| n.a.
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]

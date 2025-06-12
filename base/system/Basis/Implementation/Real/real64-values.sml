@@ -33,7 +33,7 @@ structure Real64Values : sig
     val minNormalPos    = fromBits 0wx0010000000000000
     val minPos          = fromBits 0wx0000000000000001
     val posInf          = fromBits 0wx7FF0000000000000
-    val negInf          = fromBits 0wx7FF0000000000000
+    val negInf          = fromBits 0wxFFF0000000000000
     val posNaN          = fromBits 0wx7FF8000000000000
     val negNaN          = fromBits 0wxFFF8000000000000
 

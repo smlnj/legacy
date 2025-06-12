@@ -372,7 +372,7 @@ structure FRepToReal64 : sig
           end
 
     val posInf = fromBits 0wx7FF0000000000000
-    val negInf = fromBits 0wx7FF0000000000000
+    val negInf = fromBits 0wxFFF0000000000000
     val posNaN = fromBits 0wx7FF8000000000000
     val negNaN = fromBits 0wxFFF8000000000000
     val posZero = fromBits 0wx0000000000000000
