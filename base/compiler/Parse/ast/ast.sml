@@ -32,7 +32,7 @@ struct
       (* FIX 1: "fixity" is a rather poor name for this field.
        * FIX 2: This type has some redundancy, since symbol option part is SOME iff
        * the item exp/pat part is a variable, in which case the "var" flavor of the
-       * symbol is the name of the variable, which can be used, in conjunction with
+       * symbol serves as the name of the variable, which can be used, in conjunction with
        * a static env, to determine the "fixity" of that variable/symbol. Thus the 
        * symbol option component is not needed. Thus the simpler version would be 
        * just "type 'a fixitem = {item: 'a, region: SM.region}, where 'a = pat or exp. *)
@@ -40,14 +40,18 @@ struct
   (* Alternatively
      -- replace "fixity" field name with "symbol" and define two non-polymorphic types:
 
-    ...
-    withtype patfixitem = {item: pat, symbol: S.symbol option, region: SL.region}
-    and expfixitem = {item: exp, symbol: S.symbol option, region: SL.region}
+      ...
+      withtype patfixitem = {item: pat, symbol: S.symbol option, region: SL.region}
+      and expfixitem = {item: exp, symbol: S.symbol option, region: SL.region}
    
     But should not do this because then there would have to be two versions of the
     precedence parser!  Better to have a single, polymorphic, precedence parser, or
     we could encapsulate the precedence parser in a functor that would take the item
     type as a parameter.
+
+    Or we could incorporate the pat and exp reparsing functions in the Precedence structure
+    and export them as two monomorphic functions from that structure.
+
   *)
 
   (* integer/word literal; the string is the literal as it appeared in the source
@@ -93,9 +97,8 @@ struct
 					(* if expression (derived form) *)
       | AndalsoExp of exp * exp		(* andalso (derived form) *)
       | OrelseExp of exp * exp		(* orelse (derived form) *)
-      | WhileExp of {test:exp,expr:exp}
-					(* while (derived form) *)
-      | MarkExp of exp * SL.region		(* mark an expression *)
+      | WhileExp of {test:exp,expr:exp} (* while (derived form) -- depricated *)
+      | MarkExp of exp * SL.region	(* mark an expression *)
       | VectorExp of exp list   	(* vector *)
 
     (* RULE for case functions and exception handler *)
@@ -114,8 +117,8 @@ struct
       | ListPat of pat list			(* [list,in,square,brackets] *)
       | TuplePat of pat list			(* tuple *)
       | FlatAppPat of pat fixitem list		(* patterns before fixity parsing *)
-      | AppPat of {constr:pat,argument:pat}	(* constructor application *)
-      | ConstraintPat of {pattern:pat,constraint:ty}
+      | AppPat of {constr:pat, argument:pat}	(* constructor application *)
+      | ConstraintPat of {pattern:pat, constraint:ty}
 						(* constraint *)
       | LayeredPat of {varPat:pat,expPat:pat}   (* as patterns *)
       | MarkPat of pat * SL.region		(* mark a pattern *)

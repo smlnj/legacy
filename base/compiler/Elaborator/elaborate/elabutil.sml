@@ -217,64 +217,63 @@ val trivialCompleteMatch = completeMatch(SE.empty,"Match")
 val TUPLEpat = AbsynUtil.TUPLEpat
 
 fun wrapRECdecGen rvbs =
-  let fun g (RVB{var=v as VALvar{path=SP.SPATH [sym], ...}, ...}, nvars) =
-	    let val nv = newVALvar sym
-	     in ((v, nv, sym)::nvars)
-	    end
-	| g _ = bug "wrapRECdecGen:RVB"
-      val vars = foldr g [] rvbs
-      val odec = VALRECdec rvbs
+    let fun g (RVB{var=v as VALvar{path=SP.SPATH [sym], ...}, ...}, nvars) =
+	      let val nv = newVALvar sym
+	       in ((v, nv, sym)::nvars)
+	      end
+	  | g _ = bug "wrapRECdecGen:RVB"
+	val vars = foldr g [] rvbs
+	val odec = VALRECdec rvbs
 
-      val tyvars =
-        case rvbs
-         of (RVB{tyvars,...})::_ => tyvars
-          | _ => bug "unexpected empty rvbs list in wrapRECdecGen"
+	val tyvars =
+	  case rvbs
+	   of (RVB{tyvars,...})::_ => tyvars
+	    | _ => bug "unexpected empty rvbs list in wrapRECdecGen"
 
-   in (vars,
-       case vars
-        of [(v, nv, sym)] =>
-            (VALdec [VB{pat=VARpat nv, boundtvs=[], tyvars=tyvars,
-                        exp=LETexp(odec, VARexp(ref v, []))}])
-         | _ =>
-          (let val vs = map (fn (v, _, _) => VARexp(ref v, [])) vars
-               val rootv = newVALvar internalSym
-               val rvexp = VARexp(ref rootv, [])
-               val nvdec =
-                 VALdec([VB{pat=VARpat rootv, boundtvs=[], tyvars=tyvars,
-                            exp=LETexp(odec, TUPLEexp vs)}])
+     in (vars,
+	 case vars
+	  of [(v, nv, sym)] =>
+	      (VALdec [VB{pat=VARpat nv, boundtvs=[], tyvars=tyvars,
+			  exp=LETexp(odec, VARexp(ref v, []))}])
+	   | _ =>
+	    (let val vs = map (fn (v, _, _) => VARexp(ref v, [])) vars
+		 val rootv = newVALvar internalSym
+		 val rvexp = VARexp(ref rootv, [])
+		 val nvdec =
+		   VALdec([VB{pat=VARpat rootv, boundtvs=[], tyvars=tyvars,
+			      exp=LETexp(odec, TUPLEexp vs)}])
 
-               fun h([], _, d) =
-                     LOCALdec(nvdec, SEQdec(rev d))
-                 | h((_,nv,_)::r, i, d) =
-                     let val nvb = VB {pat= VARpat nv, boundtvs=[],
-                                       exp= TPSELexp(rvexp,i), tyvars=ref TS.empty}
-                      in h(r, i+1, VALdec([nvb])::d)
-                     end
-            in h(vars, 1, [])
-           end))
-  end
+		 fun h([], _, d) =
+		       LOCALdec(nvdec, SEQdec(rev d))
+		   | h((_,nv,_)::r, i, d) =
+		       let val nvb = VB {pat= VARpat nv, boundtvs=[],
+					 exp= TPSELexp(rvexp,i), tyvars=ref TS.empty}
+			in h(r, i+1, VALdec([nvb])::d)
+		       end
+	      in h(vars, 1, [])
+	     end))
+    end
 
 fun wrapRECdec0 rvbs =
-  let val (vars, ndec) = wrapRECdecGen rvbs
-   in case vars
-       of [(_, nv, _)] => (nv, ndec)
-        | _ => bug "unexpected case in wrapRECdec0"
-  end
+    let val (vars, ndec) = wrapRECdecGen rvbs
+     in case vars
+	 of [(_, nv, _)] => (nv, ndec)
+	  | _ => bug "unexpected case in wrapRECdec0"
+    end
 
 fun wrapRECdec rvbs =
-  let val (vars, ndec) = wrapRECdecGen rvbs
-      fun h((v, nv, sym), env) = SE.bind(sym, B.VALbind nv, env)
-      val nenv = foldl h SE.empty vars
-   in (ndec, nenv)
-  end
-
-val argVarSym = S.varSymbol "arg"
+    let val (vars, ndec) = wrapRECdecGen rvbs
+	fun h((v, nv, sym), env) = SE.bind(sym, B.VALbind nv, env)
+	val nenv = foldl h SE.empty vars
+     in (ndec, nenv)
+    end
 
 fun cMARKexp (e, r) = if !ElabControl.markabsyn then MARKexp (e, r) else e
 
 fun FUNdec (completeMatch, fbl) =
-    let fun fb2rvb ({var, clauses as ({pats,resultty,exp}::_),tyvars,region}) =
-	    let fun getvar _ =  newVALvar argVarSym
+    let fun fb2rvb ({funsym, clauses as ({pats,resultty,exp}::_),tyvars,region}) =
+	    let val var = newValVar funsym
+		fun getvar _ = newVALvar (S.varSymbol "arg")
 		val vars = map getvar pats
 		fun not1(f,[a]) = a
 		  | not1(f,l) = f l
@@ -286,7 +285,7 @@ fun FUNdec (completeMatch, fbl) =
 
 (*  -- Matthias says: this seems to generate slightly bogus marks:
  *
-		val mark =  case (hd clauses, List.last clauses)
+		val mark = case (hd clauses, List.last clauses)
 	                     of ({exp=MARKexp(_,(a,_)),...},
 				 {exp=MARKexp(_,(_,b)),...}) =>
 			         (fn e => MARKexp(e,(a,b)))
