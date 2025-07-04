@@ -1,0 +1,1088 @@
+
+The default interactive shell is now zsh.
+To update your account to use zsh, please run `chsh -s /bin/zsh`.
+For more details, please visit https://support.apple.com/kb/HT208050.
+$ pwd
+/Users/dbm
+$ cd sml/Dev/github/NewFrontEnd/
+$ cd proposals/
+$ ls
+harperismus.txt		language.txt		MLFW2025.txt		variables-etc.txt
+$ pwd
+/Users/dbm/sml/Dev/github/NewFrontEnd/proposals
+$ cd ../../..
+$ cd harper/
+$ ls
+course-2025/			RWH-email-2024_12_06.txt
+dbm1.txt			rwh1.txt
+dbm2.txt			rwh2.txt
+dbm3.txt			rwh3.txt
+dbm4.txt			rwh4.txt
+$ cd course-2025/
+$ ls
+modules.pdf
+$ pwd
+/Users/dbm/sml/Dev/harper/course-2025
+$ cd ../../
+$ pwd
+/Users/dbm/sml/Dev
+$ cd ../
+$ cd history/
+$ ls
+2007-06-29 AI Homes Talk.ppt	mlowner.tgz
+baudinet.tgz			overview-95/
+bib/				papers/
+clu-history.PS			pictures/
+examples.tgz			RM-archive/
+hopl3/				robin-owns-sml/
+hopl4/				smlnj/
+INRIA/				typesforall/
+LCF/				wand.eml
+milner/				web-pages/
+ML2000.tgz
+$ cd smlnj
+$ ls
+baudinet.txt		history-notes.txt	people.txt
+docs/			history-SMLofNJ copy	request-msg.txt
+Griffin-20240902.txt	MLRISC.bib
+$ grep Wang
+  ^C ^C
+$ grep Wang *.txt
+people.txt:** Dan Wang [Princeton; ASDL]
+$ ls docs
+Mattson-ml-lex-listings.pdf	Mattson-ml-lex.pdf
+$ wc -l *
+       6 baudinet.txt
+wc: docs: read: Is a directory
+      68 Griffin-20240902.txt
+       4 history-notes.txt
+      46 history-SMLofNJ copy
+     111 MLRISC.bib
+     188 people.txt
+      26 request-msg.txt
+     449 total
+$ pwd
+/Users/dbm/sml/history/smlnj
+$ cd ..
+$ ls
+2007-06-29 AI Homes Talk.ppt	mlowner.tgz
+baudinet.tgz			overview-95/
+bib/				papers/
+clu-history.PS			pictures/
+examples.tgz			RM-archive/
+hopl3/				robin-owns-sml/
+hopl4/				smlnj/
+INRIA/				typesforall/
+LCF/				wand.eml
+milner/				web-pages/
+ML2000.tgz
+$ pwd
+/Users/dbm/sml/history
+$ pwd
+/Users/dbm/sml/history
+$ cd ../Dev/github
+$ ls
+admin/		CM/		MLW2023/	smlfmt/		smlnj1/
+boot/		ip-last/	NewFrontEnd/	smlnj/		smlnj2/
+bug2/		jhr-pp/		newpptr/	SMLNJ-history/	wpp/
+bug3/		legacy/		prettyprint/	smlnj-pickle/	Xlegacy/
+build-bug/	mlfw2/		RWH-DBM/	smlnj.org/
+$ cd SMLNJ-history/
+$ ls
+baudinet.txt			people.txt
+contribs.txt			README.md
+docs/				request-msg.txt
+history-notes.txt		smlnj-capsule-history.txt
+MLRISC.bib
+$ wc -l *.txt
+       6 baudinet.txt
+    1445 contribs.txt
+       4 history-notes.txt
+     191 people.txt
+      26 request-msg.txt
+     136 smlnj-capsule-history.txt
+    1808 total
+$ grep Wang contribs.txt
+Dan Wang, 2024-03-09
+$ pwd
+/Users/dbm/sml/Dev/github/SMLNJ-history
+$ 
+$ 
+$ pwd
+/Users/dbm/sml/Dev/github/SMLNJ-history
+$ cd ..
+$ pwd
+/Users/dbm/sml/Dev/github
+$ ls
+admin/		build-bug/	mlfw2/		RWH-DBM/	smlnj.org/
+ATPL/		CM/		MLW2023/	smlfmt/		smlnj1/
+boot/		ip-last/	NewFrontEnd/	smlnj/		smlnj2/
+bug2/		jhr-pp/		newpptr/	SMLNJ-history/	wpp/
+bug3/		legacy/		prettyprint/	smlnj-pickle/	Xlegacy/
+$ cd ATPL
+$ ls
+ATPL24/	notes/	pset/	README	www/
+$ cd notes
+$ ls
+Advanced Topics in PL Theory.bib	preamble.tex
+AdvTopPL.bib@				projects.tex
+algeff.tex				README.md
+atpl.bib				relact.tex
+canon-lf.tex				reynolds.bib
+cbpv.tex				reynolds.tex
+cont.bib				rhnotes.bib
+cont.tex				save/
+cost.tex				semeq.tex
+ctt.bib					slf-syntax.tex
+defeq.tex				slf.bib
+defns.tex				slf.tex
+dependency.bib				step-bi-step.bib
+dependency.tex				step-bi-step.tex
+effects.bib				step-idx.bib
+effects.tex				step-idx.tex
+girard.bib				symmetry.bib
+girard.tex				symmetry.tex
+howto.tex				syntax.tex
+jms/					tait-structures.tex
+kripke.bib				tait.tex
+kripke.tex				tarski.bib
+lax-sums.tex				tarski.tex
+Makefile				template.tex
+martinlof.bib				tir.bib
+modtt-slf.bib				tir.tex
+modtt-slf.tex				tlc-canon.tex
+modules.bib				tlc-sequent.tex
+modules.tex				variabletypes.tex
+$ pwd
+/Users/dbm/sml/Dev/github/ATPL/notes
+$ ls jms
+jmsdelim.sty	jon-tikz.sty	js-macros.sty
+$ ls save
+atpl-notes.sty	natco.tex
+$ make
+latexmk -pdf -outdir=out howto
+Rc files read:
+  .latexmkrc
+Latexmk: This is Latexmk, John Collins, 17 Mar. 2022. Version 4.77, version: 4.77.
+Latexmk: making output directory 'out'
+Latexmk: applying rule 'pdflatex'...
+Rule 'pdflatex': File changes, etc:
+   Changed files, or newly in use since previous run(s):
+  howto.tex
+Rule 'pdflatex': The following rules & subrules became out-of-date:
+  pdflatex
+------------
+Run number 1 of rule 'pdflatex'
+------------
+------------
+Running 'pdflatex  -recorder -output-directory="out"  "howto.tex"'
+------------
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex)
+ restricted \write18 enabled.
+entering extended mode
+(./howto.tex
+LaTeX2e <2021-11-15> patch level 1
+L3 programming layer <2022-02-24>
+(/usr/local/texlive/2022/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2021/10/04 v1.4n Standard LaTeX document class
+(/usr/local/texlive/2022/texmf-dist/tex/latex/base/size11.clo)) (./preamble.tex
+ (/usr/local/texlive/2022/texmf-dist/tex/latex/natbib/natbib.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/base/fontenc.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/base/inputenc.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/textgreek/textgreek.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/greek-fontenc/lgrenc.def
+(/usr/local/texlive/2022/texmf-dist/tex/latex/greek-inputenc/lgrenc.dfu)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/greek-fontenc/greek-fontenc.def))
+)
+
+! LaTeX Error: File `code.sty' not found.
+
+Type X to quit or <RETURN> to proceed,
+or enter new name. (Default extension: sty)
+
+Enter file name:   ^C ^C
+! Interruption.
+<to be read again> 
+                   }
+l.6 \usepackage
+               {fullpage}^^M
+? 
+(/usr/local/texlive/2022/texmf-dist/tex/latex/tools/verbatim.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/preprint/fullpage.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/todonotes/todonotes.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/base/ifthen.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/xkeyval/xkeyval.sty
+(/usr/local/texlive/2022/texmf-dist/tex/generic/xkeyval/xkeyval.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/xkeyval/xkvutils.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/xkeyval/keyval.tex))))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/xcolor/xcolor.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/graphics-cfg/color.cfg)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/graphics-def/pdftex.def))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/frontendlayer/tikz.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/basiclayer/pgf.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/utilities/pgfrcs.sty
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/utilities/pgfutil-common.te
+x
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/utilities/pgfutil-common-li
+sts.tex))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/utilities/pgfutil-latex.def
+) (/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/utilities/pgfrcs.code.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/pgf.revision.tex)))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/basiclayer/pgfcore.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/graphics/graphicx.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/graphics/graphics.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/graphics/trig.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/graphics-cfg/graphics.cfg)))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/systemlayer/pgfsys.sty
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/systemlayer/pgfsys.code.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/utilities/pgfkeysfiltered.c
+ode.tex))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/systemlayer/pgf.cfg)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-pdftex.d
+ef
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-common-p
+df.def)))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/systemlayer/pgfsyssoftpath.
+code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/systemlayer/pgfsysprotocol.
+code.tex))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcore.code.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathcalc.code.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathutil.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathparser.code.tex
+)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.code.
+tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.basic
+.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.trigo
+nometric.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.rando
+m.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.compa
+rison.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.base.
+code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.round
+.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.misc.
+code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.integ
+erarithmetics.code.tex)))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfloat.code.tex)
+) (/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfint.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepoints.co
+de.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathconst
+ruct.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathusage
+.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorescopes.co
+de.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcoregraphicst
+ate.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransform
+ations.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorequick.cod
+e.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreobjects.c
+ode.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathproce
+ssing.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorearrows.co
+de.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreshade.cod
+e.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreimage.cod
+e.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreexternal.
+code.tex))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorelayers.co
+de.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretranspare
+ncy.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepatterns.
+code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorerdf.code.
+tex)))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/modules/pgfmoduleshapes.cod
+e.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/modules/pgfmoduleplot.code.
+tex)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version
+-0-65.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version
+-1-18.sty))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/utilities/pgffor.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/utilities/pgfkeys.sty
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex)
+) (/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/math/pgfmath.sty
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/utilities/pgffor.code.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex)))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/frontendlayer/tikz/tikz.cod
+e.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/libraries/pgflibraryplothan
+dlers.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/modules/pgfmodulematrix.cod
+e.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/frontendlayer/tikz/librarie
+s/tikzlibrarytopaths.code.tex)))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/frontendlayer/tikz/librarie
+s/tikzlibrarypositioning.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/tools/calc.sty))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/xifthen/xifthen.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/ifmtarg/ifmtarg.sty))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/comment/comment.sty
+Excluding comment 'comment')
+(/usr/local/texlive/2022/texmf-dist/tex/latex/url/url.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/stix2-type1/stix2.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/base/textcomp.sty))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/amsmath/amsmath.sty
+For additional information on amsmath, use the `?' option.
+(/usr/local/texlive/2022/texmf-dist/tex/latex/amsmath/amstext.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/amsmath/amsgen.sty))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/amsmath/amsbsy.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/amsmath/amsopn.sty))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/amscls/amsthm.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/stmaryrd/stmaryrd.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/oberdiek/colonequals.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/oberdiek/stackrel.sty
+(/usr/local/texlive/2022/texmf-dist/tex/generic/etexcmds/etexcmds.sty
+(/usr/local/texlive/2022/texmf-dist/tex/generic/infwarerr/infwarerr.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty
+(/usr/local/texlive/2022/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty)))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/mathpartir/mathpartir.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/esvect/esvect.sty)
+
+! LaTeX Error: File `pl-syntax.sty' not found.
+
+Type X to quit or <RETURN> to proceed,
+or enter new name. (Default extension: sty)
+
+Enter file name: 
+! Emergency stop.
+<read *> 
+         
+l.21 \usepackage
+                {pl-judgments}^^M
+!  ==> Fatal error occurred, no output PDF file produced!
+Transcript written on out/howto.log.
+Latexmk: Getting log file 'out/howto.log'
+Latexmk: Examining 'out/howto.fls'
+Latexmk: Examining 'out/howto.log'
+Latexmk: Missing input file 'code.sty' (or dependence on it) from following:
+  '! LaTeX Error: File `code.sty' not found.'
+Latexmk: Missing input file 'pl-syntax.sty' (or dependence on it) from following:
+  '! LaTeX Error: File `pl-syntax.sty' not found.'
+Latexmk: Errors, so I did not complete making targets
+Collected error summary (may duplicate other messages):
+  pdflatex: Command for 'pdflatex' gave return code 1
+      Refer to 'out/howto.log' for details
+Latexmk: If appropriate, the -f option can be used to get latexmk
+  to try to force complete processing.
+make: *** [out/howto.pdf] Error 12
+
+$ pwd
+/Users/dbm/sml/Dev/github/ATPL/notes
+$ git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+$ git pull
+Username for 'https://github.com': 
+Password for 'https://github.com':   ^C ^C
+$ pwd
+/Users/dbm/sml/Dev/github/ATPL/notes
+$ make
+latexmk -pdf -outdir=out howto
+Rc files read:
+  .latexmkrc
+Latexmk: This is Latexmk, John Collins, 17 Mar. 2022. Version 4.77, version: 4.77.
+Latexmk: applying rule 'pdflatex'...
+Rule 'pdflatex': File changes, etc:
+   Changed files, or newly in use since previous run(s):
+  howto.tex
+Rule 'pdflatex': The following rules & subrules became out-of-date:
+  pdflatex
+------------
+Run number 1 of rule 'pdflatex'
+------------
+------------
+Running 'pdflatex  -recorder -output-directory="out"  "howto.tex"'
+------------
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex)
+ restricted \write18 enabled.
+entering extended mode
+(./howto.tex
+LaTeX2e <2021-11-15> patch level 1
+L3 programming layer <2022-02-24>
+(/usr/local/texlive/2022/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2021/10/04 v1.4n Standard LaTeX document class
+(/usr/local/texlive/2022/texmf-dist/tex/latex/base/size11.clo)) (./preamble.tex
+ (/usr/local/texlive/2022/texmf-dist/tex/latex/natbib/natbib.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/base/fontenc.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/base/inputenc.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/textgreek/textgreek.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/greek-fontenc/lgrenc.def
+(/usr/local/texlive/2022/texmf-dist/tex/latex/greek-inputenc/lgrenc.dfu)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/greek-fontenc/greek-fontenc.def))
+) (/usr/local/texlive/2022/texmf-dist/tex/latex/tools/verbatim.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/preprint/fullpage.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/todonotes/todonotes.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/base/ifthen.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/xkeyval/xkeyval.sty
+(/usr/local/texlive/2022/texmf-dist/tex/generic/xkeyval/xkeyval.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/xkeyval/xkvutils.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/xkeyval/keyval.tex))))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/xcolor/xcolor.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/graphics-cfg/color.cfg)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/graphics-def/pdftex.def))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/frontendlayer/tikz.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/basiclayer/pgf.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/utilities/pgfrcs.sty
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/utilities/pgfutil-common.te
+x
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/utilities/pgfutil-common-li
+sts.tex))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/utilities/pgfutil-latex.def
+) (/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/utilities/pgfrcs.code.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/pgf.revision.tex)))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/basiclayer/pgfcore.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/graphics/graphicx.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/graphics/graphics.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/graphics/trig.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/graphics-cfg/graphics.cfg)))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/systemlayer/pgfsys.sty
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/systemlayer/pgfsys.code.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/utilities/pgfkeysfiltered.c
+ode.tex))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/systemlayer/pgf.cfg)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-pdftex.d
+ef
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-common-p
+df.def)))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/systemlayer/pgfsyssoftpath.
+code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/systemlayer/pgfsysprotocol.
+code.tex))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcore.code.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathcalc.code.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathutil.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathparser.code.tex
+)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.code.
+tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.basic
+.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.trigo
+nometric.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.rando
+m.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.compa
+rison.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.base.
+code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.round
+.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.misc.
+code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.integ
+erarithmetics.code.tex)))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmathfloat.code.tex)
+) (/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfint.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepoints.co
+de.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathconst
+ruct.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathusage
+.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorescopes.co
+de.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcoregraphicst
+ate.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransform
+ations.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorequick.cod
+e.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreobjects.c
+ode.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathproce
+ssing.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorearrows.co
+de.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreshade.cod
+e.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreimage.cod
+e.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreexternal.
+code.tex))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorelayers.co
+de.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretranspare
+ncy.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepatterns.
+code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/basiclayer/pgfcorerdf.code.
+tex)))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/modules/pgfmoduleshapes.cod
+e.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/modules/pgfmoduleplot.code.
+tex)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version
+-0-65.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version
+-1-18.sty))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/utilities/pgffor.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/utilities/pgfkeys.sty
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex)
+) (/usr/local/texlive/2022/texmf-dist/tex/latex/pgf/math/pgfmath.sty
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/utilities/pgffor.code.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex)))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/frontendlayer/tikz/tikz.cod
+e.tex
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/libraries/pgflibraryplothan
+dlers.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/modules/pgfmodulematrix.cod
+e.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/frontendlayer/tikz/librarie
+s/tikzlibrarytopaths.code.tex)))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pgf/frontendlayer/tikz/librarie
+s/tikzlibrarypositioning.code.tex)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/tools/calc.sty))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/xifthen/xifthen.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/ifmtarg/ifmtarg.sty))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/comment/comment.sty
+Excluding comment 'comment')
+(/usr/local/texlive/2022/texmf-dist/tex/latex/url/url.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/stix2-type1/stix2.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/base/textcomp.sty))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/amsmath/amsmath.sty
+For additional information on amsmath, use the `?' option.
+(/usr/local/texlive/2022/texmf-dist/tex/latex/amsmath/amstext.sty
+(/usr/local/texlive/2022/texmf-dist/tex/latex/amsmath/amsgen.sty))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/amsmath/amsbsy.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/amsmath/amsopn.sty))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/amscls/amsthm.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/stmaryrd/stmaryrd.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/oberdiek/colonequals.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/oberdiek/stackrel.sty
+(/usr/local/texlive/2022/texmf-dist/tex/generic/etexcmds/etexcmds.sty
+(/usr/local/texlive/2022/texmf-dist/tex/generic/infwarerr/infwarerr.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/generic/iftex/iftex.sty))
+(/usr/local/texlive/2022/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty
+(/usr/local/texlive/2022/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty)))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/mathpartir/mathpartir.sty)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/esvect/esvect.sty)
+
+! LaTeX Error: File `pl-syntax.sty' not found.
+
+Type X to quit or <RETURN> to proceed,
+or enter new name. (Default extension: sty)
+
+Enter file name: 
+! Emergency stop.
+<read *> 
+         
+l.21 \usepackage
+                {pl-judgments}^^M
+!  ==> Fatal error occurred, no output PDF file produced!
+Transcript written on out/howto.log.
+Latexmk: Getting log file 'out/howto.log'
+Latexmk: Examining 'out/howto.fls'
+Latexmk: Examining 'out/howto.log'
+Latexmk: Missing input file 'pl-syntax.sty' (or dependence on it) from following:
+  '! LaTeX Error: File `pl-syntax.sty' not found.'
+Latexmk: Errors, so I did not complete making targets
+Collected error summary (may duplicate other messages):
+  pdflatex: Command for 'pdflatex' gave return code 1
+      Refer to 'out/howto.log' for details
+Latexmk: If appropriate, the -f option can be used to get latexmk
+  to try to force complete processing.
+make: *** [out/howto.pdf] Error 12
+$ pwd
+/Users/dbm/sml/Dev/github/ATPL/notes
+$ cd ..
+$ pwd
+/Users/dbm/sml/Dev/github/ATPL
+$ cd ../../../rwh
+$ ls
+ATPL/	TILT/
+$ cd ATPL
+$ ls
+1-tarski.pdf		15-tait-structures.pdf	5-defeq.pdf
+10-cont.pdf		16-modules.pdf		6-tir.pdf
+11-cost.pdf		2-tait.pdf		7-variabletypes.pdf
+12-cbpv.pdf		2a-tait.pdf		8-girard.pdf
+13-effects.pdf		3-semeq.pdf		9-reynolds.pdf
+14-dependency.pdf	4-kripke.pdf
+$ pwd
+/Users/dbm/sml/rwh/ATPL
+$ cd ../../Dev
+$ cd github/NewFrontEnd/
+$ ls
+HarperStone/	proposals/	README.md	syntax/		work/
+$ cd work
+$ ls
+bug319.txt		new-variables.txt
+journal.txt		work.txt
+$ pwd
+/Users/dbm/sml/Dev/github/NewFrontEnd/work
+$ ls
+bug319.txt		new-variables.txt	work.txt
+journal.txt		type-funs.txt
+$ ls -lt
+total 80
+-rw-r--r--  1 dbm  staff    973 Jun 28 12:29 type-funs.txt
+-rw-r--r--  1 dbm  staff   8607 Mar 23 16:02 new-variables.txt
+-rw-r--r--  1 dbm  staff  15787 Mar  4 14:39 bug319.txt
+-rw-r--r--  1 dbm  staff    590 Feb 12 12:11 work.txt
+-rw-r--r--  1 dbm  staff    526 Feb 12 11:59 journal.txt
+$ cat bug319.txt
+NewFrontEnd/work/bug319.txt
+
+Record of work on legacy issue #319 (and #344 from Crary and smlnj issue #278) The
+approach is to do a deep clean-up of module elaboration (elabmod.sml, sigmatch.sml,
+instantiate.sml, evalent.sml, etc.) to remove last vestiges of FLINT modifications.  As a
+side issue, we can also move typcath (types.sml) and TKind (ElabData/basics/tkind.sml)
+into the Elaborator/modules directory, where they are used.  TKind could possibly be moved
+somewhere where it could be shared by the elaborator and by FLIINT.
+
+Problem: Functor with opaque result signature is not producing abstract ("sealed") result
+structure.  - in Elaborator/elaborate/elabmod.sml, constrStr (constrainStr) is not called
+correctly because of the value of the "curried" argument of elabFct.  Planned fix.  Get
+rid of curried functors as a form of syntactic sugar, derived form.
+
+Have to get rid of obscuring FLINT constructions (internal "derived" forms) that may have
+originally been introduced to support curried functor syntax.
+
+** What are the basic elements of module elaboration?
+
+- syntax trees (Ast; Parse/ast/*)
+- abstract syntax (Absyn, VarCon [Variable]; ElabData/syntax/absyn.*, varcon.sml)
+- static module representations (Modules, ModuleUtil, ModuleId; ElabData/modules/*)
+- static environments (StaticEnv, Bindings, Lookup, ElabData/statenv/*)
+- (Dynamic) Access
+- types (Types, ElabData/types)
+    (tycpath generated by elaboration, but not used in the front end, try to eliminate,
+     depends of TKind defined in ElabData/basics/tkind)
+
+- Elaboration [Core] (ElabType, ElabCore; ElabUtil? Elaborator/types/*, Elaborator/elaborate/*)
+- Elaboration [Modules] (ElabMod, ElabSig; ... ) 
+- Elaboration [Modules, support] 
+    entities, entity expressions and their static "evaluation" (EvalEnt)
+    entity paths
+    entity path contexts
+    signature instantiation (Instantiate, Elaborator/modules)
+    signature matching (Sigmatch; Elaborator/modules/sigmatch.*)
+    module ids, pickling, (per)stamps, machinery supporting cutoff recompilation
+      (how "orthogonal" or "separable" is this stuff to the basic line of module elaboration?)
+    "special" symbols (internal derived forms) -- can we eliminate all these?
+
+CONJECTURE: the tycpath type in Types defines roughly the types of entity expressions (and
+  hence the types of entities?).  Similarly, the type TKind.tkind may correspond to the
+  kinds of entity variables (TP_VAR tycpaths).  In the elaborator, TKind is referenced
+  only in the Instantiate (Elaborator/modules/instantiate.sml) module.
+
+  The tycpath constructors appear in the front end only in enteval.sml, sigmatch.sml, instantiate.sml:
+
+    tycpath in Elaborator/elabmod.sml, evalent.sml, instantiate.sml, sigmatch.sml 
+      in ElabData/modules.sml, absyn.sml, types.sml
+    TP_VAR in instantiate.sml
+    TP_TYC in instantiate.sml
+    TP_FCT in evalent.sml, sigmatch.sml
+    TP_APP in evalent.sml
+    TP_SEL in instantiate.sml
+
+  In FLINT:
+    TKind in transtkind.sml
+    tycpath in transtypes.sml
+    TP_VAR in transtypes.sml
+    TP_TYC in transtypes.sml
+    TP_FCT in transtypes.sml 
+    TP_APP in transtypes.sml 
+    TP_SEL in transtypes.sml 
+    
+Probably, at least, or as a first step, TKind and tycpath could be moved into
+Elaborate/modules?  The special generative tycons (GENtyc) with tyckind=FLEXTYC could be
+modeled as an alternative form of tycon (tycon', which would only have a tycpath as
+contents) in instantiate.sml? This would allow the removal of tycpath from earlier,
+non-module parts of elaboration (and in particular from types.sml). This is because
+tycpath and hance TKind seem only relevant to instantiate.sml and perhaps sigmatch.sml and
+evalent.sml.
+
+tkind.sml (defining structure TKind) could be moved from ElabData/basics to Basics/?.
+How to avoid having both TKind and FLINT's version of the same thing for FLINT types?
+
+Basic elements:
+
+  module static representations (defined by default in ElabData/modules/modules.sml)
+    Structure, Functor, Signatures
+    spec [type spec], static specification of a structure element
+      includes an entVar + info for tycon, structure, functor elements, type for val and con elements
+      static info is Signature for structures and functors, tycSpecInfo for tycons
+    elements [type elements]; components of a signature (symbol, spec pair)
+    entities [type entity] (for tycons, structures, functors)
+      aka "realization" of a structure or functor (or tycon)
+    entity variables [type entVar; ElabData/modules/entpath.sml]
+      Essential use: parameter of a functor closue.
+    entity paths [types entpath, rEntPath; ElabData/modules/entpath.sml]
+      access static elements through a structure heirarchy
+    entity expressions [types entityExp, tycExp, strExp, fctExp]
+      Essential use: body of a functor closure.
+    entity environments [type entityEnv; ElabData/modules/entityenv.sml]
+      maps entvars to entities
+      Essential use: body of a structure (static representation)
+    modtree, stubinfo [types modtree, stubinfo]
+    
+  epcontext (entity path context, structure EntPathContext; ElabData/modules/epcontext.sml)
+
+    An epcontext is a linked list of "layers" (dcon LAYER) with outermost layer last
+    Each layer has
+      (1) a "locals", ref to environment (pathmap) that maps moduleIDs to reverse entityPaths
+      (2) an entity path called the lookContext 
+      (3) a reverse entity path called the bind Context 
+    How does it work? How are the parts of a LAYER used? What is the "extent" of a layer?
+    
+
+  moduleId (module IDs)
+
+    There are generalizations of a stamp that are used to identify static structures
+    (tycId for tycons, sigId for signatures, strId for structures, fctId for functors, and
+    also envId for (portions of) static environments.These are used to cross-reference
+    static stuff accross separate compilations (static linking, static "patching") using
+    two kinds of collections of maps over moduleIds: tmap and umap.
+
+    There are lookup and insert (bind) functions for each kind of of module ID
+
+  pickling
+
+    Serialization of static environments and their components is used to generate
+    persistant stamps that are used to implement cutoff recompilation.  The static
+    environments in question are those generated by compiling a compilation unit
+    (typically an SML source file containing module-level declarations.
+
+  modtrees, stubinfo, and moduleIds are assumed relevant only to "stubification", i.e.
+  linking static representations across compilation units. I hope this is orthogonal to
+  the main line of module elaboration.
+
+  There are fields (e.g. prim in strrec) related to managing primops in structures.
+  These (presumably) relate to special cases that arrise during bootstrapping.
+
+  There is also the question of whether elaboration has been modified (by FLINT) to
+  precompute information that is needed in FLINT representation and optimizations. The
+  most obvious instance of this is the tycpath type and FLEXtyc generative type constructors,
+  and the related TKind structure.
+
+* module Ids (ModuleId: MODULE_ID, Elaborator/modules/moduleid.sml)
+
+* epcontext [structure EntPathContext :> ENT_PATH_CONTEXT, Elaborator/modules/epcontext.sml]
+
+* Stamps vs entVars: need to distinguish between when to use stamps and when to use entVars,
+  which are equivalent to stamps. Related question: should entVar be abstract?
+
+** Curried functors (to be removed for simplification)
+
+* Ast: BaseFct can represent a curried functor in the case where the parameter list has
+  lengh > 1.  We can simplify by simply supposing/requiring (without changing Ast) that
+  the BaseFct parameter list is always of length 1 (the non-curried functor case).  So Ast
+  remains unchanged for the time being, but later we could simplify by making the functor
+  parameter be a parameter instead of a list of parameters.  where a parameter is a
+  parameter name and a signature.s
+
+
+** LambdaVar revised
+  ElabData/basics/lambdavar.s??
+  Lambda vars represented by a record
+
+    {name: string option, prefix: name option, index: word}
+
+  where the name field is SOME if the lambda var is created with a name, otherwise, if
+  prefix is SOME p, then p is prefixed to the string for the index to create the print
+  string (where at most one of name and prefix should be SOME).  The index word is used to
+  identify the variable (equality, comparison) and is used for hashing.
+
+  The LambdaVar structure has Set, Map, and Tbl substructures for sets, finite maps, and
+  hash tables of lambda variables. The SortedList structure was redundant given the Set
+  structure, so the SortedList structure is eliminated. This affects a bunch of files in
+  FLINT and CPS, where SortedList was used for lambdavar sets (and also "type variable"
+  sets in FLINT).  So there are a bunch of type errors introduced in CPS/ bacause of
+  confusion between lvar sets and lvar (sorted?) lists.
+
+  At the request of JHR, returned dupLvar, toID, and fromID to LambdaVar and its signature.
+
+  The following obsolete/redundant functions have been dropped from the LAMBDA_VAR interface:
+     sameName -- replaced by a dummy function that does nothing
+     namedLvar -- replaced by LambdaVar.mkLvar
+     lvarSym -- removed, not needed
+     lvarName -- replaced by LambdaVar.toString
+
+** TyconVar: TYCON_VAR structure added.
+
+  In FLINT/kernel/lty.sml, there are two flavors of "type" variables, that represent
+  tycons and functor generalizations of tycons. One flavor are the "named" tycon
+  variables, "tvar" which were defined in terms of lambda variables (LambdaVar.lvar).
+  I've added a TyconVar structure, similar to LambdaVar, to represent such variables
+  (TyconVar.tycvar), and their sets (and possibly maps and hash tables).
+
+  We want to get rid of the other flavor "enc_tvar" based on DeBriun indices, and use the
+  "named" form (tvar) only throughout elaboration. Note that in FLINT, one of the first
+  processing phases (deb2names phase in main/flint-opt.sml) replaces the enc_tvars
+  with tvars using the "debIndex2names" function in the TvarCvt (FLINT/flint/tvarcvt.sml)
+  structure.
+
+
+** Module Elaboration
+
+* elabmod-fix.sml:
+  
+
+------------------------------------------------------------------------------------------
+We can achieve a slight simplification if we require functors to always have a named
+parameter. Then we wouldn't support the syntactic sugar for an "opened" parameter signature.
+This would also eliminate the need for the ParamId special symbol that is used where a functor
+parameter is not named.
+------------------------------------------------------------------------------------------
+
+==========================================================================================
+The new scheme!!!  ("back to the drawing board")
+
+* svars: static variables representing the identity of tycons and things that carry tycons,
+  like structures (and also functors, which only involve "potential" tycons)
+
+* kinds for svars
+  relationship to Types.tycpath and the TKind structure
+
+* relationship between svars and stamps (and pids)
+
+* relationship between svars and entity vars (entvars)?
+
+* parameter tycon identities: symbolic paths relative to a structure (functor parameter) svar
+   parameter tycons do not have an identity independent of their containing parameter
+   structure. Possibility of "secondary" svars for components.
+
+* svars for functors?
+
+* treatment of "anonymous" functor parameter structures
+  parameter name derived from functor name? (e.g. "F" -> "F_P", or "F.P", or ...)
+
+* instantiation and sharing - major change, and hopefully major simplification
+
+* efficiency of tycon identity for type checking [engineering]
+
+* translation of new module model to (simplified) FLINT plambda
+  -- elimination of deBruin indexed "type variables" (enc_tvars) from module elaboration.
+
+* Development and exploration of the new scheme using a toy implementation
+  including h.o. functors, signature matching and instantiation, a bit of core type checking
+
+* the static skeleton of a module (entities?)  
+
+PRINCIPLE: functors are not macros
+PRINCIPLE: Landin's "Principle of correspondence"
+  If you can declare a name, you can (lambda-) abstract with respect to such a name.
+   ==> functors can have functors as parameters
+
+Some Slogans or catch-phrases
+  From experience maintaining ancient code.
+
+* dealing with code that was developed for research purposes rather than for use
+    and maintenance
+* loss of intellectual ownership (through ephemeral authors, or just time passing)
+* "thinking gets captured or limited by legacy code"
+  * "design through debuggiing does not work well"
+  * "local or partial code clean-ups are dangerous"
+  * "the danger of (local or small-scale) backward-compatibility"
+
+
+==========================================================================================
+
+
+==========================================================================================
+NOTES
+==========================================================================================
+
+[engineering, type checking]
+  Type function application minimizing allocation of new structure:
+  (\t.ty ty'): assuming that in many cases much of the structure of ty is not dominating
+  occurences of type variable t, we don't want to reconstruct copies of this structure.
+  E.g. \t. (ty1 * ty2) where ty1 is a big type expression in which t does not occur --> we don't copy ty1
+  The substitution function (t, ty1, ty2) could be defined in terms of an auxiliary function
+  subst0 : ty -> ty s where datatype s = New of ty | Old of ty, where New flags that its argument
+  had to be copied because of an occurrence of t. Only constructions one of whose subtypes was New
+  need produce a New result.  If all subtypes produced OLD, just return the original ty unchained,
+  wrapped in Old (Old ty)
+
+  This might be a better alternative to the approach used in ordinary front-end type substitution
+  where an exception is raised to indicate that the old structure does not need to be copied. It
+  replaces setting up exception handlers with temporarily wrapping intermediate results with Old or
+  New.
+
+  Can generalize to case where several type variables are being substituted in parallel (e.g. when
+  applying n-ary type functions, or instantiating n-ary polymorophic types.
+
+  Might combine this with "lazy" application or instantiation, where the instantiation is a substitution
+  vector kept on the side. This might be a much simpler variation on Nadathur closures, possibly similar
+  to lambda calculus with "explicit substitutions".
+
+
+[DBM, 2025.02.22]
+ Something to ask Karl about: If we allow modules within expressions, it seems that a module
+ declaration could apprear in the scope of a polymorphic type varialbe binding, in which case
+ that polymorphic type variable could appear free in the module:
+
+    fun f ['a] (x: 'a) =
+	let structure A = struct type t = 'a list val x: t = nil end
+	 in A.x
+	end
+
+    val y = f 1   (so y : int list)
+
+  Is this ok? In this case the instantiation of 'a is determined by type checking in a context
+  where f is called.
+
+  Thus types in such an expression-embedded structure may be determined by polymorphic type
+  inference.
+------------------------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------------------------
+Changed files:
+
+ElabData/
+
+  main/
+
+    edcontrol.s??: the saveLvarNames flag is removed
+
+  basics
+
+    lambdavar.s.. --> old-lambdavar.s..
+
+    new lambdavar.s.. replacing the old versions
+
+    new tyconvar.s.. (for abstract generalized tycon variables)
+
+TopLevel
+
+  main/
+
+    control.s??: The saveit flag (defined in terms of ElabControl.saveLvarNames) is removed.
+$ pwd
+/Users/dbm/sml/Dev/github/NewFrontEnd/work
+$ pwd
+/Users/dbm/sml/Dev/github/NewFrontEnd/work
+$ ls
+bug319.txt		new-variables.txt	work.txt
+journal.txt		type-funs.txt
+$ pwd
+/Users/dbm/sml/Dev/github/NewFrontEnd/work
+$ opwd
+bash: opwd: command not found
+$ pwd
+/Users/dbm/sml/Dev/github/NewFrontEnd/work
+$ pwd
+/Users/dbm/sml/Dev/github/NewFrontEnd/work
+$ cd ../..
+$ pwd
+/Users/dbm/sml/Dev/github
+$ cd legacy
+$ pwd
+/Users/dbm/sml/Dev/github/legacy
+$ git status
+On branch dbm2
+Your branch is up to date with 'origin/dbm2'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	deleted:    base/compiler/Elaborator/elaborate/.#elabcore.sml
+	deleted:    base/compiler/Elaborator/elaborate/bar
+	modified:   base/compiler/Elaborator/elaborate/elabcore.sml
+	modified:   base/compiler/Elaborator/elaborate/elabutil.sml
+	deleted:    base/compiler/Elaborator/elaborate/foo
+	modified:   base/compiler/Elaborator/elaborate/precedence.sml
+	modified:   base/compiler/Parse/ast/ast.sml
+
+no changes added to commit (use "git add" and/or "git commit -a")
+$ pwd
+/Users/dbm/sml/Dev/github/legacy
+$ cd base/compiler/Elaborator/
+$ cd elaborate
+$ ls -a
+./			elabmod-fix.sml		elabtype.sml
+../			elabmod-fixes.txt	elabutil.sig
+.cm/			elabmod.sml		elabutil.sml
+check-unused.sml	elabsig.sml		include.sml
+elabcore.sml		elabtop.sml		precedence.sml
+elabdebug.sml		elabtype.sig		tyvarset.sml
+$ pwd
+/Users/dbm/sml/Dev/github/legacy/base/compiler/Elaborator/elaborate
+$ ls -a
+./			elabmod-fix.sml		elabtype.sml
+../			elabmod-fixes.txt	elabutil.sig
+.cm/			elabmod.sml		elabutil.sml
+check-unused.sml	elabsig.sml		include.sml
+elabcore.sml		elabtop.sml		precedence.sml
+elabdebug.sml		elabtype.sig		tyvarset.sml
+$ git status
+On branch dbm2
+Your branch is up to date with 'origin/dbm2'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	deleted:    .#elabcore.sml
+
+no changes added to commit (use "git add" and/or "git commit -a")
+$ ls -a
+./			elabmod-fix.sml		elabtype.sml
+../			elabmod-fixes.txt	elabutil.sig
+.cm/			elabmod.sml		elabutil.sml
+check-unused.sml	elabsig.sml		include.sml
+elabcore.sml		elabtop.sml		precedence.sml
+elabdebug.sml		elabtype.sig		tyvarset.sml
+$ git rm .#elabcore.sml
+rm 'base/compiler/Elaborator/elaborate/.#elabcore.sml'
+$ git push
+Username for 'https://github.com': elabcore.sml		elabtop.sml		precedence.sml
+elabdebug.sml		elabtype.sig		tyvarset.sml
+$   ^C ^C
+$ pwd
+/Users/dbm/sml/Dev/github/legacy/base/compiler/Elaborator/elaborate
+$ git status
+On branch dbm2
+Your branch is up to date with 'origin/dbm2'.
+
+nothing to commit, working tree clean
+$ ls
+check-unused.sml	elabmod.sml		elabutil.sig
+elabcore.sml		elabsig.sml		elabutil.sml
+elabdebug.sml		elabtop.sml		include.sml
+elabmod-fix.sml		elabtype.sig		precedence.sml
+elabmod-fixes.txt	elabtype.sml		tyvarset.sml
+$ pwd
+/Users/dbm/sml/Dev/github/legacy/base/compiler/Elaborator/elaborate
+$ git status
+On branch dbm2
+Your branch is up to date with 'origin/dbm2'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   precedence.sml
+	modified:   ../../Parse/ast/ast.sml
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.#precedence.sml
+
+no changes added to commit (use "git add" and/or "git commit -a")
+$ 

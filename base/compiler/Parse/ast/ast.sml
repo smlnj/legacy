@@ -181,7 +181,7 @@ struct
 	    | FunDec of (fb list * tyvar list)		(* recurs functions *)
 	    | TypeDec of tb list			(* type dec *)
 	    | DatatypeDec of {datatycs: db list, withtycs: tb list} (* datatype dec *)
-	    | DataReplDec of S.symbol * path              (* dt replication *)
+	    | DataReplDec of S.symbol * path            (* dt replication *)
 	    | AbstypeDec of {abstycs: db list, withtycs: tb list, body: dec} (* abstract type *)
 	    | ExceptionDec of eb list			(* exception *)
 	    | StrDec of strb list			(* structure *)

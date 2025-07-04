@@ -139,8 +139,10 @@ fun 'a precedenceParse
     (* PATTERN reparsing **********************************************************)
 
     (* span: SL.region * SL.region -> SL.region *)
-    (* this function should be moved to SourceLoc *)
-    fun span (SL.REGION(l1,r1), SL.REGION(l2,r2)) = 
+    (* Returns a minimal length region the contains the two argument regions.
+       This function should be moved to SourceLoc.
+     *)
+    fun span (SL.REGION (l1,r1), SL.REGION (l2,r2)) = 
 	  SL.REGION(Int.min(l1,l2),Int.max(r1,r2))
       | span _ => SL.NULLregion
 
@@ -197,7 +199,7 @@ fun 'a precedenceParse
 				       expPat = recurse expPat}
 		    | ST.FlatAppPat patFixitems =>
 	                parseFlatAppPat (patFixitems, env, region)
-		    | _ => pat)
+		    | _ => Pat)
 	 in recurse pat
 	end
 
@@ -214,7 +216,7 @@ fun 'a precedenceParse
      * Returned pat is always a TuplePat (marked if both args were marked).
      * Actually a pattern pairing function, taking 2 pats and producing a 2 element TuplePat. *)
     fun pair_exp (ST.MarkExp (e1, region1), ST.MarkExp(e2, region2)) =
-	  ST.MarkExp (ST.TuplePat [e1, e2], span (region1, region2))
+	  ST.MarkExp (ST.TupleExp [e1, e2], span (region1, region2))
       | pair_exp (a,b) = ST.TupleExp [a,b]
 
     (* parseFlatAppExp : ST.exp ST.fixitem list * SE.staticEnv * SL.region -> ST.exp *)
@@ -226,46 +228,89 @@ fun 'a precedenceParse
      * Recursively reparse a pattern, eliminating all FlatAppPat subpatterns.
      *) 
    fun reparseExp (exp: ST.exp, env: SE.staticEnv, region: SL.region) : ST.exp =
-	raise Fail "reparseExp unimplemented"
+       let fun recurse exp = 
+	       (case exp
+		  of ST.VarExp => exp		(* variable *)
+		   | ST.FnExp rules =>		(* abstraction *)
+		       ST.FnExp (map (reparseRule (env, region)), rule)
+		   | ST.AppExp {function, argument} =>  (* simple application *)
+		       ST.AppExp {function = recurse function, argument = recurse argument}
+		   | ST.MarkExp (exp, region') =>     (* mark an expression *)
+		       ST.MarkExp (reparseEsp (exp, env, region'), region')
+		   | ST.CaseExp {expr:exp, rules:rule list} => (* case expression *)
+		       ST.CaseExp (exp = recurse exp, rules = map (reparseRule (exp, region)) rules}
+		   | ST.LetExp {dec: dec, expr: exp} => (* let expression *)
+		       ST.LetExp {dec = reparseDec (dec, env, region), expr = recurse expr}
+		   | ST.SeqExp exps => (* sequence expression *)
+		       ST.SeqExp (map recurse exps)
+		   | ST.RecordExp (fields: (S.symbol * exp) list) => 
+		       ST.RecordExp (map (fn (label, exp) => (label, recurse exp)) fields)
+		   | ST.ListExp exps => (* list expression (of form [e1, ...]) *)
+		       ST.ListExp (map recurse exps)
+		   | ST.TupleExp exps => (* tuple expression *)
+		       ST.TupleExp (map recurse exps)
+		   | ST.VectorExp exps => (* vector expression *)
+		       ST.VectorExp (map recurse exps)
+		   | ST.ConstraintExp {expr:exp,constraint:ty} =>  (* type constraint *)
+		       ST.ConstraintExp {expr = recurse expr, constraint = constraint}
+		   | ST.HandleExp {expr:exp, rules:rule list} => (* exception handler *)
+		       ST.HandleExp {expr = recurse expr,
+				     rules = (map (reparseRule (env, region)) rules)}
+		   | ST.RaiseExp exp =>  (* raise an exception *)
+		       ST.RaiseExp (recurse exp)
+		   | ST.IfExp {test: ST.exp, thenCase: ST.exp, elseCase: ST.exp} =>
+		       ST.IfExp {test = recurse test,
+				 thenCase = recurse thenCase,
+				 elseCase = recurse elseCase}
+		   | ST.AndalsoExp (exp1, exp2) =>
+		       ST.AndalsoExp (recurse exp1, recurse exp2)
+		   | ST.OrelseExp (exp1, exp2) =>
+		       ST.OrelseExp (recurse exp1, recurse exp2)
+		   | ST.WhileExp {test: ST.exp, expr: ST.exp} =>
+		       ST.WhileExp {test = recurse test, expr = recurse expr}
+		   | ST.FlatAppExp expFixitems =>	(* expressions before fixity parsing *)
+		       parseFlatAppExp (expFixitems, env, region)
+		   | _ => exp)
+        in recurse exp
+       end (* fun reparseExp *)
 
-(*
-    datatype exp
-      = VarExp of path			(* variable *)
-      | FnExp of rule list		(* abstraction *)
-      | FlatAppExp of exp fixitem list	(* expressions before fixity parsing *)
-      | AppExp of {function:exp,argument:exp}
-				    	(* application *)
-      | CaseExp of{expr:exp,rules:rule list}
-				    	(* case expression *)
-      | LetExp of {dec:dec,expr:exp}	(* let expression *)
-      | SeqExp of exp list		(* sequence of expressions *)
+(*  Cases covered by _ => exp default rule; having no exp subterm *)
       | IntExp of literal		(* integer *)
       | WordExp of literal		(* word literal *)
       | RealExp of real_lit		(* floating point coded by its string *)
       | StringExp of string		(* string *)
       | CharExp of string		(* char *)
-      | RecordExp of (S.symbol * exp) list (* record *)
-      | ListExp of exp list	        (*  [list,in,square,brackets] *)
-      | TupleExp of exp list		(* tuple (derived form) *)
       | SelectorExp of S.symbol		(* selector of a record field *)
-      | ConstraintExp of {expr:exp,constraint:ty}
-					(* type constraint *)
-      | HandleExp of {expr:exp, rules:rule list}
-				 	(* exception handler *)
-      | RaiseExp of exp			(* raise an exception *)
-      | IfExp of {test:exp, thenCase:exp, elseCase:exp}
-					(* if expression (derived form) *)
-      | AndalsoExp of exp * exp		(* andalso (derived form) *)
-      | OrelseExp of exp * exp		(* orelse (derived form) *)
-      | WhileExp of {test:exp,expr:exp}
-					(* while (derived form) *)
-      | MarkExp of exp * SL.region		(* mark an expression *)
-      | VectorExp of exp list   	(* vector *)
-
-    (* RULE for case functions and exception handler *)
-    and rule = Rule of {pat:pat,exp:exp}
-
 *)
+
+(* reparseRule : SE.statenv * SL.region -> ST.rule -> ST.rule *)
+and reparseRule : (env, region) (ST.Rule {pat, exp}) = 
+    ST.Rule {pat = reparsePat (pat, env, region),
+             exp = reparseExp (exp, env, region)}
+
+(* reparseDec : ST.dec * SE.statenv * SL.region -> ST.dec *)
+and reparseDec (dec, env, region) =
+
+    (* DECLARATIONS (let and structure) *)
+    and dec = ValDec of (vb list * tyvar list)		(* values *)
+	    | ValrecDec of (rvb list * tyvar list)	(* recursive values *)
+	    | DoDec of exp				(* 'do' exp *)
+	    | FunDec of (fb list * tyvar list)		(* recurs functions *)
+	    | TypeDec of tb list			(* type dec *)
+	    | DatatypeDec of {datatycs: db list, withtycs: tb list} (* datatype dec *)
+	    | DataReplDec of S.symbol * path              (* dt replication *)
+	    | AbstypeDec of {abstycs: db list, withtycs: tb list, body: dec} (* abstract type *)
+	    | ExceptionDec of eb list			(* exception *)
+	    | StrDec of strb list			(* structure *)
+	    | FctDec of fctb list			(* functor *)
+	    | SigDec of sigb list			(* signature *)
+	    | FsigDec of fsigb list			(* funsig *)
+	    | LocalDec of dec * dec			(* local dec *)
+	    | SeqDec of dec list			(* sequence of dec *)
+	    | OpenDec of path list			(* open structures *)
+	    | OvldDec of S.symbol * exp list            (* overloading (internal; restricted) *)
+	    | FixDec of {fixity: F.fixity, ops: S.symbol list}  (* fixity *)
+	    | MarkDec of dec * SL.region		        (* mark a dec *)
 
 end (* local - imports *)
 end (* structure Precedence *)
