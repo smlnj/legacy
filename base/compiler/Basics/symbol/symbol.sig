@@ -1,29 +1,42 @@
 (* Copyright 1989 by AT&T Bell Laboratories *)
-signature SYMBOL = sig
+(* Copyright 2025 by The Fellowship of SML/NJ *)
+
+signature SYMBOL =
+sig
+
     type symbol
-    datatype namespace =
-       VALspace | TYCspace | SIGspace | STRspace | FCTspace | FIXspace |
-       LABspace | TYVspace | FSIGspace
-    val eq: symbol * symbol -> bool
-    and symbolGt : symbol * symbol -> bool
-    and symbolCMLt : symbol * symbol -> bool
-    and varSymbol: string -> symbol
-    and tycSymbol: string -> symbol
-    and sigSymbol: string -> symbol
-    and strSymbol: string -> symbol
-    and fctSymbol: string -> symbol
-    and fsigSymbol: string -> symbol
-    and fixSymbol: string -> symbol
-    and labSymbol: string -> symbol
-    and tyvSymbol: string -> symbol
-    and var'n'fix : string -> symbol * symbol
-    and name: symbol -> string
-    and number: symbol -> word
+
+    datatype namespace
+      = VALspace | TYCspace | SIGspace | STRspace | FCTspace | FIXspace
+      | LABspace | TYVspace | FSIGspace
+
+    val compare: symbol * symbol -> order
+
+(* redundant:u
+    val symbolGt : symbol * symbol -> bool
+    val symbolCMLt : symbol * symbol -> bool
+*)
+    val mkSymbol : string * namespace
+
+    val valSymbol: string -> symbol
+    val tycSymbol: string -> symbol
+    val sigSymbol: string -> symbol
+    val strSymbol: string -> symbol
+    val fctSymbol: string -> symbol
+    val fsigSymbol: string -> symbol
+    val fixSymbol: string -> symbol
+    val labSymbol: string -> symbol
+    val tyvSymbol: string -> symbol
+
+    val name: symbol -> string
+    val hash: symbol -> word
     val nameSpace : symbol -> namespace
     val nameSpaceToString : namespace -> string
     val describe : symbol -> string
     val symbolToString : symbol -> string
     val compare : symbol * symbol -> order
+
 (* Probably should merge STRspace and FCTspace into one namespace.
    Similarly for SIGspace and FSIGspace. *)
-end
+
+end (* signature SYMBOL *)

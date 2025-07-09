@@ -52,7 +52,7 @@ is (* "members" -- source files *)
 	elaborate/elabutil.sig
 	elaborate/elabutil.sml
 	elaborate/elabdebug.sml
-	elaborate/precedence.sml
+	elaborate/reparse.sml  (* was precedence.com; internal *)
 	elaborate/elabtype.sig
 	elaborate/elabtype.sml
 	elaborate/elabcore.sml

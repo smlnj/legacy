@@ -1,21 +1,28 @@
-(* Elaborator/elaborate/precedence.sml *)
+(* Elaborator/elaborate/reparse.sml *)
 (* Copyright 1996 by AT&T Bell Laboratories *)
 (* Copyright 2025 by The Fellowship of SML/NJ (www.smlnj.org) *)
-(* [DBM, 2025.03.25] Rewritten to clarify and simplify the precedence parsing algorithm. *)
 
-signature PRECEDENCE =
+(* [DBM, 2025.03.25] Rewritten to clarify and simplify the precedence parsing algorithm. 
+ * [DBM, 2025.07.05] The parse function has been replaced by two specialized versions:
+ *   reparsePat for Ast patterns and reparseExp for Ast expressiohns.
+ *)
+
+signature REPARSE =
 sig
-(*
-  val parse: {apply: 'a * 'a -> 'a, pair: 'a * 'a -> 'a} -> 
-                'a Ast.fixitem list * StaticEnv.staticEnv * SourceLoc.region -> 'a
-*)
-  val reparsePat : Ast.pat * SE.staticEnv * SL.region -> Ast.pat
-  val reparseExp : Ast.exp * SE.staticEnv * SL.region -> Ast.exp
 
-end (* signature PRECEDENCE *)
+  val reparsePat : Ast.pat * StaticEnv.staticEnv * SourceLoc.region -> Ast.pat   (* complete reparse *)
+  val reparseFlatAppPat : Ast.pat Ast.fixitem list * StaticEnv.staticEnv * SourceLocL.region -> Ast.pat
+  val reparseFlatAppExp : Ast.exp Ast.fixitem list * StaticEnv.staticEnv * SourceLocL.region -> Ast.exp
+
+end (* signature Reparse *)
 
 
-structure Precedence : PRECEDENCE = 
+(* Reparse: REPARSE is an auxiliary module used only in ElabCore.  Its functionality
+ * is used to "reparse" Ast.fitItems (partially parsed applications) using infix bindings
+ * provided by a static environment.
+ *)
+
+structure Reparse: REPARSE = 
 struct    
 
 local (* imports *)
@@ -26,20 +33,21 @@ local (* imports *)
 
   structure S = Symbol
   structure F = Fixity
+  structure SE = StaticEnv		    
 
-  structure ST = Ast
+  structure ST = Ast  (* ST for "Syntax Tree" *)
 
 in 
 
-(* throughout, 'a instantiates uniformly to either ST.exp or ST.pat *)
+(* throughout the precedence parser code, 'a instantiates to either ST.exp or ST.pat *)
 
-type 'a token = 'a * F.fixity * S.symbol option
+type 'a token = 'a * F.fixity * S.symbol option  (* LOCAL *)
   (* a variant of 'a ST.fixItem, making the F.fixity part explicit, the symbol option is
    * only used in error messages.
    * Note that the symbol, if present, is in the fixity name space, but this 
    * does not matter for printing its name. *)
 
-(* 'a frame:  elements of the precedence parsing stack ('a = ST.pat, ST.exp) *)
+(* 'a frame:  elements of the precedence parsing stack ('a = ST.pat, ST.exp) *) (* LOCAL *)
 datatype 'a frame  
   = INFIX of Symbol.symbol * int * 'a  (* int is an infix operator right binding power *)
   | NONFIX of 'a
@@ -47,16 +55,17 @@ datatype 'a frame
 (* the precedence parsing stack ('a = ST.pat, ST.exp) *)
 type 'a stack = 'a frame list
 
-(* parse: ['a] {apply: 'a * 'a -> 'a, pair: 'a * 'a -> 'a}
-            -> 'a ST.fixitem list * StaticEnv.staticEnv * SourceMap.region
-            -> 'a
+(* precedenceParse: ['a]
+            {apply: 'a * 'a -> 'a, pair: 'a * 'a -> 'a}
+         -> 'a ST.fixitem list * StaticEnv.staticEnv * SourceMap.region
+         -> 'a
  * complete parsing of Ast exp or pattern (represented as partially parsed exp/pat ST.fixitem list)
  * using precedence parsing
  * - this is not using the regions found in the fixitems. Do they have any other uses? *)
 fun 'a precedenceParse
        {apply: 'a * 'a -> 'a, pair: 'a * 'a -> 'a}
        (items: 'a ST.fixitem list, env: StaticEnv.staticEnv, region: SL.region) : 'a =
-    let fun err (msg: string) = EM.errorRegion (region, "Precedence.parse: " ^ msg)
+    let fun err (msg: string) = EM.errorRegion (region, "Reparse.precedenceParse: " ^ msg)
 
         (* parseToken : 'a token * 'a stack -> 'a stack *)
 	(* 1 step of parsing an expression - driven by loop function below *)
@@ -132,15 +141,17 @@ fun 'a precedenceParse
 
      in finish (foldl parseToken nil tokens)
 	(* Or should it be foldr?
-	 * I think foldl is right -- the fixitems should be processed in left to right order. *)
+	 * I think foldl is right -- the fixitems can/should be processed in left to right order.
+	 * There should be no scoping relations between items. *)
     end (* end fun precedenceParse *)
 
 
     (* PATTERN reparsing **********************************************************)
 
     (* span: SL.region * SL.region -> SL.region *)
-    (* Returns a minimal length region the contains the two argument regions.
-       This function should be moved to SourceLoc.
+    (* Returns a minimal length region that contains the two argument regions.
+       This region combinding function should be in SourceLoc. Hence it is called
+       as SL.span below.
      *)
     fun span (SL.REGION (l1,r1), SL.REGION (l2,r2)) = 
 	  SL.REGION(Int.min(l1,l2),Int.max(r1,r2))
@@ -169,13 +180,18 @@ fun 'a precedenceParse
     val parseFlatAppPat = Precedence.parse {apply = apply_pat, pair = pair_pat}
 
     (* reparsePat : ST.pat * SE.staticEnv * SL.region -> ST.pat
-     * Recursively reparse a pattern, eliminating all FlatAppPat subpatterns.
-     * recurse through the entire pat, eliminating any FlatAppPats.
-     * We need to pass an env to pass to parseFlatApp in case there have been additional infix
-     *   constructor symbols in FlatAppPat subpatterns that have to be parsed with parseFlatApp.
-     * This function, and parseFlatApp, should be moved to the Precedence structure. The same
-     * should be done for exp reparsing, I presume. Rename to "reparsePat".
+     * Recursively reparse a pattern, eliminating _all_ embedded FlatAppPat subpatterns,
+     * recursing through the entire pat, eliminating any and all FlatAppPats nodes.
+     * We need to pass an env to identify infix constructor symbols and their fixity properties.
+     * Since there is no "let" form in patterns, a pattern and all of its subpatterns are
+     * in the scope of the same static environment and hence the same infix bindings, so we
+     * can safely recurse down through the whole pattern structure without changing the env.
      *)
+     (* Do we really ever need to do a complete reparse, or is reparsing just the top node
+      -- when it is a FlatAppPat -- all we need to do.  This depends perhaps on how we 
+      do the initial "reparsing" pass on the lhs of a "fun" declaration (vb, rvb).
+     *)
+
     fun reparsePat (pat: ST.pat, env: SE.staticEnv, region: SL.region) : ST.pat =
 	let fun recurse pat = 
 		(case pat
@@ -198,7 +214,7 @@ fun 'a precedenceParse
 	                ST.LayeredPat {varPat = recurse varPat,
 				       expPat = recurse expPat}
 		    | ST.FlatAppPat patFixitems =>
-	                parseFlatAppPat (patFixitems, env, region)
+	                recurse (parseFlatAppPat (patFixitems, env, region))
 		    | _ => Pat)
 	 in recurse pat
 	end
@@ -206,10 +222,17 @@ fun 'a precedenceParse
 
     (* EXPRESSION reparsing **********************************************************)
 
+    (* Reparsing expressions is complicated by the fact that the declaration part of a
+       let binding may introduce new infix declarations, so the fixity part of the
+       reparsing environment may change, and the reparsing of the body will need to be
+       done using that new fixity environment. So we just provide the reparseFlatAppExp
+       function and let the recursion of elabExp deal with providing the proper env
+       context (e.g. adjusting the env for the body of let expressions).
+
     (* apply_exp : ST.exp * ST.exp -> ST.exp
      * Returned pat is always an AppPat (marked if both arguments were marked) *)
     fun apply_exp (ST.MarkExp (e1, region1), ST.MarkExp (e2, region2)) =
-	  ST.MarkExp (ST.AppExp {function = e1, argument = e2}, span (region1, region2))
+	  ST.MarkExp (ST.AppExp {function = e1, argument = e2}, SL.span (region1, region2))
       | apply_exp (e1, e2) = ST.AppExp {function = e1, argument = e2}
 
     (* pair_exp : ST.exp * ST.exp -> ST.exp
@@ -219,28 +242,36 @@ fun 'a precedenceParse
 	  ST.MarkExp (ST.TupleExp [e1, e2], span (region1, region2))
       | pair_exp (a,b) = ST.TupleExp [a,b]
 
-    (* parseFlatAppExp : ST.exp ST.fixitem list * SE.staticEnv * SL.region -> ST.exp *)
+    (* reparseFlatAppExp : ST.exp ST.fixitem list * SE.staticEnv * SL.region -> ST.exp *)<
     (* the result of parseFlatApp (and Precedence.parse) can still contain FlatApp subterms,
      * so patCompleteParse still needs to be applied *)
-    val parseFlatAppExp = precedenceParse {apply = apply_exp, pair = pair_exp}
+    val reparseFlatAppExp = precedenceParse {apply = apply_exp, pair = pair_exp}
+
+(* reparseExp, which partially recurses through the exp term structure, is not needed.
+   We can just use reparseFlatAppExp where the elabExp function encounters
+   a FlatAppExp and depend on the recursive definition of elabExp (in ElabCore) to
+   provide appropriate static environments (and hence infix bindings).
 
     (* reparseExp : ST.exp * SE.staticEnv * SL.region -> ST.exp
-     * Recursively reparse a pattern, eliminating all FlatAppPat subpatterns.
-     *) 
+     * Recursively reparse an expression down to any embedded let subexpressions.
+     * This is only applied to terms where the term and all of its subterms are
+     * subject to the same static environment (and hence the same infix bindings).
+     * Exp reparsing only applies to structure outside any embedded let expressions.
+     * Thus any unreparsed FlatAppExps in the result will be subexpressions of the bodies
+     * of let subexpressions of the main argument. *) 
    fun reparseExp (exp: ST.exp, env: SE.staticEnv, region: SL.region) : ST.exp =
        let fun recurse exp = 
 	       (case exp
-		  of ST.VarExp => exp		(* variable *)
+		  of ST.MarkExp (exp, region') =>     (* mark an expression *)
+		       ST.MarkExp (reparseExp (exp, env, region'), region')
+		   | ST.VarExp => exp		(* variable *)
 		   | ST.FnExp rules =>		(* abstraction *)
-		       ST.FnExp (map (reparseRule (env, region)), rule)
+		       ST.FnExp (map (reparseRule (env, region)), rules)
 		   | ST.AppExp {function, argument} =>  (* simple application *)
 		       ST.AppExp {function = recurse function, argument = recurse argument}
-		   | ST.MarkExp (exp, region') =>     (* mark an expression *)
-		       ST.MarkExp (reparseEsp (exp, env, region'), region')
 		   | ST.CaseExp {expr:exp, rules:rule list} => (* case expression *)
 		       ST.CaseExp (exp = recurse exp, rules = map (reparseRule (exp, region)) rules}
-		   | ST.LetExp {dec: dec, expr: exp} => (* let expression *)
-		       ST.LetExp {dec = reparseDec (dec, env, region), expr = recurse expr}
+
 		   | ST.SeqExp exps => (* sequence expression *)
 		       ST.SeqExp (map recurse exps)
 		   | ST.RecordExp (fields: (S.symbol * exp) list) => 
@@ -274,43 +305,13 @@ fun 'a precedenceParse
         in recurse exp
        end (* fun reparseExp *)
 
-(*  Cases covered by _ => exp default rule; having no exp subterm *)
-      | IntExp of literal		(* integer *)
-      | WordExp of literal		(* word literal *)
-      | RealExp of real_lit		(* floating point coded by its string *)
-      | StringExp of string		(* string *)
-      | CharExp of string		(* char *)
-      | SelectorExp of S.symbol		(* selector of a record field *)
-*)
-
-(* reparseRule : SE.statenv * SL.region -> ST.rule -> ST.rule *)
+(* reparseRule : SE.staticEnv * SL.region -> ST.rule -> ST.rule *)
+(* The rhs expressions are only reparsed down to any embedded let expressions. *)
 and reparseRule : (env, region) (ST.Rule {pat, exp}) = 
     ST.Rule {pat = reparsePat (pat, env, region),
-             exp = reparseExp (exp, env, region)}
-
-(* reparseDec : ST.dec * SE.statenv * SL.region -> ST.dec *)
-and reparseDec (dec, env, region) =
-
-    (* DECLARATIONS (let and structure) *)
-    and dec = ValDec of (vb list * tyvar list)		(* values *)
-	    | ValrecDec of (rvb list * tyvar list)	(* recursive values *)
-	    | DoDec of exp				(* 'do' exp *)
-	    | FunDec of (fb list * tyvar list)		(* recurs functions *)
-	    | TypeDec of tb list			(* type dec *)
-	    | DatatypeDec of {datatycs: db list, withtycs: tb list} (* datatype dec *)
-	    | DataReplDec of S.symbol * path              (* dt replication *)
-	    | AbstypeDec of {abstycs: db list, withtycs: tb list, body: dec} (* abstract type *)
-	    | ExceptionDec of eb list			(* exception *)
-	    | StrDec of strb list			(* structure *)
-	    | FctDec of fctb list			(* functor *)
-	    | SigDec of sigb list			(* signature *)
-	    | FsigDec of fsigb list			(* funsig *)
-	    | LocalDec of dec * dec			(* local dec *)
-	    | SeqDec of dec list			(* sequence of dec *)
-	    | OpenDec of path list			(* open structures *)
-	    | OvldDec of S.symbol * exp list            (* overloading (internal; restricted) *)
-	    | FixDec of {fixity: F.fixity, ops: S.symbol list}  (* fixity *)
-	    | MarkDec of dec * SL.region		        (* mark a dec *)
+             exp = reparseExp (exp, env, region)} (* we can use the same env here because
+	                                           * match bindings do not add infix bindings. *)
+*)
 
 end (* local - imports *)
-end (* structure Precedence *)
+end (* structure Reparse *)

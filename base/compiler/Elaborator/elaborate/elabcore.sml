@@ -320,66 +320,7 @@ let
 
     (* PATTERN parsing and elaboration **********************************************************)
 
-    (* apply_pat : Ast.pat * Ast.pat -> Ast.pat
-     * Returned pat is always an AppPat (marked if both arguments were marked) *)
-    fun apply_pat (c as MarkPat(_,SL.REGION(l1,r1)), p as MarkPat(_,SL.REGION(l2,r2))) =
-	  MarkPat (AppPat {constr=c, argument=p}, SL.REGION(Int.min(l1,l2),Int.max(r1,r2)))
-      | apply_pat (c, p) = AppPat {constr=c, argument=p}
-
-    (* tuple_pat : Ast.pat * Ast.pat -> Ast.pat
-     * Returned pat is always a TuplePat (marked if both args were marked).
-     * Actually a pattern pairing function, taking 2 pats and producing a 2 element TuplePat. *)
-    fun tuple_pat (a as Ast.MarkPat(_,SL.REGION(l,_)), b as Ast.MarkPat(_,SL.REGION(_,r))) =
-	  Ast.MarkPat (Ast.TuplePat[a,b],SL.REGION(l,r))
-      | tuple_pat (a,b) = Ast.TuplePat[a,b]
-
-    (* parseFlatApp : Ast.pat Ast.fixitem list * SE.staticEnv * SL.region -> Ast.pat *)
-    (* the result of parseFlatApp (and Precedence.parse) can still contain FlatApp subterms,
-     * so patCompleteParse still needs to be applied *)
-    val parseFlatApp = Precedence.parse {apply=apply_pat, pair=tuple_pat}
-
-    (* patCompleteParse : Ast.pat * SE.staticEnv * SL.region -> Ast.pat
-     * result pat contains no FlatAppPat subpatterns
-     * recurse through the entire pat, eliminating any FlatAppPats.
-     * We need to pass an env to pass to parseFlatApp in case there have been additional infix
-     *   constructor symbols in FlatAppPat subpatterns that have to be parsed with parseFlatApp.
-     * This function, and parseFlatApp, should be moved to the Precedence structure. The same
-     * should be done for exp reparsing, I presume. Rename to "reparsePat".
-     *)
-    fun patCompleteParse (pat: Ast.pat, env: SE.staticEnv, region: SL.region) =
-        (case pat
-	   of Ast.MarkPat (pat', region') => MarkPat (patCompleteParse (pat', region'), region')
-	        (* preserve the orignial Marked region *)
-	    | Ast.ListPat pats => Ast.ListPat (map patCompleteParse pats)
-	        let fun f p => patCompleteParse (p, region)
-		 in Ast.ListPat (map f pats)
-		end
-	    | Ast.TuplePat pats =>
-	        let fun f p => patCompleteParse (p, region)
-		 in Ast.TuplePat (map f pats)
-		end
-	    | Ast.VectorPat pats =>
-	        let fun f p => patCompleteParse (p, region)
-		 in Ast.VectorPat (map f pats)
-		end
-	    | Ast.OrPat pats =>
-	        let fun f p => patCompleteParse (p, region)
-		 in Ast.OrPat (map f pats)
-		end
-	    | Ast.RecordPat {def, flexibility} =>
-	        let fun f (s,p) => (s, patCompleteParse (p, region))
-		 in Ast.RecordPat {def = map f def, flexibility = flexibility}
-		end
-	    | Ast.AppPat {constr, argument} =>
-	        Ast.AppPat {constr = patCompleteParse (constr, region), patCompleteParse (argument, region)}
-	    | Ast.LayeredPat {varPat, expPat} =>
-	        Ast.LayeredPat {varPat = patCompleteParse (varPat, region),
-				expPat = patCompleteParse (expPat, region)}
-	    | Ast.FlatAppPat patFixitems =>
-	        parseFlatApp (patFixitems, env, region)
-	    | _ => pat
-
-    (* LAZY: utilities for lazy sml translation **************************************************)
+  (* LAZY: utilities for lazy sml translation **************************************************)
 
     (* will one forcingFun do, or should new ones be generated with
      * different bound variables for each use? (DBM) *)
@@ -388,11 +329,12 @@ let
     fun forceExp (exp: AS.exp) =
 	let val v = newVALvar (S.varSymbol "x")
 	 in AS.APPexp (AS.FNexp(completeMatch
-				  [AS.RULE (AS.APPpat (BT.dollarDcon, nil, AS.VARpat v), AS.VARexp (ref v, nil))],
+				  [AS.RULE (AS.APPpat (BT.dollarDcon, nil, AS.VARpat v),
+					    AS.VARexp (ref v, nil))],
 				T.UNDEFty),
 		       exp)
-	     (* DBM: second arg of APPpat and VARexp = nil and
-	      * of FNexp = T.UNDEFty ok? *)
+	     (* DBM: nil as 2nd arg of APPpat and VARexp and
+	      * T.UNDEFty as 2nd arg of FNexp ok? Seems to work? *)
 	end
 
     (* delayExp : AS.exp -> AS.exp *)
@@ -580,6 +522,7 @@ let
 			     (region,
 			      ("variable " ^ S.name x ^ " does not occur in all branches of or-pattern"))
 		       fun insFn (id: S.symbol, access, tyref) =
+
 			   (insert (id, (access, tyref, 1)); (access, tyref))
 		       fun bumpFn (id: S.symbol, access0: A.access, tyref0: T.ty ref) =
 			   (let val (access, tyref, n) = look id
@@ -678,7 +621,8 @@ let
 	    in (AS.MARKpat (pat', region), tyvarset)
 	   end
 
-       | Ast.FlatAppPat pats => elabPat (parseFlatApp (pats, env, region), env, region)
+       | Ast.FlatAppPat patfixitems =>
+	   elabPat (Reparse.reparseFlatAppPat (patfixitems, env, region), env, region)
 
     end (* fun elabPat *)
 
@@ -710,11 +654,15 @@ let
 		      pair = (fn (a,b) => TupleExp[a,b])}
 
     (* elabExp : Ast.exp * SE.staticEnv * SL.region -> Absyn.exp * TS.tyvarset * tyvarsetUpdater *)
+    (* The exp argument should never by a flatAppExp, because of prior reparsing. *)
     fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 		: (Absyn.exp * TS.tyvarset * tyvarsetUpdater) =
-        let val union = checkedUnion (region, "elabExp") in
+        let val union = checkedUnion (region, "elabExp")
+	 in
  	(case exp
-	  of Ast.VarExp path =>  (* path : S.symbol list *)
+	   of Ast.FlatAppExp expfixitems =>
+	        elabExp (Reparse.reparseFlatAppExp (expfixitems, env, region), env, region)
+	    | Ast.VarExp path =>  (* path : S.symbol list *)
 	       let val sympath =  SP.SPATH path
 		in ((case LU.lookVal (env, sympath)
 		      of SOME value =>
@@ -825,7 +773,9 @@ let
 	   | Ast.LetExp {dec,expr} =>
 	       let val (d1, e1, tyvarset1, updater1) =
 			  elabDec' (dec, env, IP.IPATH[], region)
-		   val (e2, tyvarset2, updater2) = elabExp (expr, SE.atop(e1,env), region)
+		   val envBody = SE.atop (e1, env)
+		   val (e2, tyvarset2, updater2) =
+		       elabExp (Reparse.reparseExp (expr, envBody, region), envBody, region)
 		   fun updater tv = (updater1 tv; updater2 tv)
 		in (LETexp (d1, e2), union (tyvarset1, tyvarset2), updater)
 	       end
@@ -865,7 +815,7 @@ let
 		    updater)
 	       end
 	   | Ast.FnExp rules =>
-	       let val (rls,tyv,updater) = elabMatch(rules,env,region)
+	       let val (rls, tyv, updater) = elabMatch (rules, env, region)
 		in (FNexp (completeMatch rls, T.UNDEFty), tyv, updater)
 	       end
 	   | Ast.MarkExp (exp,region) =>
@@ -880,19 +830,21 @@ let
 					 AS.MARKexp (VARexp (ref v,[]),region))], T.UNDEFty)
 		end,
 		TS.empty, nullUpdater)
-	   | Ast.FlatAppExp items => elabExp (expParse (items, env, region), env, region))
     end (* elabExp *)
 
-    (* elabELabel : (S.symbol * Ast.exp) list * SE.staticEnv * SL.region
-                    -> (S.symbol * AS.exp) list * TS.tyvarset * tyvarsetUpdater
-    * should be called "elabFields" *)
+    (* elabExpReparsed : AS.exp * SE.staticEnv * retion -> AS.exp *)
+    and elabExpReparsed (exp, env, region) =
+	elabExp (Reparse.reparseExp (exp, env, region), env, region)
+
+    (* elabExpFields : (S.symbol * Ast.exp) list * SE.staticEnv * SL.region
+                    -> (S.symbol * AS.exp) list * TS.tyvarset * tyvarsetUpdater *)
     and elabExpFields (ast_fields, env, region) =
 	  let fun folder ((lb2,e2),(les2,lvt2,updts2)) =
 		  let val (e3, lvt3, updt3) = elabExp (e2, env, region)
 		   in ((lb2,e3) :: les2, checkedUnion (region, "elabELabel") (lvt3,lvt2),
 		       updt3 :: updts2)
 		  end
-	      val (les1,tyvarset,updaters) = foldr folder ([], TS.empty, []) ast_fields
+	      val (les1, tyvarset, updaters) = foldr folder ([], TS.empty, []) ast_fields
 	      fun updater tv : unit = app (fn f => f tv) updaters
 	   in (les1, tyvarset, updater)
 	  end
@@ -998,10 +950,10 @@ let
 	   | Ast.FunDec (fbs, explicitTvs) =>
 	       elabFUNdec(fbs, explicitTvs, env, rpath, region)
 
-	   | Ast.ValrecDec(rvbs,explicitTvs) =>
-	       elabVALRECdec(rvbs,explicitTvs,env,rpath,region)
+	   | Ast.ValrecDec (rvbs, explicitTvs) =>
+	       elabVALRECdec (rvbs, explicitTvs, env, rpath, region)
 
-	   | Ast.SeqDec ds => elabSEQdec(ds,env,rpath,region)
+	   | Ast.SeqDec ds => elabSEQdec (ds, env, rpath, region)
 
 	   | Ast.LocalDec ld => elabLOCALdec(ld,env,rpath,region)
 
@@ -1091,7 +1043,7 @@ let
 	  let val union = checkedUnion (region, "elabVB")
               val diff = checkedDiff (region, "elabVB")
 	      val (pat, tyvarset_pat) = elabPat (pat, env, region)
-	      val (exp, tyvarset_exp, updater_exp) = elabExp (exp, env, region)
+	      val (exp, tyvarset_exp, updater_exp) = elabExpReparsed (exp, env, region)
 	      val exp = if lazyp  (* LAZY *)
 		        then delayExp (forceExp exp)
 			else exp
@@ -1178,7 +1130,7 @@ let
 	    of (FnExp _, region') =>
 	       (* DBM: where should region vs region' be used? Seems to depend on what
 		  stripExpAst does. *)
-	        let val (e, ev, updater) = elabExp (exp, env, region')
+	        let val (e, ev, updater) = elabExpReparsed (exp, env, region')
 		    val (t,tv) =
 			case resultty
 			  of SOME ty_result =>
@@ -1277,7 +1229,7 @@ let
 	    fun folder ((exp, lazyp), (fexps_acc, tyvarset_acc, updaters_acc)) =
 		let val (pat', tyvarset_pat) = elabPat (argpat, env, region)
 		    val env' = SE.atop (EU.bindVARp [pat'], env)
-		    val (exp', tyvarset_exp, updater) = elabExp (exp, env', region)
+		    val (exp', tyvarset_exp, updater) = elabExpReparsed (exp, env', region)
 		 in (FNexp (completeMatch [RULE (pat', if lazyp then exp' else delayExp exp')],
 			    T.UNDEFty) :: fexps_acc,
 		     union (union (tyvarset_pat, tyvarset_exp), tyvarset_acc),
@@ -1787,7 +1739,7 @@ let
 	    fun elabClause ({argpats, exp}: ast_clause, resTyOp, lazyKind, region: SL.region) =
 		let val (pats, tyvarset_pats) = elabPatList (argpats, env, region)
                     val nenv = SE.atop (EU.bindVARp pats, env_post_fbs)
-		    val (as_exp, tyvarset_exp, updater_exp) = elabExp (exp, nenv, region)
+		    val (as_exp, tyvarset_exp, updater_exp) = elabExp??? (exp, nenv, region)
 		    (* LAZY fb: wrap delay or force around elaborated rhs as appropriate. *)
 		    val exp' =
 			case lazyKind

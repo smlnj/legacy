@@ -21,11 +21,6 @@ sig
   (* "raw" symbolic path as symbol list <> SymPath.path *)
   type path
 
-  type 'a fixitem (* = {item: 'a, fixity: symbol option, region: SourceLoc.region} *)
-  (* polymorphic, but with only two instances: Ast.pat fixitem and Ast.exp fixitem.
-   * [Probably better to just have two types: patfixitem and expfixitem. ]
-   * fixity is SOME only in the case that the exp/pat item is a single variable ?? *)
-
   datatype 'a sigConst
     = NoSig
     | Transparent of 'a
@@ -217,5 +212,8 @@ sig
       | RecordTy of (Symbol.symbol * ty) list 	(* record *)
       | TupleTy of ty list		(* tuple *)
       | MarkTy of ty * SourceLoc.region (* mark type *)
+
+  val patToSymbols : pat -> (Symbol.symbol * Symbol.symbol) option
+  val expToSymbols : exp -> (Symbol.symbol * Symbol.symbol) option
 
 end (* signature AST *)

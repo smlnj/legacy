@@ -1085,4 +1085,355 @@ Untracked files:
 	.#precedence.sml
 
 no changes added to commit (use "git add" and/or "git commit -a")
+$ pw
+bash: pw: command not found
+$ pwd
+/Users/dbm/sml/Dev/github/legacy/base/compiler/Elaborator/elaborate
+$ cd ../../
+$ pwd
+/Users/dbm/sml/Dev/github/legacy/base/compiler
+$ grep infix */*/*.sml
+Basics/stats/stats.sml:    infix 6 ++ val op ++ = Time.+
+Basics/stats/stats.sml:    infix 6 -- val op -- = Time.-
+Basics/stats/stats.sml:    infix 6 +++
+Basics/stats/stats.sml:    infix 6 ---
+Basics/symbol/fixity.sml:  val infixleft : int -> fixity
+Basics/symbol/fixity.sml:  val infixright : int -> fixity
+Basics/symbol/fixity.sml:  fun infixleft n = INfix (n+n, n+n+1)
+Basics/symbol/fixity.sml:  fun infixright n = INfix (n+n+1, n+n)
+Basics/symbol/fixity.sml:         (if i mod 2 = 0 then "infix " else "infixr ")^
+CodeGen/alpha32/alpha32CpsRegs.sml:    infix upto
+CodeGen/alpha32/alpha32CpsRegs.sml:      infix --
+CodeGen/cpscompile/cps-c-calls.sml:   infix 6 \/
+CodeGen/cpscompile/cps-c-calls.sml:   infix 7 /\
+CodeGen/cpscompile/cps-c-calls.sml:   infix 5 --
+CodeGen/cpscompile/spill-new.sml:  infix 6 \/
+CodeGen/cpscompile/spill-new.sml:  infix 7 /\
+CodeGen/cpscompile/spill-new.sml:  infix 5 --
+CodeGen/cpscompile/spill-old.sml:infix 6 \/   infix 7 /\
+CodeGen/hppa/hppaCpsRegs.sml:      infix --
+CodeGen/ppc/ppcCpsRegs.sml:    infix upto
+CodeGen/ppc/ppcCpsRegs.sml:      infix --
+CodeGen/sparc/sparcCpsRegs.sml:	  infix --
+CodeGen/x86/x86CpsRegs.sml:    infix upto
+DebugProf/profile/sprof.sml:infix -->
+DebugProf/profile/tdp-instrument.sml:    infix -->
+DebugProf/profile/tprof.sml:      infix -->
+DebugProf/types/reconstruct.sml:    infix -->
+ElabData/basics/env.sml:infix atop
+ElabData/pickle/pickle-sym-pid.sml:          infix $
+ElabData/pickle/pickle-sym-pid.sml:          infix $
+ElabData/pickle/pickmod.sml:    infix 3 $
+ElabData/pickle/pickmod.sml:	    infix >>
+ElabData/prim/primop-bindings.sml:    infix :-:
+ElabData/syntax/absynutil.sml: * argument of an infix constructor in an APPexp (see PPAbsyn.ppAppExp) *)
+ElabData/syntax/absynutil.sml: * argument of an infix constructor in an APPpat (see PPAbsyn.ppDconPat) *)
+ElabData/syntax/ppabsyn.sml:	      let val infix0 = INfix(0,0)
+ElabData/syntax/ppabsyn.sml:		       pps "infix "
+ElabData/syntax/ppabsyn.sml:		     else pps "infixr ";
+ElabData/types/basictypes.sml:    infix -->
+ElabData/types/typesutil.sml:    infix 9 sub
+ElabData/types/typesutil.sml:    infix -->
+Elaborator/elaborate/elabcore.sml:     * We need to pass an env to pass to parseFlatApp in case there have been additional infix
+Elaborator/elaborate/elabcore.sml:				   ("elabRVB: infix symbol \""^ S.name f ^
+Elaborator/elaborate/elabcore.sml:                      * variable patterns, an error occurs if the variable is an infix *)
+Elaborator/elaborate/elabcore.sml:							    String.concat ["infix operator \"",  S.name sym,
+Elaborator/elaborate/elabcore.sml:			function symbol is infix and is used as infix (rather than "op f") in the clause LHS.
+Elaborator/elaborate/elabcore.sml:			with an atomic pattern that is an infix identifier application. If so, it parses that
+Elaborator/elaborate/elabcore.sml:			 * patfixitem list should be parsed as an infix application
+Elaborator/elaborate/elabcore.sml:			 * We choose not to support mixing infix function notation and currying, e.g.
+Elaborator/elaborate/elabcore.sml:			    fun x f y z w = ... where f is infix, and not even fun (x f y) z = ....
+Elaborator/elaborate/elabcore.sml:			    If f is infix, the only options are fun p1 f p2 where p1 and p2 are atomic
+Elaborator/elaborate/elabcore.sml:			   2. fun op f apat_1 ... apat_n =  -- f possibly infix id (doen't matter)
+Elaborator/elaborate/elabcore.sml:			   3. fun (apat_1 f apat_2) =       -- f infix id (no currying! so exactly 3 patFixitems)
+Elaborator/elaborate/elabcore.sml:			                                    -- f infix id, additional curried patterns !!
+Elaborator/elaborate/elabcore.sml:			   4. fun apat_1 f apat_2 =         -- f infix id (2nd apat), no currying!)
+Elaborator/elaborate/elabcore.sml:			                                    -- f infix id, additional curried patterns !!
+Elaborator/elaborate/elabcore.sml:			          (3) Case 4 is the argpats = [a, <f>, b] case with f infix. a and b can contain variables
+Elaborator/elaborate/elabcore.sml:			   (assuming it is a VarPat) if it is infix.  The head identifier of a proper pattern should not be
+Elaborator/elaborate/elabcore.sml:			 (* In example "fun x f y = x; -- where f infix" what prevented parseLHS0 from choosing x
+Elaborator/elaborate/elabcore.sml:			    first for the "fun p1 f p2" pattern with infix f?  Otherwise we REQUIRE that p1 provides
+Elaborator/elaborate/elabcore.sml:			    Another Error example: "fun (x y) f z = ..." where f infix, non-dcon, if x is non-dcon.
+Elaborator/elaborate/elabcore.sml:			    i.e. if infix f is the function id, then the other pattern expressions should not contain
+Elaborator/elaborate/elabcore.sml:			  * second of which is an id f (VarPat [f]) where f is infix (non-dcon variable) (Case 3).
+Elaborator/elaborate/elabcore.sml:			  * Example: "fun x f y = ..." where x or y is an infix symbol is an error.
+Elaborator/elaborate/elabcore.sml:		      * Case 4: infix funcition symbol as second argpat out of 3.
+Elaborator/elaborate/elabcore.sml:		      *   2. argument 2 is an infix variable symbol (VarPat [f]).
+Elaborator/elaborate/elabcore.sml:		      * where the middle one (#item b) could be an infix function variable.
+Elaborator/elaborate/elabcore.sml:			    check whether the next (2nd) item (VarPat) is an infix symbol, in which
+Elaborator/elaborate/elabcore.sml:			    out to be an infix variable.
+Elaborator/elaborate/elabcore.sml:                        parseLHS deals with the case (Case 3) where the function symbol is infix and is the 2nd
+Elaborator/elaborate/elabcore.sml:			-- f is an infix identifier (VARpat[f]), which must not be bound to a datacon in the env.
+Elaborator/elaborate/elabcore.sml:			-- p and q are atomic (i.e. pat fixitems) and are NONfix (not infix identifiers).
+Elaborator/elaborate/elabcore.sml:			Note that we are not allowing (unparenthesized) infix function declarations with currying.
+Elaborator/elaborate/elabcore.sml:					     (* try Case 3 (argpat1 parses to an infix application) *)
+Elaborator/elaborate/elabtype.sml:(* infix arrow tycon *)
+Elaborator/elaborate/elabtype.sml:infix -->
+Elaborator/elaborate/precedence.sml:  = INFIX of Symbol.symbol * int * 'a  (* int is an infix operator right binding power *)
+Elaborator/elaborate/precedence.sml:			stack as (INFIX _) :: _) =  (* top of stack is an infix item *)
+Elaborator/elaborate/precedence.sml:		 of F.NONfix => NONFIX e :: stack  (* OK, stack looking for an infix arg *)
+Elaborator/elaborate/precedence.sml:			   (err (String.concat ["expression/pattern begins with infix identifier \"",
+Elaborator/elaborate/precedence.sml:	      (* bp is the rbp of e2, which should be a an infix variable/constructor *)
+Elaborator/elaborate/precedence.sml:			     (err (String.concat ["expression/pattern begins with infix identifier \"",
+Elaborator/elaborate/precedence.sml:              (* infix application configuration of the stack;
+Elaborator/elaborate/precedence.sml:	       * e2 should be a variable exp or pat whose name symbol had an infix binding *)
+Elaborator/elaborate/precedence.sml:	      (err ("expression or pattern ends with infix identifier \"" 
+Elaborator/elaborate/precedence.sml:	       fixity)  (* fixity : S.symbol option; SOME sym if sym is an infix variable name *)
+Elaborator/elaborate/precedence.sml:     * We need to pass an env to pass to parseFlatApp in case there have been additional infix
+Elaborator/types/typecheck.sml:infix 9 sub
+Elaborator/types/typecheck.sml:infix -->
+Execution/binfile/binfile.sml:    infix >>
+Execution/binfile/binfile.sml:	  infix // %% !!
+FLINT/flint/ppflint.sml:    infix &
+FLINT/trans/pequal.sml:    infix -->
+Library/bignums/realconst.sml:infix plus times
+Library/bignums/realconst.sml:      infix 9 sub
+Library/pickle/pickle-util.sml:    infix 3 $
+Library/pickle/pickle-util.sml:    infixr 4 &
+Library/pickle/pickle-util.sml:	infix // %% !!
+Library/pickle/unpickle-util.sml:	    infix &
+Parse/ast/ppast.sml:		      pps "infix "
+Parse/ast/ppast.sml:		  else pps "infixr ";
+Parse/ast/ppast.sml:  scoped infix declarations. Parsing is completed during elaboration in the
+Parse/ast/ppast.sml:  that are declared infix.  Even code that involves no infix operators will only
+Parse/lex/tokentable.sml:	    ("infix"	, fn yypos => Tokens.INFIX(yypos,yypos+5)),
+Parse/lex/tokentable.sml:	    ("infixr"	, fn yypos => Tokens.INFIXR(yypos,yypos+6)),
+Parse/parse/ml.grm.sml:infix 5 $$
+Parse/parse/ml.grm.sml: val  result = MlyValue.fixity (fn _ => (infixleft 0))
+Parse/parse/ml.grm.sml: in (infixleft (checkFix(#2 int, mkregion(intleft, intright))))
+Parse/parse/ml.grm.sml: val  result = MlyValue.fixity (fn _ => (infixright 0))
+Parse/parse/ml.grm.sml: in (infixright (checkFix(#2 int, mkregion(intleft, intright))))
+Parse/parse/sml.grm.sml:infix 5 $$
+Parse/parse/sml.grm.sml: val  result = MlyValue.fixity (fn _ => (infixleft 0))
+Parse/parse/sml.grm.sml: in (infixleft (checkFix(#2 int, mkregion (intleft, intright))))
+Parse/parse/sml.grm.sml: val  result = MlyValue.fixity (fn _ => (infixright 0))
+Parse/parse/sml.grm.sml: in (infixright (checkFix(#2 int, mkregion (intleft, intright))))
+$ grep infix */*/*.sml | wc -l
+     115
+$ grep infix */*/*.sml > infixes.txt
+$ grep infixr */*/* | wc -l
+      15
+$ grep infixr */*/*
+Basics/symbol/fixity.sml:  val infixright : int -> fixity
+Basics/symbol/fixity.sml:  fun infixright n = INfix (n+n+1, n+n)
+Basics/symbol/fixity.sml:         (if i mod 2 = 0 then "infix " else "infixr ")^
+ElabData/syntax/ppabsyn.sml:		     else pps "infixr ";
+Library/pickle/pickle-util.sml:    infixr 4 &
+Parse/ast/ppast.sml:		  else pps "infixr ";
+Parse/lex/tokentable.sml:	    ("infixr"	, fn yypos => Tokens.INFIXR(yypos,yypos+6)),
+Parse/parse/ml.grm:	| INFIXR		(infixright 0)
+Parse/parse/ml.grm:	| INFIXR int		(infixright (checkFix(#2 int, mkregion(intleft, intright))))
+Parse/parse/ml.grm.sml: val  result = MlyValue.fixity (fn _ => (infixright 0))
+Parse/parse/ml.grm.sml: in (infixright (checkFix(#2 int, mkregion(intleft, intright))))
+Parse/parse/sml.grm:	| INFIXR		(infixright 0)
+Parse/parse/sml.grm:	| INFIXR int		(infixright (checkFix(#2 int, mkregion (intleft, intright))))
+Parse/parse/sml.grm.sml: val  result = MlyValue.fixity (fn _ => (infixright 0))
+Parse/parse/sml.grm.sml: in (infixright (checkFix(#2 int, mkregion (intleft, intright))))
+$ pwd
+/Users/dbm/sml/Dev/github/legacy/base/compiler
+$ ls -lt
+total 240
+-rw-r--r--   1 dbm  staff   2483 Jul  3 17:07 infixes.txt
+drwxr-xr-x  11 dbm  staff    352 Apr  7 13:44 ElabData/
+drwxr-xr-x   7 dbm  staff    224 Apr  5 11:29 Parse/
+drwxr-xr-x  13 dbm  staff    416 Apr  3 19:22 Basics/
+-rw-r--r--   1 dbm  staff      0 Mar 27 16:44 bool,
+-rw-r--r--   1 dbm  staff    883 Mar 26 10:47 work.txt
+-rw-r--r--   1 dbm  staff      0 Mar 26 10:47 Unsafe.Object.object
+-rw-r--r--   1 dbm  staff      0 Mar 26 10:47 Stamps.stamp
+-rw-r--r--   1 dbm  staff  24263 Mar 26 10:47 MAP
+drwxr-xr-x   7 dbm  staff    224 Mar 26 10:47 Elaborator/
+-rw-r--r--   1 dbm  staff   8685 Mar  4 15:11 core.cm
+-rw-r--r--   1 dbm  staff    419 Jan 30  2024 time-comp.sml
+-rw-r--r--   1 dbm  staff    946 Jan 30  2024 backend-x86.cm
+-rw-r--r--   1 dbm  staff    921 Jan 30  2024 backend-sparc.cm
+-rw-r--r--   1 dbm  staff    800 Jan 30  2024 backend-ppc.cm
+-rw-r--r--   1 dbm  staff    878 Jan 30  2024 backend-hppa.cm
+-rw-r--r--   1 dbm  staff   1010 Jan 30  2024 backend-amd64.cm
+-rw-r--r--   1 dbm  staff    913 Jan 30  2024 backend-alpha32.cm
+drwxr-xr-x   7 dbm  staff    224 Jan 30  2024 TopLevel/
+-rw-r--r--@  1 dbm  staff  15540 Jan 30  2024 README
+-rw-r--r--   1 dbm  staff   1350 Jan 30  2024 Makefile
+-rw-r--r--   1 dbm  staff   2431 Jan 30  2024 MLRISC-OPTIMIZER.cm
+drwxr-xr-x   5 dbm  staff    160 Jan 30  2024 Library/
+-rw-r--r--@  1 dbm  staff   1071 Jan 30  2024 LICENSE
+-rw-r--r--   1 dbm  staff   9075 Jan 30  2024 INDEX
+drwxr-xr-x  13 dbm  staff    416 Jan 30  2024 FLINT/
+drwxr-xr-x   7 dbm  staff    224 Jan 30  2024 Execution/
+drwxr-xr-x   5 dbm  staff    160 Jan 30  2024 DebugProf/
+drwxr-xr-x  11 dbm  staff    352 Jan 30  2024 CodeGen/
+-rw-r--r--@  1 dbm  staff   2130 Jan 30  2024 ChangeLog
+drwxr-xr-x   7 dbm  staff    224 Jan 30  2024 CPS/
+-rw-r--r--   1 dbm  staff   1046 Jan 30  2024 COPYRIGHT
+$ mv infixes.txt new-infixes.txt
+$ mv new-infixes.txt ~/sml/Dev/github/NewFrontEnd/proposals
+$ ls -lt
+total 232
+drwxr-xr-x  11 dbm  staff    352 Apr  7 13:44 ElabData/
+drwxr-xr-x   7 dbm  staff    224 Apr  5 11:29 Parse/
+drwxr-xr-x  13 dbm  staff    416 Apr  3 19:22 Basics/
+-rw-r--r--   1 dbm  staff      0 Mar 27 16:44 bool,
+-rw-r--r--   1 dbm  staff    883 Mar 26 10:47 work.txt
+-rw-r--r--   1 dbm  staff      0 Mar 26 10:47 Unsafe.Object.object
+-rw-r--r--   1 dbm  staff      0 Mar 26 10:47 Stamps.stamp
+-rw-r--r--   1 dbm  staff  24263 Mar 26 10:47 MAP
+drwxr-xr-x   7 dbm  staff    224 Mar 26 10:47 Elaborator/
+-rw-r--r--   1 dbm  staff   8685 Mar  4 15:11 core.cm
+-rw-r--r--   1 dbm  staff    419 Jan 30  2024 time-comp.sml
+-rw-r--r--   1 dbm  staff    946 Jan 30  2024 backend-x86.cm
+-rw-r--r--   1 dbm  staff    921 Jan 30  2024 backend-sparc.cm
+-rw-r--r--   1 dbm  staff    800 Jan 30  2024 backend-ppc.cm
+-rw-r--r--   1 dbm  staff    878 Jan 30  2024 backend-hppa.cm
+-rw-r--r--   1 dbm  staff   1010 Jan 30  2024 backend-amd64.cm
+-rw-r--r--   1 dbm  staff    913 Jan 30  2024 backend-alpha32.cm
+drwxr-xr-x   7 dbm  staff    224 Jan 30  2024 TopLevel/
+-rw-r--r--@  1 dbm  staff  15540 Jan 30  2024 README
+-rw-r--r--   1 dbm  staff   1350 Jan 30  2024 Makefile
+-rw-r--r--   1 dbm  staff   2431 Jan 30  2024 MLRISC-OPTIMIZER.cm
+drwxr-xr-x   5 dbm  staff    160 Jan 30  2024 Library/
+-rw-r--r--@  1 dbm  staff   1071 Jan 30  2024 LICENSE
+-rw-r--r--   1 dbm  staff   9075 Jan 30  2024 INDEX
+drwxr-xr-x  13 dbm  staff    416 Jan 30  2024 FLINT/
+drwxr-xr-x   7 dbm  staff    224 Jan 30  2024 Execution/
+drwxr-xr-x   5 dbm  staff    160 Jan 30  2024 DebugProf/
+drwxr-xr-x  11 dbm  staff    352 Jan 30  2024 CodeGen/
+-rw-r--r--@  1 dbm  staff   2130 Jan 30  2024 ChangeLog
+drwxr-xr-x   7 dbm  staff    224 Jan 30  2024 CPS/
+-rw-r--r--   1 dbm  staff   1046 Jan 30  2024 COPYRIGHT
+$ lpwd
+bash: lpwd: command not found
+$ pwd
+/Users/dbm/sml/Dev/github/legacy/base/compiler
+$ cd ~/sml/Dev/github/NewFrontEnd/
+$ git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   proposals/MLFW2025.txt
+	modified:   proposals/language.txt
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	proposals/new-infixes.txt
+	work/type-funs.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+$ git add proposals/MLFW2025.txt
+$ git add proposals/language.txt
+$ git add proposals/new-infixes.txt
+$ git add work/type-funs.txt
+$ cd proposals
+$ pwd
+/Users/dbm/sml/Dev/github/NewFrontEnd/proposals
+$ ls
+harperismus.txt		MLFW2025.txt		variables-etc.txt
+language.txt		new-infixes.txt
+$ sml
+Standard ML of New Jersey [Version 2025.1; 64-bit; February 14, 2025]
+- quot;
+stdIn:1.2-1.6 Error: unbound variable or constructor: quot
+- Int.quot;
+val it = fn : int * int -> int
+- Int.rem;
+val it = fn : int * int -> int
+- Int.quot (5,2);
+val it = 2 : int
+- Int.rem (5,2);
+val it = 1 : int
+- 5 div 2;
+val it = 2 : int
+- 5 mod 2;
+val it = 1 : int
+- ~5 div 2;
+val it = ~3 : int
+- Int.quot (~5, 2);
+val it = ~2 : int
+- Int.rem (~5, 2);
+val it = ~1 : int
+- 
+$ pwd
+/Users/dbm/sml/Dev/github/NewFrontEnd/proposals
+$ pwd
+/Users/dbm/sml/Dev/github/NewFrontEnd/proposals
+$ pwd
+/Users/dbm/sml/Dev/github/NewFrontEnd/proposals
+$ cd ../work
+$ ls
+bug319.txt		new-variables.txt	work.txt
+journal.txt		type-funs.txt
+$ ls -lt
+total 88
+-rw-r--r--  1 dbm  staff    625 Jul  4 16:19 de-infix.txt
+-rw-r--r--  1 dbm  staff    973 Jun 28 12:29 type-funs.txt
+-rw-r--r--  1 dbm  staff   8607 Mar 23 16:02 new-variables.txt
+-rw-r--r--  1 dbm  staff  15787 Mar  4 14:39 bug319.txt
+-rw-r--r--  1 dbm  staff    590 Feb 12 12:11 work.txt
+-rw-r--r--  1 dbm  staff    526 Feb 12 11:59 journal.txt
+$ git add de-infix.txt 
+$ pwd
+/Users/dbm/sml/Dev/github/NewFrontEnd/work
+$ cd ../../legacy/base/compiler
+$ ls
+backend-alpha32.cm	core.cm			MAP
+backend-amd64.cm	CPS/			MLRISC-OPTIMIZER.cm
+backend-hppa.cm		DebugProf/		Parse/
+backend-ppc.cm		ElabData/		README
+backend-sparc.cm	Elaborator/		Stamps.stamp
+backend-x86.cm		Execution/		time-comp.sml
+Basics/			FLINT/			TopLevel/
+bool,			INDEX			Unsafe.Object.object
+ChangeLog		Library/		work.txt
+CodeGen/		LICENSE
+COPYRIGHT		Makefile
+$ cd Elaborator/elaborate/
+$ ls -lt
+total 864
+-rw-r--r--  1 dbm  staff  14651 Jul  5 13:32 precedence.sml
+-rw-r--r--  1 dbm  staff  46381 Jul  3 15:49 pwd
+-rw-r--r--  1 dbm  staff  86788 May 24 14:54 elabcore.sml
+-rw-r--r--  1 dbm  staff  17294 May  2 18:53 elabutil.sml
+-rw-r--r--  1 dbm  staff  19273 Apr  8 11:28 elabtype.sml
+-rw-r--r--  1 dbm  staff    831 Apr  8 11:17 elabtype.sig
+-rw-r--r--  1 dbm  staff   2739 Apr  8 10:21 elabutil.sig
+-rw-r--r--  1 dbm  staff  67959 Apr  8 10:15 elabmod.sml
+-rw-r--r--  1 dbm  staff  71765 Apr  4 10:16 elabmod-fix.sml
+-rw-r--r--  1 dbm  staff  44965 Apr  3 19:50 elabsig.sml
+-rw-r--r--  1 dbm  staff   6654 Mar 26 10:47 tyvarset.sml
+-rw-r--r--  1 dbm  staff   7385 Mar  4 15:11 check-unused.sml
+-rw-r--r--  1 dbm  staff   5039 Feb 11 15:59 elabmod-fixes.txt
+-rw-r--r--  1 dbm  staff  11326 Jan 30  2024 include.sml
+-rw-r--r--  1 dbm  staff   6804 Jan 30  2024 elabtop.sml
+-rw-r--r--  1 dbm  staff   2202 Jan 30  2024 elabdebug.sml
+$ git mv precedence.sml reparse.sml
+$ cd ..
+$ pwd
+/Users/dbm/sml/Dev/github/legacy/base/compiler/Elaborator
+$ cd elaborate
+$ ls
+check-unused.sml	elabsig.sml		include.sml
+elabcore.sml		elabtop.sml		pwd
+elabdebug.sml		elabtype.sig		reparse.sml
+elabmod-fix.sml		elabtype.sml		tyvarset.sml
+elabmod-fixes.txt	elabutil.sig
+elabmod.sml		elabutil.sml
+$ cd ..
+$ pwd
+/Users/dbm/sml/Dev/github/legacy/base/compiler/Elaborator
+$ cd ..
+$ ls */*.cm
+Basics/basics.cm		Elaborator/elaborate.cm
+DebugProf/debugprof.cm		Execution/execute.cm
+ElabData/elabdata.cm		Parse/parser.cm
+$ cd Elaborator
+$ cd elaborate/
+$ ls
+check-unused.sml	elabsig.sml		include.sml
+elabcore.sml		elabtop.sml		pwd
+elabdebug.sml		elabtype.sig		reparse.sml
+elabmod-fix.sml		elabtype.sml		tyvarset.sml
+elabmod-fixes.txt	elabutil.sig
+elabmod.sml		elabutil.sml
 $ 

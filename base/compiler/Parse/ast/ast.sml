@@ -25,6 +25,8 @@ struct
     (* "raw" symbolic path as symbol list (corresponds to Modules.spath) <> SymPath.path *)
     type path = S.symbol list
 
+(* replace fixitem with pat: 
+
     type 'a fixitem = {item: 'a, fixity: S.symbol option, region: SL.region}
       (* item will be either an exp or a pat. fixity is SOME only when the exp or pat
        * is an identifier (id in sml.grm), in which case the symbol is the identifier
@@ -37,7 +39,7 @@ struct
        * symbol option component is not needed. Thus the simpler version would be 
        * just "type 'a fixitem = {item: 'a, region: SM.region}, where 'a = pat or exp. *)
 
-  (* Alternatively
+    Alternatively (1)
      -- replace "fixity" field name with "symbol" and define two non-polymorphic types:
 
       ...
@@ -51,6 +53,14 @@ struct
 
     Or we could incorporate the pat and exp reparsing functions in the Precedence structure
     and export them as two monomorphic functions from that structure.
+
+    Alternatively (2)
+    Just use pat/exp instead of fixitem.
+    E.g., a variable pattern is of the form "VarPat [name]" where name is a string.
+    We can get the corresponding VALspace and FIXspace symbols for name "Symbol.valAndFix".
+    If we want to make sure that the pat represents a variable, we have to check that the
+    VALspace symbol is not bound to a constructor, since variables and constructors are
+    both in the VALspace name space.
 
   *)
 
@@ -67,12 +77,14 @@ struct
       | Transparent of 'a
       | Opaque of 'a
 
+
     (* EXPRESSIONS *)
 
     datatype exp
       = VarExp of path			(* variable *)
       | FnExp of rule list		(* abstraction *)
       | FlatAppExp of exp fixitem list	(* expressions before fixity parsing *)
+(*    | FlatAppExp of exp	(* expressions before fixity parsing *) *)
       | AppExp of {function:exp,argument:exp}
 				    	(* application *)
       | CaseExp of{expr:exp,rules:rule list}
@@ -117,6 +129,7 @@ struct
       | ListPat of pat list			(* [list,in,square,brackets] *)
       | TuplePat of pat list			(* tuple *)
       | FlatAppPat of pat fixitem list		(* patterns before fixity parsing *)
+(*    | FlatAppPat of pat		(* patterns before fixity parsing *) *)
       | AppPat of {constr:pat, argument:pat}	(* constructor application *)
       | ConstraintPat of {pattern:pat, constraint:ty}
 						(* constraint *)
@@ -146,8 +159,10 @@ struct
 							(* application *)
 	       | MarkFct of fctexp * SL.region     	(* mark *)
 
-    (* WHERE SPEC *) and wherespec = WhType of S.symbol list * tyvar
-    list * ty | WhStruct of S.symbol list * S.symbol list
+    (* WHERE SPEC *)
+    and wherespec
+	= WhType of S.symbol list * tyvar list * ty
+        | WhStruct of S.symbol list * S.symbol list
 
     (* SIGNATURE EXPRESSION *)
     and sigexp = VarSig of S.symbol			(* signature variable *)
@@ -247,10 +262,22 @@ struct
 
     (* TYPES *)
     and ty
-      = VarTy of tyvar			(* type variable *)
-      | ConTy of S.symbol list * ty list	(* type constructor application *)
-      | RecordTy of (S.symbol * ty) list 	(* record *)
-      | TupleTy of ty list		(* tuple *)
-      | MarkTy of ty * SL.region        (* mark type *)
+      = VarTy of tyvar			  (* type variable *)
+      | ConTy of S.symbol list * ty list  (* type constructor application *)
+      | RecordTy of (S.symbol * ty) list  (* record *)
+      | TupleTy of ty list		  (* tuple *)
+      | MarkTy of ty * SL.region          (* region-marked type *)
+
+  (* We might not need the following two functions. Used in ElabCore to check whether a 
+     symbol is an infix function (variable) symbol? *)
+    (* patToSymbols : pat -> (S.symbol * S.symbol) option *)
+    (* result symbol is in the fixity namespace *)
+    fun patToSymbols (VarPat [name]) = SOME (S.valSymbol name, S.fixSymbol name)
+      | patToFixSymbol _ =  NONE
+
+    (* expToSymbols : exp -> (S.symbol * S.symbol) option *)
+    (* result symbol is in the fixity namespace *)
+    fun expToSymbols (VarExp [name]) = SOME (S.valSymbol name, S.fixSymbol name)
+      | expToFixSymbol _ =  NONE
 
 end (* structure Ast *)
