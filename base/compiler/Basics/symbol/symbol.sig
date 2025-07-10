@@ -12,10 +12,6 @@ sig
 
     val compare: symbol * symbol -> order
 
-(* redundant:u
-    val symbolGt : symbol * symbol -> bool
-    val symbolCMLt : symbol * symbol -> bool
-*)
     val mkSymbol : string * namespace
 
     val valSymbol: string -> symbol
@@ -29,14 +25,16 @@ sig
     val tyvSymbol: string -> symbol
 
     val name: symbol -> string
-    val hash: symbol -> word
+    val hash: symbol -> word  (* formerly "number" *)
     val nameSpace : symbol -> namespace
     val nameSpaceToString : namespace -> string
     val describe : symbol -> string
     val symbolToString : symbol -> string
     val compare : symbol * symbol -> order
 
-(* Probably should merge STRspace and FCTspace into one namespace.
-   Similarly for SIGspace and FSIGspace. *)
+(* redundant -- so eliminated
+    val symbolGt : symbol * symbol -> bool
+    val symbolCMLt : symbol * symbol -> bool
+*)
 
 end (* signature SYMBOL *)
