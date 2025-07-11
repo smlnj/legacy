@@ -32,8 +32,8 @@ val quotedBogusHash = HashString.hashString "'BOGUS"
 val quotedBogusString = "'BOGUS"
 
 (* ID (identifiers) is split into IDA (alphanumeric) and IDS (symbolic) *)
-  %%
-  %term
+%%
+%term
       EOF | SEMICOLON
     | IDA of FastSymbol.raw_symbol
     | IDS of FastSymbol.raw_symbol
@@ -339,32 +339,18 @@ exp_2c	: exp COMMA exp_2c	(exp :: exp_2c)
 exp_list : exp			([exp])
 	 | exp COMMA exp_list	(exp :: exp_list)
 
-pat	: pat AS pat		(layered(pat1, pat2,
-					 mkregion(pat1left,pat2right)))
-	| pat COLON ty		(markpat(ConstraintPat{pattern=pat, constraint=ty},patleft,tyright))
-	| apats			(markpat(FlatAppPat apats, apatsleft, apatsright))
+pat	: id AS pat		(markpat (LayeredPat {variable = valSymbol id, main = pat}, idleft, patright))
+	| pat COLON ty		(markpat (ConstraintPat{pattern=pat, constraint=ty}, patleft, tyright))
+	| apats			(markpat (FlatAppPat apats, apatsleft, apatsright))
 
-apat	: apat'		        ({item=markpat(apat',apat'left,apat'right),
-				  region=mkregion(apat'left,apat'right),
-			          fixity=NONE})
-	| LPAREN pat RPAREN	({item=pat,
-				  region=mkregion(LPARENleft,RPARENright),
-				  fixity=NONE})
-	| id			(let val (v,f) = var'n'fix id
-				 in {item=markpat(VarPat [v],idleft,idright),
-				     region=mkregion(idleft,idright),
-				     fixity=SOME f} end)
-	| LPAREN RPAREN		({item=markpat(unitPat,LPARENleft,RPARENright),
-				  region=mkregion(LPARENleft,RPARENright),
-				  fixity=NONE})
+apat	: apat'		        (markpat (apat', apat'left, apat'right))
+	| LPAREN pat RPAREN	(markpat (pat, mkregion (LPARENleft, RPARENright)))
+	| id			(markpat (VarPat [valSymbol id], idleft, idright)))
+	| LPAREN RPAREN		(markpat (unitPat, LPARENleft, RPARENright))
 	| LPAREN pat COMMA  pat_list RPAREN
-  				({item=markpat(TuplePat(pat :: pat_list),LPARENleft,RPARENright),
-				  region=mkregion(LPARENleft,RPARENright),
-				  fixity=NONE})
+  				(markpat (TuplePat(pat :: pat_list), LPARENleft, RPARENright))
 	| LPAREN pat BAR or_pat_list RPAREN
-				({item=markpat(OrPat(pat :: or_pat_list),LPARENleft,RPARENright),
-				  region=mkregion(LPARENleft,RPARENright),
-				  fixity=NONE})
+				(markpat (OrPat(pat :: or_pat_list), LPARENleft, RPARENright))
 
 (* FIXME: should be "OP id", but that breaks smlnj/init/built-in.sml *)
 apat'	: OP ident		(VarPat [varSymbol ident])
@@ -386,19 +372,17 @@ apat'	: OP ident		(VarPat [varSymbol ident])
 			          in RecordPat{def=d,flexibility=f}
                                  end)
 
-plabel	: selector EQUALOP pat	((selector,pat))
+plabel	: selector EQUALOP pat	((selector, pat))
 	| id			(labSymbol id, VarPat [varSymbol id])
 	| id AS pat		(labSymbol id,
-				 LayeredPat{varPat=VarPat [varSymbol id],
-					    expPat=pat})
+				 LayeredPat{variable = varSymbol id,
+					    main = pat})
 	| id COLON ty		(labSymbol id,
-				 ConstraintPat{pattern=VarPat [varSymbol id],
-					       constraint=ty})
+				 ConstraintPat {pattern=VarPat [varSymbol id],
+					        constraint=ty})
 	| id COLON ty AS pat	(labSymbol id,
-				 LayeredPat
-				 {varPat=ConstraintPat{pattern=VarPat [varSymbol id],
-						       constraint=ty},
-				  expPat=pat})
+				 LayeredPat {variable = valSymbol id,
+					     main = ConstraintPat {pattern = pat, constraint = ty}})
 
 plabels : plabel COMMA plabels	(let val (a,(b,fx))=(plabel, plabels)
 				 in (a::b, fx) end)

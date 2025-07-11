@@ -4,18 +4,8 @@
 
 (* [DBM, 2025.03.25] Rewritten to clarify and simplify the precedence parsing algorithm. 
  * [DBM, 2025.07.05] The parse function has been replaced by two specialized versions:
- *   reparsePat for Ast patterns and reparseExp for Ast expressiohns.
+ *   reparseFlatAppPat for Ast patterns and reparseFlatAppExp for Ast expressiohns.
  *)
-
-signature REPARSE =
-sig
-
-  val reparsePat : Ast.pat * StaticEnv.staticEnv * SourceLoc.region -> Ast.pat   (* complete reparse *)
-  val reparseFlatAppPat : Ast.pat Ast.fixitem list * StaticEnv.staticEnv * SourceLocL.region -> Ast.pat
-  val reparseFlatAppExp : Ast.exp Ast.fixitem list * StaticEnv.staticEnv * SourceLocL.region -> Ast.exp
-
-end (* signature Reparse *)
-
 
 (* Reparse: REPARSE is an auxiliary module used only in ElabCore.  Its functionality
  * is used to "reparse" Ast.fitItems (partially parsed applications) using infix bindings
@@ -220,14 +210,14 @@ fun 'a precedenceParse
 	end
 
 
-    (* EXPRESSION reparsing **********************************************************)
+    (* EXPRESSION reparsing *)
 
     (* Reparsing expressions is complicated by the fact that the declaration part of a
        let binding may introduce new infix declarations, so the fixity part of the
        reparsing environment may change, and the reparsing of the body will need to be
        done using that new fixity environment. So we just provide the reparseFlatAppExp
        function and let the recursion of elabExp deal with providing the proper env
-       context (e.g. adjusting the env for the body of let expressions).
+       context (e.g. adjusting the env for the body of let expressions). *)
 
     (* apply_exp : ST.exp * ST.exp -> ST.exp
      * Returned pat is always an AppPat (marked if both arguments were marked) *)
@@ -247,70 +237,20 @@ fun 'a precedenceParse
      * so patCompleteParse still needs to be applied *)
     val reparseFlatAppExp = precedenceParse {apply = apply_exp, pair = pair_exp}
 
-(* reparseExp, which partially recurses through the exp term structure, is not needed.
-   We can just use reparseFlatAppExp where the elabExp function encounters
-   a FlatAppExp and depend on the recursive definition of elabExp (in ElabCore) to
-   provide appropriate static environments (and hence infix bindings).
+(* reparseExp: incomplete and redundant; NOT USED.
 
-    (* reparseExp : ST.exp * SE.staticEnv * SL.region -> ST.exp
-     * Recursively reparse an expression down to any embedded let subexpressions.
-     * This is only applied to terms where the term and all of its subterms are
-     * subject to the same static environment (and hence the same infix bindings).
-     * Exp reparsing only applies to structure outside any embedded let expressions.
-     * Thus any unreparsed FlatAppExps in the result will be subexpressions of the bodies
-     * of let subexpressions of the main argument. *) 
-   fun reparseExp (exp: ST.exp, env: SE.staticEnv, region: SL.region) : ST.exp =
-       let fun recurse exp = 
-	       (case exp
-		  of ST.MarkExp (exp, region') =>     (* mark an expression *)
-		       ST.MarkExp (reparseExp (exp, env, region'), region')
-		   | ST.VarExp => exp		(* variable *)
-		   | ST.FnExp rules =>		(* abstraction *)
-		       ST.FnExp (map (reparseRule (env, region)), rules)
-		   | ST.AppExp {function, argument} =>  (* simple application *)
-		       ST.AppExp {function = recurse function, argument = recurse argument}
-		   | ST.CaseExp {expr:exp, rules:rule list} => (* case expression *)
-		       ST.CaseExp (exp = recurse exp, rules = map (reparseRule (exp, region)) rules}
+   val reparseExp : ST.exp * SE.staticEnv * SL.region -> ST.exp
 
-		   | ST.SeqExp exps => (* sequence expression *)
-		       ST.SeqExp (map recurse exps)
-		   | ST.RecordExp (fields: (S.symbol * exp) list) => 
-		       ST.RecordExp (map (fn (label, exp) => (label, recurse exp)) fields)
-		   | ST.ListExp exps => (* list expression (of form [e1, ...]) *)
-		       ST.ListExp (map recurse exps)
-		   | ST.TupleExp exps => (* tuple expression *)
-		       ST.TupleExp (map recurse exps)
-		   | ST.VectorExp exps => (* vector expression *)
-		       ST.VectorExp (map recurse exps)
-		   | ST.ConstraintExp {expr:exp,constraint:ty} =>  (* type constraint *)
-		       ST.ConstraintExp {expr = recurse expr, constraint = constraint}
-		   | ST.HandleExp {expr:exp, rules:rule list} => (* exception handler *)
-		       ST.HandleExp {expr = recurse expr,
-				     rules = (map (reparseRule (env, region)) rules)}
-		   | ST.RaiseExp exp =>  (* raise an exception *)
-		       ST.RaiseExp (recurse exp)
-		   | ST.IfExp {test: ST.exp, thenCase: ST.exp, elseCase: ST.exp} =>
-		       ST.IfExp {test = recurse test,
-				 thenCase = recurse thenCase,
-				 elseCase = recurse elseCase}
-		   | ST.AndalsoExp (exp1, exp2) =>
-		       ST.AndalsoExp (recurse exp1, recurse exp2)
-		   | ST.OrelseExp (exp1, exp2) =>
-		       ST.OrelseExp (recurse exp1, recurse exp2)
-		   | ST.WhileExp {test: ST.exp, expr: ST.exp} =>
-		       ST.WhileExp {test = recurse test, expr = recurse expr}
-		   | ST.FlatAppExp expFixitems =>	(* expressions before fixity parsing *)
-		       parseFlatAppExp (expFixitems, env, region)
-		   | _ => exp)
-        in recurse exp
-       end (* fun reparseExp *)
+   A reparseExp function doesn't quite work with a single initial static environment.
+   reparseExp would partially recurse through the exp term structure, but would need to
+   be called with a new staticEnv argument for the body of let expressions. So reparsing
+   for expressions cannot be fully separated from general elaboration becuase of "let",
+   which requires elaboration of the dec part of the let.
 
-(* reparseRule : SE.staticEnv * SL.region -> ST.rule -> ST.rule *)
-(* The rhs expressions are only reparsed down to any embedded let expressions. *)
-and reparseRule : (env, region) (ST.Rule {pat, exp}) = 
-    ST.Rule {pat = reparsePat (pat, env, region),
-             exp = reparseExp (exp, env, region)} (* we can use the same env here because
-	                                           * match bindings do not add infix bindings. *)
+   Instead of using reparseExp, we can just use reparseFlatAppExp for the FlatAppExp case
+   in the elabExp function and depend on the recursive definition of elabExp (in ElabCore)
+   to generate the appropriate static environments (and hence infix bindings) for let bodies.
+
 *)
 
 end (* local - imports *)

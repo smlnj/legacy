@@ -1,10 +1,13 @@
 (* elaborate.cm
  *
- * COPYRIGHT (c) 2020 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2025 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
 
 Group  (* exports *)
+  (* Probably only ElabTop really needs to be exported. Everything
+     else could be internal only. *)
+
         signature ELAB_CONTROL
 	structure ElabControl
 
@@ -29,6 +32,7 @@ Group  (* exports *)
 	structure ElabUtil
 	structure ElabDebug
 	structure EvalEntity
+        structure ElabCore
 	structure ElabMod
 	structure ElabTop
 
@@ -52,7 +56,8 @@ is (* "members" -- source files *)
 	elaborate/elabutil.sig
 	elaborate/elabutil.sml
 	elaborate/elabdebug.sml
-	elaborate/reparse.sml  (* was precedence.com; internal *)
+	elaborate/reparse.sig  (* internal -> REPARSE *)
+	elaborate/reparse.sml  (* internal -> Reparse; was precedence.sml *)
 	elaborate/elabtype.sig
 	elaborate/elabtype.sml
 	elaborate/elabcore.sml
@@ -60,7 +65,7 @@ is (* "members" -- source files *)
 	elaborate/elabmod.sml
 	elaborate/include.sml
 	elaborate/elabtop.sml
-	elaborate/check-unused.sml
+	elaborate/check-unused.sml  (* internal -> CheckUnused *)
 
 (* imported libraries *)
 
@@ -68,6 +73,6 @@ is (* "members" -- source files *)
 	$smlnj/viscomp/basics.cm    (* == Basics/basics.cm? *)
 	$smlnj/viscomp/parser.cm    (* == Parser/parser.cm? <- Ast *)
 
-	$smlnj/smlnj-lib/smlnj-lib.cm
-	$smlnj/smlnj-lib/controls-lib.cm
-	$smlnj/basis/basis.cm
+	$smlnj/smlnj-lib/smlnj-lib.cm     (* SML/NJ library *)
+	$smlnj/smlnj-lib/controls-lib.cm  (* Controls library *)
+	$smlnj/basis/basis.cm             (* Basis Library *)

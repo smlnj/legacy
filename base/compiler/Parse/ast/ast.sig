@@ -213,6 +213,7 @@ sig
       | TupleTy of ty list		(* tuple *)
       | MarkTy of ty * SourceLoc.region (* mark type *)
 
+  (* these should probably be in AstUtil, not here *)
   val patToSymbols : pat -> (Symbol.symbol * Symbol.symbol) option
   val expToSymbols : exp -> (Symbol.symbol * Symbol.symbol) option
 

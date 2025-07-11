@@ -83,8 +83,8 @@ struct
     datatype exp
       = VarExp of path			(* variable *)
       | FnExp of rule list		(* abstraction *)
-      | FlatAppExp of exp fixitem list	(* expressions before fixity parsing *)
-(*    | FlatAppExp of exp	(* expressions before fixity parsing *) *)
+      | FlatAppExp of exp list   	(* expressions before fixity parsing *) *)
+(*    | FlatAppExp of exp fixitem list	(* old version of FlatAppExp *) *)
       | AppExp of {function:exp,argument:exp}
 				    	(* application *)
       | CaseExp of{expr:exp,rules:rule list}
@@ -110,8 +110,9 @@ struct
       | AndalsoExp of exp * exp		(* andalso (derived form) *)
       | OrelseExp of exp * exp		(* orelse (derived form) *)
       | WhileExp of {test:exp,expr:exp} (* while (derived form) -- depricated *)
-      | MarkExp of exp * SL.region	(* mark an expression *)
       | VectorExp of exp list   	(* vector *)
+
+      | MarkExp of exp * SL.region	(* mark an expression *)
 
     (* RULE for case functions and exception handler *)
     and rule = Rule of {pat:pat,exp:exp}
@@ -124,19 +125,21 @@ struct
       | WordPat of literal			(* word literal *)
       | StringPat of string			(* string *)
       | CharPat of string			(* char *)
+
       | RecordPat of {def:(S.symbol * pat) list, flexibility:bool}
 						(* record *)
       | ListPat of pat list			(* [list,in,square,brackets] *)
       | TuplePat of pat list			(* tuple *)
-      | FlatAppPat of pat fixitem list		(* patterns before fixity parsing *)
-(*    | FlatAppPat of pat		(* patterns before fixity parsing *) *)
+      | FlatAppPat of pat list		        (* patterns before fixity parsing *) *)
+(*    | FlatAppPat of pat fixitem list		(* old version for FlatAppPat *) *)
       | AppPat of {constr:pat, argument:pat}	(* constructor application *)
       | ConstraintPat of {pattern:pat, constraint:ty}
 						(* constraint *)
-      | LayeredPat of {varPat:pat,expPat:pat}   (* as patterns *)
-      | MarkPat of pat * SL.region		(* mark a pattern *)
+      | LayeredPat of {variable: S.symbol, main: pat}   (* as patterns *)
       | VectorPat of pat list			(* vector pattern *)
       | OrPat of pat list			(* or-pattern *)
+
+      | MarkPat of pat * SL.region		(* mark a pattern *)
 
     (* STRUCTURE EXPRESSION *)
     (* we don't need the AppStrI, just the single AppStr will do. *)

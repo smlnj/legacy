@@ -12,8 +12,6 @@ sig
   (* BUILDS VARIOUS CONSTRUCTIONS *)
   val makeSEQdec : Ast.dec * Ast.dec -> Ast.dec
 
-  val layered : Ast.pat * Ast.pat * SourceLoc.region -> Ast.pat
-
   (* SYMBOLS *)
   val arrowTycon : Symbol.symbol
   val bogusID : Symbol.symbol
