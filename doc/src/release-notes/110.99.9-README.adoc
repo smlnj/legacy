@@ -77,6 +77,9 @@ gforge bug tracker.
 | [.bugid]#362#
 | {issue-base}/362[`Real.fromString` on negative inf/infinity returns positive infinity]
 | n.a.
+| [.bugid]#363#
+| {issue-base}/363["default word size" in the documentation for Util/Random]
+| n.a.
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]
