@@ -1,6 +1,6 @@
-(* astutil.sml
+(* Parse/ast/astutil.sml
  *
- * COPYRIGHT (c) 2018 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2018, 2025 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
 
@@ -39,6 +39,27 @@ in
       | makeSEQdec (a, Ast.SeqDec b) = Ast.SeqDec(a::b)
       | makeSEQdec (a,b) = Ast.SeqDec[a,b]
 
+
+    (* We might not need the following two functions. Used in Reparse, and in ElabCore to
+     * check whether a symbol is an infix function (variable) symbol in a function header LHS. *)
+    (* patToSymbols : pat -> (S.symbol * string) option *)
+    (* result symbol are in the VALspace and FIXspace namespaces, respectively *)
+    fun patToFixSymbol (Ast.VarPat [name]) =
+	  let val s = S.name name
+	   in SOME (S.fixSymbol s, s)
+	  end
+      | patToFixSymbol _ =  NONE
+
+    (* expToSymbols : exp -> (S.symbol * string) option *)
+    (* result symbol is in the fixity namespace *)
+    fun expToSymbols (Ast.VarExp [name]) =
+	  let val s = S.name name
+	   in SOME (S.fixSymbol s, s)
+	  end
+      | expToaSymbols _ =  NONE
+
+
+  (* Quotation *)    
 
     fun quoteExp s = Ast.AppExp{function=Ast.VarExp quoteDcon,argument=Ast.StringExp s}
     fun antiquoteExp e = Ast.AppExp{function=Ast.VarExp antiquoteDcon,argument= e}

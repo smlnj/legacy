@@ -12,7 +12,7 @@ sig
 
     val compare: symbol * symbol -> order
 
-    val mkSymbol : string * namespace
+    val mkSymbol : namespace -> string -> symbol
 
     val valSymbol: string -> symbol
     val tycSymbol: string -> symbol
@@ -33,8 +33,9 @@ sig
     val compare : symbol * symbol -> order
 
 (* redundant -- so eliminated
+    val eq : symbol * symbol -> bool
     val symbolGt : symbol * symbol -> bool
-    val symbolCMLt : symbol * symbol -> bool
+    val symbolCMLt : symbol * symbol -> bool  (* special ordering for CM? *)
 *)
 
 end (* signature SYMBOL *)

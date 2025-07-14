@@ -1,6 +1,6 @@
-(* ast.sig
+(* Parse/ast/ast.sig
  *
- * COPYRIGHT (c) 2018 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2025 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
 
@@ -30,15 +30,12 @@ sig
 
   datatype exp
     = VarExp of path		(* variable *)
-    | FnExp of rule list		(* abstraction *)
-    | FlatAppExp of exp fixitem list
-                                  (* expressions prior to fixity parsing *)
-    | AppExp of {function:exp,argument:exp}
-				  (* application *)
-    | CaseExp of{expr:exp,rules:rule list}
-				  (* case expression *)
+    | FnExp of rule list	(* abstraction *)
+    | FlatAppExp of exp list    (* expressions prior to fixity parsing *)
+    | AppExp of {function:exp,argument:exp}  (* application *)
+    | CaseExp of{expr:exp,rules:rule list}  (* case expression *)
     | LetExp of {dec:dec,expr:exp} (* let expression *)
-    | SeqExp of exp list		(* sequence of expressions *)
+    | SeqExp of exp list	(* sequence of expressions *)
     | IntExp of literal		(* integer *)
     | WordExp of literal	(* word literal *)
     | RealExp of real_lit	(* floating point coded by its string *)
@@ -76,7 +73,7 @@ sig
 						(* record *)
           | ListPat of pat list		        (*  [list,in,square,brackets] *)
 	  | TuplePat of pat list		(* tuple *)
-          | FlatAppPat of pat fixitem list      (* patterns prior to fixity parsing *)
+          | FlatAppPat of pat list              (* patterns applications prior to fixity parsing *)
 	  | AppPat of {constr:pat,argument:pat} (* application *)
 	  | ConstraintPat of {pattern:pat,constraint:ty}
 						(* constraint *)
@@ -212,9 +209,5 @@ sig
       | RecordTy of (Symbol.symbol * ty) list 	(* record *)
       | TupleTy of ty list		(* tuple *)
       | MarkTy of ty * SourceLoc.region (* mark type *)
-
-  (* these should probably be in AstUtil, not here *)
-  val patToSymbols : pat -> (Symbol.symbol * Symbol.symbol) option
-  val expToSymbols : exp -> (Symbol.symbol * Symbol.symbol) option
 
 end (* signature AST *)

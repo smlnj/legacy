@@ -299,9 +299,9 @@ app_exp	: aexp	        ([{item=markexp(aexp,aexpleft,aexpright),
 				fixity=SOME f} :: app_exp
 			 end)
 
- aexp	: OP ident		(VarExp [varSymbol ident])
-	| OP IDA DOT qident	(VarExp (strSymbol IDA :: qident varSymbol))
-	| IDA DOT qident	(VarExp (strSymbol IDA :: qident varSymbol))
+ aexp	: OP ident		(VarExp [valSymbol ident])
+	| OP IDA DOT qident	(VarExp (strSymbol IDA :: qident valSymbol))
+	| IDA DOT qident	(VarExp (strSymbol IDA :: qident valSymbol))
 	| int			(IntExp int)
 	| WORD			(WordExp WORD)
 	| REAL			(RealExp REAL)
@@ -323,7 +323,7 @@ app_exp	: aexp	        ([{item=markexp(aexp,aexpleft,aexpright),
 				(markexp (LetExp{dec=markdec(ldecs, ldecsleft,ldecsright),
 						 expr=SeqExp exp_ps},
 					  LETleft,ENDright))
-        | AQID                  (VarExp([varSymbol AQID]))
+        | AQID                  (VarExp([valSymbol AQID]))
         | quote                 (ListExp quote)
 
 quote   : BEGINQ ENDQ           ([quoteExp ENDQ])
@@ -353,9 +353,9 @@ apat	: apat'		        (markpat (apat', apat'left, apat'right))
 				(markpat (OrPat(pat :: or_pat_list), LPARENleft, RPARENright))
 
 (* FIXME: should be "OP id", but that breaks smlnj/init/built-in.sml *)
-apat'	: OP ident		(VarPat [varSymbol ident])
-	| OP IDA DOT qid	(VarPat (strSymbol IDA :: qid varSymbol))
-	| IDA DOT qid		(VarPat (strSymbol IDA :: qid varSymbol))
+apat'	: OP ident		(VarPat [valSymbol ident])
+	| OP IDA DOT qid	(VarPat (strSymbol IDA :: qid valSymbol))
+	| IDA DOT qid		(VarPat (strSymbol IDA :: qid valSymbol))
 	| int			(IntPat int)
 	| WORD			(WordPat WORD)
 	| STRING		(StringPat STRING)
@@ -373,12 +373,12 @@ apat'	: OP ident		(VarPat [varSymbol ident])
                                  end)
 
 plabel	: selector EQUALOP pat	((selector, pat))
-	| id			(labSymbol id, VarPat [varSymbol id])
+	| id			(labSymbol id, VarPat [valSymbol id])
 	| id AS pat		(labSymbol id,
-				 LayeredPat{variable = varSymbol id,
+				 LayeredPat{variable = valSymbol id,
 					    main = pat})
 	| id COLON ty		(labSymbol id,
-				 ConstraintPat {pattern=VarPat [varSymbol id],
+				 ConstraintPat {pattern=VarPat [valSymbol id],
 					        constraint=ty})
 	| id COLON ty AS pat	(labSymbol id,
 				 LayeredPat {variable = valSymbol id,
@@ -419,7 +419,7 @@ rpat	: LPAREN rpat RPAREN	(rpat)
 				      }
 				  end)
 	| OP id constraint	(fn (lazy, exp) => Rvb{
-				    var = varSymbol id, fixity = NONE,
+				    var = valSymbol id, fixity = NONE,
 				    resultty = constraint,
 				    exp = exp, lazyp = lazy
 				  })
@@ -478,12 +478,12 @@ db	: idtyc EQUALOP constrs	         (Db{tyc=tycSymbol idtyc,
 constrs : constr		([constr])
 	| constr BAR constrs	(constr :: constrs)
 
-constr	: op_op id		(varSymbol id, NONE)
-	| op_op id OF ty	(varSymbol id, SOME ty)
+constr	: op_op id		(valSymbol id, NONE)
+	| op_op id OF ty	(valSymbol id, SOME ty)
 
-eb	: op_op id		([EbGen{exn=(varSymbol id),etype=NONE}])
-	| op_op id OF ty	([EbGen{exn=(varSymbol id),etype=SOME ty}])
-	| op_op id EQUALOP qid	([EbDef{exn=varSymbol id, edef=qid varSymbol}])
+eb	: op_op id		([EbGen{exn=(valSymbol id),etype=NONE}])
+	| op_op id OF ty	([EbGen{exn=(valSymbol id),etype=SOME ty}])
+	| op_op id EQUALOP qid	([EbDef{exn=valSymbol id, edef=qid valSymbol}])
 	| eb AND eb		(eb1 @ eb2)
 
 qid_p	: qid			([qid strSymbol])
@@ -513,9 +513,9 @@ ldec	: VAL vb		(ValDec(vb,nil))
 	| EXCEPTION eb		(ExceptionDec eb)
 	| OPEN qid_p		(OpenDec qid_p)
 	| fixity ops		(FixDec{fixity=fixity, ops=ops})
-	| OVERLOAD id AS exp_pa (OvldDec(varSymbol id, exp_pa))
+	| OVERLOAD id AS exp_pa (OvldDec(valSymbol id, exp_pa))
 	| OVERLOAD id COLON ty AS exp_pa
-				(OvldDec(varSymbol id, exp_pa))
+				(OvldDec(valSymbol id, exp_pa))
 
 exp_pa	: exp			([exp])
 	| exp AND exp_pa	(exp :: exp_pa)
@@ -567,12 +567,12 @@ tyspec	: tyspec AND tyspec	(tyspec1 @ tyspec2)
         | tyvars idtyc EQUALOP ty  ([(tycSymbol idtyc,tyvars,SOME ty)])
 
 valspec	: valspec AND valspec	(valspec1 @ valspec2)
-	| op_op ident COLON ty  ([(varSymbol ident,ty)])
+	| op_op ident COLON ty  ([(valSymbol ident,ty)])
 
 
 exnspec : exnspec AND exnspec	(exnspec1 @ exnspec2)
-	| id			([(varSymbol id,NONE)])
-	| id OF ty		([(varSymbol id,SOME ty)])
+	| id			([(valSymbol id,NONE)])
+	| id OF ty		([(valSymbol id,SOME ty)])
 
 sharespec: sharespec AND sharespec	(sharespec1 @ sharespec2)
 	 | TYPE patheqn	([MarkSpec (ShareTycSpec(patheqn tycSymbol),

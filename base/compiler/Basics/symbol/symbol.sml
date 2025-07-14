@@ -56,52 +56,48 @@ in
 	 | 0w8 => FIXspace
 	 | _ => EM.impossible "Symbol.nameSpace"
 
-  (* mkSymbol : string * namespace -> symbol *)
-  fun mkSymbol (name: string, ns : namespace) = 
+  (* mkSymbol : namespace -> string -> symbol *)
+  fun mkSymbol (ns : namespace) (name: string) : symbol = 
       (HS.hashStrinig name + nameSpaceOffset ns, name)
 
-
-  (* value Symbols -- names of  value variables and data constructors *)
+  (* value Symbols -- names of value variables and data constructors *)
 
   (* valSymbol : string -> symbol *)
-  fun valSymbol (name: string) = mkSymbol (name, VALspace)
+  val valSymbol = mkSymbol VALspace
 
 
   (* type constructors and type variables *)
 
   (* tycSymbol : string -> symbol *)
-  fun tycSymbol (name: string) = mkSymbol (name, TYCspace)
+  val tycSymbol = mkSymbol TYCspace
 
   (* tyvSymbol : string -> symbol *)
-  fun tyvSymbol (name: string) = mkSymbol (name, TYVspace)
+  val tyvSymbol = mkSymbol TYVspace
 
 
   (* modules and module signatures *)
 
   (* strSymbol : string -> symbol *)
-  fun strSymbol (name: string) = mkSymbol (name, STRspace)
+  val strSymbol = mkSymbol STRspace
 
   (* fctSymbol : string -> symbol *)
-  fun fctSymbol (name: string) = mkSymbol (name, FCTspace)
+  val fctSymbol = mkSymbol FCTspace
 
   (* sigSymbol : string -> symbol *)
-  fun sigSymbol (name: string) = mkSymbol (name, SIGspace)
+  val sigSymbol = mkSymbol SIGspace
 
   (* fsigSymbol : string -> symbol *)
-  fun fsigSymbol (name: string) = mkSymbol (name, FSIGspace)
+  val fsigSymbol = mkSymbol FSIGspace
 
 
   (* others -- these an not essential *)
 
   (* fixSymbol : string -> symbol *)
-  fun fixSymbol (name: string) = mkSymbol (name, FIXspace)
+  val fixSymbol = mkSymbol FIXspace
 
   (* labSymbol : string -> symbol *)
-  fun labSymbol (name: string) = mkSymbol (name, LABspace)
+  val labSymbol = mkSymbol LABspace
 
-
-  (* eq : symbol * symbol -> bool *)
-  fun eq (SYMBOL(a1,b1),SYMBOL(a2,b2)) = a1=a2 andalso b1=b2
 
   (* compare : symbol * symbol -> order *)
   fun compare ((hash1, name1): symbol, (hash2, name2): symbol) =

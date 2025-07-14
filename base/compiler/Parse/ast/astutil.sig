@@ -1,4 +1,4 @@
-(* astutil.sig
+(* Parse/ast/astutil.sig
  *
  * COPYRIGHT (c) 2018, 2025 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
@@ -21,8 +21,12 @@ sig
 
   val unitExp : Ast.exp
   val unitPat : Ast.pat
+  
+  (* reparsing: used in Reparse (& maybe ElabCore?) *)
+  vol patToFixSymbol : Ast.pat -> (Symbol.symbol * string) option
+  val expToFixSymbol : Ast.exp -> (Symbol.symbol * string) option
 
-  (* QUOTES *)
+  (* "Object language" quotation *)
   val quoteExp : string -> Ast.exp
   val antiquoteExp : Ast.exp -> Ast.exp
 

@@ -653,13 +653,12 @@ let
 		     {apply = (fn(f,a) => AppExp{function=f,argument=a}),
 		      pair = (fn (a,b) => TupleExp[a,b])}
 
-    (* elabExp : Ast.exp * SE.staticEnv * SL.region -> Absyn.exp * TS.tyvarset * tyvarsetUpdater *)
-    (* The exp argument should never by a flatAppExp, because of prior reparsing. *)
-    fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
+(* elabExp : Ast.exp * SE.staticEnv * SL.region -> Absyn.exp * TS.tyvarset * tyvarsetUpdater *)
+(* The exp argument should never by a flatAppExp, because of prior reparsing. *)
+fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 		: (Absyn.exp * TS.tyvarset * tyvarsetUpdater) =
-        let val union = checkedUnion (region, "elabExp")
-	 in
- 	(case exp
+    let val union = checkedUnion (region, "elabExp")
+    in (case exp
 	   of Ast.FlatAppExp expfixitems =>
 	        elabExp (Reparse.reparseFlatAppExp (expfixitems, env, region), env, region)
 	    | Ast.VarExp path =>  (* path : S.symbol list *)

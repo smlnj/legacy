@@ -1,4 +1,4 @@
-(* ast.sml
+(* Parse/ast/ast.sml
  *
  * Syntax trees for bare ML
  *
@@ -84,7 +84,6 @@ struct
       = VarExp of path			(* variable *)
       | FnExp of rule list		(* abstraction *)
       | FlatAppExp of exp list   	(* expressions before fixity parsing *) *)
-(*    | FlatAppExp of exp fixitem list	(* old version of FlatAppExp *) *)
       | AppExp of {function:exp,argument:exp}
 				    	(* application *)
       | CaseExp of{expr:exp,rules:rule list}
@@ -131,7 +130,6 @@ struct
       | ListPat of pat list			(* [list,in,square,brackets] *)
       | TuplePat of pat list			(* tuple *)
       | FlatAppPat of pat list		        (* patterns before fixity parsing *) *)
-(*    | FlatAppPat of pat fixitem list		(* old version for FlatAppPat *) *)
       | AppPat of {constr:pat, argument:pat}	(* constructor application *)
       | ConstraintPat of {pattern:pat, constraint:ty}
 						(* constraint *)
@@ -271,16 +269,5 @@ struct
       | TupleTy of ty list		  (* tuple *)
       | MarkTy of ty * SL.region          (* region-marked type *)
 
-  (* We might not need the following two functions. Used in ElabCore to check whether a 
-     symbol is an infix function (variable) symbol? *)
-    (* patToSymbols : pat -> (S.symbol * S.symbol) option *)
-    (* result symbol is in the fixity namespace *)
-    fun patToSymbols (VarPat [name]) = SOME (S.valSymbol name, S.fixSymbol name)
-      | patToFixSymbol _ =  NONE
-
-    (* expToSymbols : exp -> (S.symbol * S.symbol) option *)
-    (* result symbol is in the fixity namespace *)
-    fun expToSymbols (VarExp [name]) = SOME (S.valSymbol name, S.fixSymbol name)
-      | expToFixSymbol _ =  NONE
 
 end (* structure Ast *)
