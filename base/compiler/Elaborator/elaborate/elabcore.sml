@@ -4,10 +4,6 @@
  * All rights reserved.
  *)
 
-(* TODO:
- * 1. move full reparse fuction(s) for pat and exp into the Precedence structure. 
- *)
-
 signature ELABCORE =
 sig
 
@@ -99,6 +95,7 @@ fun showDec (msg, dec, env) =
 (* ========================================================================================== *)
 (* some specialized error reporting functions *)
 
+(* Not needed with new ErrorMsg signature:
 (* error0 : SL.region * EM.severity * string -> unit *)
 (* error0 is EM.error "partially applied" to EM.nullErrorBody (=> empty format) *)
 fun error0 (region: SL.region, severity: EM.severity, msg: string) : unit =
@@ -109,8 +106,7 @@ fun error0 (region: SL.region, severity: EM.severity, msg: string) : unit =
 fun error (msg: string) : unit =
     error0 (SL.NULLregion, EM.COMPLAIN, msg)
 
-(* errorRegion : SL.region * string -> unit *)
-fun errorRegion (region, msg) = error0 (region, EM.COMPLAIN, msg)
+*)
 
 (* checkedUnion : SL.region * string -> (TS.tyvarset * TS.tyvarset, region) -> TS.tyvarset *)
 (* check tyvarset unions for incompatible tyvars, e.g. 'a and ''a in "same scope" *)
@@ -118,7 +114,7 @@ fun checkedUnion (region: SL.region, Where: string)
       (tyvarset1: TS.tyvarset, tyvarset2 : TS.tyvarset) : TS.tyvarset =
     case TS.union (tyvarset1, tyvarset2)
       of SOME u => u
-       | NONE => (errorRegion (region, "tyvarset union [" ^ Where ^"]"); TS.empty)
+       | NONE => (EM.errorRegion (region, "tyvarset union [" ^ Where ^"]"); TS.empty)
 
 (* checkedDiff : SL.region * string -> (TS.tyvarset * TS.tyvarset, region) -> TS.tyvarset *)
 (* check tyvarset differences for incompatible tyvars, e.g. 'a and ''a in "same scope" *)
@@ -126,7 +122,7 @@ fun checkedDiff (region: SL.region, Where: string)
       (tyvarset1: TS.tyvarset, tyvarset2 : TS.tyvarset) : TS.tyvarset =
     case TS.diff (tyvarset1, tyvarset2)
       of SOME u => u
-       | NONE => (errorRegion (region, "tyvarset union [" ^ Where ^"]"); TS.empty)
+       | NONE => (EM.errorRegion (region, "tyvarset union [" ^ Where ^"]"); TS.empty)
 
 
 (* ========================================================================================== *)
@@ -166,7 +162,7 @@ fun noTyvars (dec, env) = (dec, env, TS.empty, nullUpdater)
 (* lazyKind: used for communicating information about lazy FunDec decs
  * between preprocessing phase (fb_folder, formerly makevar) and the main part of elabFunDec. *)
 
-datatype lazyKind = STRICT | DELAY | FORCE  (* attribute of (Ast) fundec (parsed fb) *)
+datatype lazyKind = STRICT | DELAY | FORCE  (* attribute of (Ast) fundec (a parsed fb) *)
 
 (* fb_clause: the argument type, or contents, of the Ast.Clause data constructor.
    This represents a partially parsed clause of a function declaration (represented by an fb).
@@ -185,12 +181,12 @@ datatype lazyKind = STRICT | DELAY | FORCE  (* attribute of (Ast) fundec (parsed
    actual argument pattern list are extracted by the parseLHS function
    (elabFunDec#fb_folder#parseLHS). *)
 
-type fb_clause =  {pats: pat fixitem list, resultty: ty option, exp:exp}
+type fb_clause =  {pats: pat list, resultty: ty option, exp:exp}
 
 (* ast_clause -- the basic, fully parsed, fb clause, the elements, containing just 
- * two things: the argpats (LHS) and exp (RHS), derived by parsing an fb_clause, and
- * not including the properties that are, in principle, common to all clauses
- * of an fb, like the function name, the curried arity, and the (optional) result type.
+ * two things: the argpats (derived from the LHS) and exp (RHS), derived by parsing an fb_clause,
+ * and not including the properties that are, in principle, common to all clauses
+ * of an fb, like the function name, the curried arity, and the optional result type.
  * -- argpats:  the argument patterns (Ast.pat), fully parsed, after the analysis to
  *              extract the function name symbol. The number of argpats should be the
  *              same for all clauses of a function declaration (i.e., an Ast.fb).
@@ -221,18 +217,18 @@ type ast_clause = {argpats: Ast.pat list, exp: Ast.exp}  (* belongs in ElabUtil?
 type fundec0  (* fold accumulator argument in ast_clausesFolder -- a "subset" of fundec *)
   = {funsym: S.symbol,   (* the symbol is the function name - must be consistent across clauses*)
      arity: int,         (* arity = length argpats - must be consistent across clauses *)
-     resTyOp: (T.ty * TS.tyvarset) option  (* the elaborated optional result type - must be
-					    * consistent across clauses *)
-     clauses: ast_clause list}      (* the list of "parsed" function clauses *)
+     resTyOp: (T.ty * TS.tyvarset) option  (* the elaborated optional result type -
+					    * must be consistent across clauses *)
+     clauses: ast_clause list}  (* the list of "reparsed" and analyzed function clauses or rules *)
 
-(* fundec adds lazyKind and region to fundec0 *)
+(* fundec adds lazyKind and region fields to fundec0 *)
 type fundec
   = {funsym: S.symbol,   (* the symbol is the function name - must be consistent across clauses*)
      arity: int,         (* arity = length argpats - must be consistent across clauses *)
      resTyOp: (T.ty * TS.tyvarset) option, (* the elaborated optional result type - must be
 					    * consistent across clauses *)
      clauses: ast_clause list,  (* the ast_clause list is the list of parsed function clauses *)
-     lazy: lazyKind,
+     lazy: lazyKind,   (* determined by bool argument to Ast.Fb *)
      region: SL.region}
 
 (* as_clause: the Absyn record for a clause produced by elabClause
@@ -248,23 +244,6 @@ type as_fundec =
       tyvarset: TS.tyvarset ref
       region: SL.region}
 
-(* 
-   Defn of type Ast.fixitem, repeated here for refernce.
-   fixitems are produced by the parser (ml.grm.sml) as the result of parsing atomic patterns
-   and atomic expressions.
-
-   ('a |-> pat or 'a |-> exp)
-   type 'a fixitem = {item: 'a,                (* a pattern, Ast.pat or expression, Ast.exp *)
-                      fixity: S.symbol option, (* SOME f' <=> item = VarPat [f], where
-                                                * f and f' are var- and fix- symbols with
-						* the same name *)
-		      region: SL.region}
-
-   Where 'a will be instantiated to either Ast.pat (for pat reparsing) or Ast.exp
-   (for exp reparsing).
-
-*)
-
 (* ========================================================================================== *)
 (* some utility functions not defined in ElabUtil -- though they could be moved there! *)
 
@@ -276,10 +255,10 @@ fun stripExpAbs (MARKexp (e,_)) = stripExpAbs e
 
 (* stripExpAst : Ast.exp -> Ast.exp
  * Like stripExpAbs except operating on the Ast representtion. *)
-fun stripExpAst(MarkExp(e,r'),r) = stripExpAst(e,r')
-  | stripExpAst(ConstraintExp{expr=e,...},r) = stripExpAst(e,r)
-  | stripExpAst(SeqExp[e],r) = stripExpAst(e,r)
-  | stripExpAst(FlatAppExp[{item,region,...}],r) = stripExpAst(item,region)
+fun stripExpAst (MarkExp (e, r'), r) = stripExpAst (e, r')
+  | stripExpAst (ConstraintExp {expr=e,...}, r) = stripExpAst (e,r)
+  | stripExpAst (SeqExp[e], r) = stripExpAst (e,r)
+  | stripExpAst (FlatAppExp [exp], r) = stripExpAst (item, r)  (* does not need to be reparsed *)
   | stripExpAst x = x
 
 (* dummyFNexp : AS.exp : As.exp
@@ -304,6 +283,7 @@ end
 exception FreeOrVars
 (* used when creating a hash table in the OrPat case of elabPat *)
 
+(* elabDec : Ast.dec * SE.staticEnv * (T.tycon -> bool) * IP.path * SL.region -> AS.dec * SE.staticEnv *)
 (* ELABORATE GENERAL (core) DECLARATIONS -- the main elaboration function *)
 and elabDec (dec, env, isFree, rpath, region) =
 
@@ -422,17 +402,17 @@ let
 		       (case LU.lookVal (env, SP.SPATH qid)
 			  of SOME (V.CON (dcon as T.DATACON{rep=(A.EXN _), ...})) => dcon
 			   | SOME (V.CON _) =>
-			     (errorRegion
+			     (EM.errorRegion
 				(region,
 				 "ElabCore.elabEb[EbDef]: found data constructor instead of exception");
 			      V.bogusEXN)
 			   | SOME (V.VAL _) =>
-			     (errorRegion
+			     (EM.errorRegion
 			       (region,
 				"ElabCore.elabEb[EbDef]: found variable instead of exception");
 			      V.bogusEXN)
 			   | NONE =>
-			     (errorRegion
+			     (EM.errorRegion
 			        (region,
 				 "ElabCore.elabEb[EbDef]: unbound exception name: "^(S.name ename));
 			      V.bogusEXN)
@@ -451,7 +431,7 @@ let
 	let fun folder (exc,(ebs,enames,env_acc,tyvarset_acc)) =
 		  let val (eb, ename, env_inc, tyvarset_inc) = elabEb (exc, env, region)
 		   in if EU.checkForbiddenCons ename
-		      then errorRegion
+		      then EM.errorRegion
 			    (region,
 			     concat["exception name \"", S.name ename, "\" is forbidden"])
 		      else ();
@@ -461,7 +441,7 @@ let
 	    val (ebs,enames,env,tyvarset) = foldl folder ([], [], SE.empty, TS.empty) excbinds
 	 in if EU.checkUniq enames
             then ()
-	    else errorRegion (region, "duplicate exception declaration");
+	    else EM.errorRegion (region, "duplicate exception declaration");
 		 (* FIX: error message should include the duplicate exception constructor name(s) *)
 	    (EXCEPTIONdec(rev ebs),env,tyvarset,nullUpdater)
 	end
@@ -518,7 +498,7 @@ let
 		       fun insert kv = Tbl.insert tbl kv
 		       fun look k = Tbl.lookup tbl k
 		       fun errorMsg (x: S.symbol) =
-			   errorRegion
+			   EM.errorRegion
 			     (region,
 			      ("variable " ^ S.name x ^ " does not occur in all branches of or-pattern"))
 		       fun insFn (id: S.symbol, access, tyref) =
@@ -599,7 +579,7 @@ let
 		       in (EU.makeAPPpat (dcon_pat, arg_pat), tyvarset)
 		      end
 		 | getVar (_, region) =
-		   (errorRegion (region, "non-constructor applied to argument in pattern");
+		   (EM.errorRegion (region, "non-constructor applied to argument in pattern");
 		    (WILDpat, TS.empty))
 	    in getVar (constr, region)
 	   end
@@ -621,8 +601,8 @@ let
 	    in (AS.MARKpat (pat', region), tyvarset)
 	   end
 
-       | Ast.FlatAppPat patfixitems =>
-	   elabPat (Reparse.reparseFlatAppPat (patfixitems, env, region), env, region)
+       | Ast.FlatAppPat pats =>
+	   elabPat (Reparse.reparseFlatAppPat (pats, env, region), env, region)
 
     end (* fun elabPat *)
 
@@ -659,8 +639,8 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 		: (Absyn.exp * TS.tyvarset * tyvarsetUpdater) =
     let val union = checkedUnion (region, "elabExp")
     in (case exp
-	   of Ast.FlatAppExp expfixitems =>
-	        elabExp (Reparse.reparseFlatAppExp (expfixitems, env, region), env, region)
+	   of Ast.FlatAppExp exps =>
+	        elabExp (Reparse.reparseFlatAppExp (exps, env, region), env, region)
 	    | Ast.VarExp path =>  (* path : S.symbol list *)
 	       let val sympath =  SP.SPATH path
 		in ((case LU.lookVal (env, sympath)
@@ -682,7 +662,7 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 				    end
 			       else AS.CONexp (d, []))  (* not LAZY *)
 		     | NONE => (* path not found in env *)
-			 (errorRegion (region, "elabExp: unbound path" ^ SymPath.toString sympath);
+			 (EM.errorRegion (region, "elabExp: unbound path" ^ SymPath.toString sympath);
 			  AS.SEQexp nil)), (* dummy return value of type AS.exp *)
 		  TS.empty,
 		  nullUpdater)
@@ -703,16 +683,15 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 		     case Real64ToBits.classify r
 		       of IEEEReal.INF =>
 			    (* literal would cause overflow when converted to IEEE float format *)
-			    (errorRegion (region, concat ["real literal '", src, "' is too large"]);
+			    (EM.errorRegion (region, concat ["real literal '", src, "' is too large"]);
 			     result r)
 		       | IEEEReal.ZERO =>
 			   if RealLit.isZero r
 			   then result r
-			   else (EM.error region EM.WARN
+			   else (EM.warnRegion (region,
 				  (String.concat
 				     ["real literal '", src, "' is too small and will be rounded to ",
-				      if (RealLit.isNeg r) then "~0.0" else "0.0"])
-				  EM.nullErrorBody;
+				      if (RealLit.isNeg r) then "~0.0" else "0.0"]))
 		               result (RealLit.zero(RealLit.isNeg r)))
 		       | _ => result r
 		end
@@ -774,7 +753,7 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 			  elabDec' (dec, env, IP.IPATH[], region)
 		   val envBody = SE.atop (e1, env)
 		   val (e2, tyvarset2, updater2) =
-		       elabExp (Reparse.reparseExp (expr, envBody, region), envBody, region)
+		       (elabExp (expr, envBody, region), envBody, region)
 		   fun updater tv = (updater1 tv; updater2 tv)
 		in (LETexp (d1, e2), union (tyvarset1, tyvarset2), updater)
 	       end
@@ -830,10 +809,6 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 		end,
 		TS.empty, nullUpdater)
     end (* elabExp *)
-
-    (* elabExpReparsed : AS.exp * SE.staticEnv * retion -> AS.exp *)
-    and elabExpReparsed (exp, env, region) =
-	elabExp (Reparse.reparseExp (exp, env, region), env, region)
 
     (* elabExpFields : (S.symbol * Ast.exp) list * SE.staticEnv * SL.region
                     -> (S.symbol * AS.exp) list * TS.tyvarset * tyvarsetUpdater *)
@@ -947,7 +922,7 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 	   | Ast.DoDec exp => elabDOdec(exp, env, region)
 
 	   | Ast.FunDec (fbs, explicitTvs) =>
-	       elabFUNdec(fbs, explicitTvs, env, rpath, region)
+	       elabFUNdec (fbs, explicitTvs, env, rpath, region)
 
 	   | Ast.ValrecDec (rvbs, explicitTvs) =>
 	       elabVALRECdec (rvbs, explicitTvs, env, rpath, region)
@@ -1017,7 +992,7 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 		  let val path' = SP.SPATH path
                    in case LU.lookStr(env, path')
 		        of SOME str => (path', str)
-			 | NONE => (errorRegion (region,
+			 | NONE => (EM.errorRegion (region,
 				    "elabOPENdec: undefined path: "^SP.toString path');
 				    (path', M.ERRORstr))
                   end
@@ -1042,7 +1017,7 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 	  let val union = checkedUnion (region, "elabVB")
               val diff = checkedDiff (region, "elabVB")
 	      val (pat, tyvarset_pat) = elabPat (pat, env, region)
-	      val (exp, tyvarset_exp, updater_exp) = elabExpReparsed (exp, env, region)
+	      val (exp, tyvarset_exp, updater_exp) = elabExp (exp, env, region)
 	      val exp = if lazyp  (* LAZY *)
 		        then delayExp (forceExp exp)
 			else exp
@@ -1129,7 +1104,7 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 	    of (FnExp _, region') =>
 	       (* DBM: where should region vs region' be used? Seems to depend on what
 		  stripExpAst does. *)
-	        let val (e, ev, updater) = elabExpReparsed (exp, env, region')
+	        let val (e, ev, updater) = elabExp (exp, env, region')
 		    val (t,tv) =
 			case resultty
 			  of SOME ty_result =>
@@ -1143,14 +1118,14 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 			   (case LU.lookFix (env,f)
 			      of F.NONfix => ()  (* NONfix OK *)
 			       | _ =>
-				 errorRegion (region,
+				 EM.errorRegion (region,
 				   ("elabRVB: infix symbol \""^ S.name f ^
 				    "\" used where a nonfix identifier was expected")));
 		    ({match = e, ty = t, name=var},
 		     checkedUnion (region, "elabRVB") (ev, tv),
 		     updater)
 		end
-	     | _ => (errorRegion (region, "fn expression required on rhs of val rec");
+	     | _ => (EM.errorRegion (region, "fn expression required on rhs of val rec");
 		     ({match = dummyFNexp, ty = NONE, name = var}, TS.empty, nullUpdater)))
 
     (* elabVALRECstrict : Ast.rvb list * TS.tyvarset * SE.staticEnv * SL.region
@@ -1194,7 +1169,7 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
             (*  check uniqueness of function names in the VALREC *)
 	    val _ = if EU.checkUniq (map (fn (_, {name,...}) => name) rvbs)
 		    then ()
-		    else errorRegion (region, "duplicate function name in val rec dec")
+		    else EM.errorRegion (region, "duplicate function name in val rec dec")
 
             val (ndec, nenv) =
   	        EU.wrapRECdec (map (fn (v, {ty, match, name}) =>
@@ -1228,7 +1203,7 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 	    fun folder ((exp, lazyp), (fexps_acc, tyvarset_acc, updaters_acc)) =
 		let val (pat', tyvarset_pat) = elabPat (argpat, env, region)
 		    val env' = SE.atop (EU.bindVARp [pat'], env)
-		    val (exp', tyvarset_exp, updater) = elabExpReparsed (exp, env', region)
+		    val (exp', tyvarset_exp, updater) = elabExp (exp, env', region)
 		 in (FNexp (completeMatch [RULE (pat', if lazyp then exp' else delayExp exp')],
 			    T.UNDEFty) :: fexps_acc,
 		     union (union (tyvarset_pat, tyvarset_exp), tyvarset_acc),
@@ -1412,7 +1387,7 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 			    patterns (without "applied variables"). Thus we don't support case 31 below.
 			    Case 4c is not supported by the Defn (Revised) grammar.
 			Cases:
-			   1. fun f apat_1 ... apat_n =     -- f nonfix id (a variable symbol w NONfix fixity)
+			   1. fun f apat_1 ... apat_n =     -- f nonfix variable (valSymbol, not datacon)
 			                                       1st apat is VarPat [f]
 			   2. fun op f apat_1 ... apat_n =  -- f possibly infix id (doen't matter)
 			                                       1st apat is VarPat [f] even if f INfix
@@ -1424,13 +1399,20 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 			                                       where apat_1 does not have var head operator
 			   4c. fun apat_1 f apat_2 apat_3 ... =
 			                                    -- f infix id, additional curried patterns !!
-			   5. fun apat_1 f apat_2 : ty =
+			   5. fun apat_1 f apat_2 : ty =    -- like 4. with result type ascription
 
 			   NOTES: (1) only 1. and 2. support currying (3c not supported).
 			          (2) Case 3 is the argpat1 = [item=FlatAppPat items, ...} case.
 				      where f is NONfix, non-dcon "head" of the (completely) parsed FlatAppPat.
 			          (3) Case 4 is the argpats = [a, <f>, b] case with f infix. a and b can contain variables
 			              and constructor ids. f is the funsym
+
+                           Example:
+
+                              fun a :: b f x :: y  -- f infix variable precedence 6 (weaker than "::")
+			        ==> fun (a :: b) f (x :: y)       (f ((a :: b), (x :: y)))
+				(reparse [a, ::, b, f, x, ::, y])  
+
 
 			   Defn of "head identifier" of a pattern
 			      path if the pattern is VarPat path

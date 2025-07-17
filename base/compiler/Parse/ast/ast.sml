@@ -25,44 +25,7 @@ struct
     (* "raw" symbolic path as symbol list (corresponds to Modules.spath) <> SymPath.path *)
     type path = S.symbol list
 
-(* replace fixitem with pat: 
-
-    type 'a fixitem = {item: 'a, fixity: S.symbol option, region: SL.region}
-      (* item will be either an exp or a pat. fixity is SOME only when the exp or pat
-       * is an identifier (id in sml.grm), in which case the symbol is the identifier
-       * symbol translated to the fixity name space. *)
-      (* FIX 1: "fixity" is a rather poor name for this field.
-       * FIX 2: This type has some redundancy, since symbol option part is SOME iff
-       * the item exp/pat part is a variable, in which case the "var" flavor of the
-       * symbol serves as the name of the variable, which can be used, in conjunction with
-       * a static env, to determine the "fixity" of that variable/symbol. Thus the 
-       * symbol option component is not needed. Thus the simpler version would be 
-       * just "type 'a fixitem = {item: 'a, region: SM.region}, where 'a = pat or exp. *)
-
-    Alternatively (1)
-     -- replace "fixity" field name with "symbol" and define two non-polymorphic types:
-
-      ...
-      withtype patfixitem = {item: pat, symbol: S.symbol option, region: SL.region}
-      and expfixitem = {item: exp, symbol: S.symbol option, region: SL.region}
-   
-    But should not do this because then there would have to be two versions of the
-    precedence parser!  Better to have a single, polymorphic, precedence parser, or
-    we could encapsulate the precedence parser in a functor that would take the item
-    type as a parameter.
-
-    Or we could incorporate the pat and exp reparsing functions in the Precedence structure
-    and export them as two monomorphic functions from that structure.
-
-    Alternatively (2)
-    Just use pat/exp instead of fixitem.
-    E.g., a variable pattern is of the form "VarPat [name]" where name is a string.
-    We can get the corresponding VALspace and FIXspace symbols for name "Symbol.valAndFix".
-    If we want to make sure that the pat represents a variable, we have to check that the
-    VALspace symbol is not bound to a constructor, since variables and constructors are
-    both in the VALspace name space.
-
-  *)
+  (*  old pat fixitem replaced by pat,  exp fixitem replaced by exp *)
 
   (* integer/word literal; the string is the literal as it appeared in the source
    * and the int is the value of the literal.
@@ -194,7 +157,7 @@ struct
     and dec = ValDec of (vb list * tyvar list)		(* values *)
 	    | ValrecDec of (rvb list * tyvar list)	(* recursive values *)
 	    | DoDec of exp				(* 'do' exp *)
-	    | FunDec of (fb list * tyvar list)		(* recurs functions *)
+	    | FunDec of (fb list * tyvar list)		(* mutually recursive functions *)
 	    | TypeDec of tb list			(* type dec *)
 	    | DatatypeDec of {datatycs: db list, withtycs: tb list} (* datatype dec *)
 	    | DataReplDec of S.symbol * path            (* dt replication *)
@@ -224,8 +187,11 @@ struct
     and fb = Fb of clause list * bool (* bool = true => lazy *)
 	   | MarkFb of fb * SL.region
 
-    (* CLAUSE: a definition for a single pattern in a function binding *)
-    and clause = Clause of {pats: pat fixitem list, resultty: ty option, exp:exp}
+    (* CLAUSE: single a rule (pat = exp) in a function binding *)
+    (* LHS is a list of patterns that has to be analyzed to determine the function
+     * name and the rule parameter patterns. This is not trivial because of infix
+     * symbols used as function names and infix datacons. *)
+    and clause = Clause of {pats: pat list, resultty: ty option, exp:exp}
 
     (* TYPE BINDING *)
     and tb = Tb of {tyc : S.symbol, def : ty, tyvars : tyvar list}

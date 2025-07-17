@@ -19,7 +19,9 @@ in
      space (nameSpaceOffset). There are 9 different varieties of symbols, distinguished
      by their name spaces. *)
 
-  datatype symbol = word * string
+  type rawsymbol = word * string
+
+  type symbol = word * string   (* the hash (word) includes a small namespace offset *)
 
   (* 9 name spaces! Too many! Name spaces will become separate environment components in NFE.
    * LABspace and FIXspace can be dropped, while the module spaces can be merged,

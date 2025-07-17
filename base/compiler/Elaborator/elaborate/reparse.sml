@@ -125,7 +125,8 @@ fun precedenceParse (items: I.item list, env: StaticEnv.staticEnv, region: SL.re
 
     end (* fun precedenceParse *)
 
-end (* functor Reparse *)
+end (* local -- imports *)
+end (* functor ReparseFct *)
 
 
 structure PatternItem : ITEM =
@@ -264,19 +265,11 @@ end (* structure Reparse *)
 
    is not possible, because bodies of embedded let subexpressions would need to
    be called with a possibly augmented staticEnv argument for the body of let expressions.
-   So reparsing for expressions cannot be fully separated from general elaboration becuase of
+   Reparsing for expressions cannot be fully separated from general elaboration becuase of
    the "let" case, which requires elaboration of the dec part of the let.
 
    Instead of using reparseExp, we use reparseFlatAppExp for the FlatAppExp case
    in the elabExp function and depend on the recursive definition of elabExp (in ElabCore)
    to generate the appropriate static environments (and hence infix bindings) for let bodies.
-
-
-    (* Reparsing expressions is complicated by the fact that the declaration part of a
-       let binding may introduce new infix declarations, so the fixity part of the
-       reparsing environment may change, and the reparsing of the body will need to be
-       done using that new fixity environment. So we just provide the reparseFlatAppExp
-       function and let the recursion of elabExp deal with providing the proper env
-       context (e.g. adjusting the env for the body of let expressions). *)
 
 *)
