@@ -3,7 +3,7 @@
  * Specific Real64 values that we need both in the real64.sml and num-scan.sml
  * files.
  *
- * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (https://smlnj.org)
+ * COPYRIGHT (c) 2025 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *)
 
