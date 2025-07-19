@@ -49,6 +49,9 @@ FILES::
 
 === SML/NJ Library
 
+* Added a number of operations to the `MONO_HASH_SET` interface to make
+  it more compatible with the `ORD_SET` interface.
+
 === Successor ML
 
 === ML-LPT
@@ -87,7 +90,11 @@ gforge bug tracker.
 
 // ***** include a list of unnumbered bugs here *****
 * Merged fix for the inverse power-of-five table from the development branch
-  (see https://github.com/smlnj/smlnj/pull/306[Pull Request 306]).
+  (see https://github.com/smlnj/smlnj/pull/306[Pull Request #306]).
+
+* Merge fix for the `IntBinarySet` structure from the development branch
+  (see https://github.com/smlnj/smlnj/pull/308[Pull Request #308] and
+  https://github.com/smlnj/smlnj/issues/310[Issue #310]).
 
 == Supported systems
 

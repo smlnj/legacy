@@ -6,7 +6,7 @@ SML/NJ 110.99.9
 -------------------
 
 [2025-07-17]
-        Merged development pull request #306, which fixed a bug in the `IntBinarySet`
+        Merged development pull request #308, which fixed a bug in the `IntBinarySet`
         structure (Issue #310).
 
 [2025-07-17]
