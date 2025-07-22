@@ -1,0 +1,39 @@
+[DBM, 2025.07.18]
+
+Basics/symbol/fastsymbol.* made redundant (functionality merged into Symbol)
+Basics/util/wordstrhashtable.sml made redundant by Symbol.HashTable.
+Basics/symbol/symbol-hashtable.sml (replaced by Symbol.HashTable)
+Basics/basics.cm  -- above are eliminated from Basics/basics.cm
+
+[DBM, 2025.07.20]
+Issue of symbols and namespaces in Ast and parsing.
+Should the Ast structures contain only (namespace free) raw symbols, or should
+we use namespaced symbols in Ast.
+Environmental lookups are performed on Ast paths, which implies that the structure
+symbols of a path (all but the last one) are in the STRspace.
+The problem is whether it is always the case that when the parser is constructing
+Ast nodes involving symbols, it is clear what namespaces the symbols should be assigned
+to. In certain cases, at least, it appears that raw symbols (without namepace assignments) are used in Ast structures.
+
+The use of namespaced symbols when building Ast structures during parsing implies
+a shallow kind of static semantics processing, e.g. knowing from context that a symbol
+should be in the STRspace or VALspace namespace.
+
+Note that FastSymbol has been eliminated, but this probably does not affect the issue.
+
+[DBM, 2025.07.21]
+Worked on issue of symbols and name spaces in ml.grm and Ast.  The lexer should
+produce strings rather than symbols for identifiers of various flavors (IDA, IDS, TYVAR
+
+
+Instead of having IDA, IDS, TYVAR, and AQID tokens carry a (raw) symbol,
+they now carry just a string, and instead of having to convert their raw
+symbols into namespaced symbols in the parsing actions in ml.grm, now we
+create symbols in the appropriate name space.  In NFE, where symbols will
+be replaced by atoms and namespaces are no longer relevant. Suggestion:
+we could have IDA, etc. have atoms rather than strings as their values. This
+would provide more "uniqueness" for identifiers, and the symbols used in
+Ast would also be atoms.
+ 
+This required changing ml.grm and ml.lex (so ml.lex would produce strings
+rather than symbols.

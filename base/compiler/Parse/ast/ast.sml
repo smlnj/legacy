@@ -2,7 +2,7 @@
  *
  * Syntax trees for bare ML
  *
- * COPYRIGHT (c) 2018 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2018, 2025 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
 
@@ -14,25 +14,39 @@
 structure Ast : AST =
 struct
 
+(* Symbols in the Ast (syntax trees):
+ *   Since elaboration is where namespaces are assigned to symbols, the symbols
+ *   occurring in the Ast data structures will be raw symbols (without assigned
+ *   name spaces, even though in some cases there might be plausible grounds for
+ *   creating "namespaced" symbols during parsing.
+ *)
+
+local (* imports *)
+
     structure SL = SourceLoc
     structure SM = SourceMap
     structure S = Symbol
     structure F = Fixity
 
+in
+
     (* to mark positions in files *)
     type srcpos = SL.charpos  (* character position from beginning of stream (base 1) *)
 
-    (* "raw" symbolic path as symbol list (corresponds to Modules.spath) <> SymPath.path *)
+    (* "raw" symbolic path as raw? symbol list (corresponds to Modules.spath) <> SymPath.path *)
     type path = S.symbol list
 
-  (*  old pat fixitem replaced by pat,  exp fixitem replaced by exp *)
-
-  (* integer/word literal; the string is the literal as it appeared in the source
-   * and the int is the value of the literal.
+  (* CHANGES:
+   * - pat fixitem replaced by pat; exp fixitem replaced by exp
+   * - AppPat constr argument is a path, not a pat
+   * Imprecise Ast datacon types can lead to "abuse" of the datatype.
    *)
+  
+    (* integer/word literal; the string is the literal as it appeared in the source
+     * and the int is the value of the literal. *)
     type literal = string * IntInf.int
 
-  (* real literal; also paired with source string *)
+    (* real literal; also paired with source string *)
     type real_lit = string * RealLit.t
 
     datatype 'a sigConst
@@ -57,16 +71,14 @@ struct
       | WordExp of literal		(* word literal *)
       | RealExp of real_lit		(* floating point coded by its string *)
       | StringExp of string		(* string *)
-      | CharExp of string		(* char *)
-      | RecordExp of (S.symbol * exp) list (* record *)
+      | CharExp of string		(* char *)      | RecordExp of (S.symbol * exp) list (* record *)
       | ListExp of exp list	        (*  [list,in,square,brackets] *)
       | TupleExp of exp list		(* tuple (derived form) *)
       | SelectorExp of S.symbol		(* selector of a record field *)
       | ConstraintExp of {expr:exp,constraint:ty}
 					(* type constraint *)
       | HandleExp of {expr:exp, rules:rule list}
-				 	(* exception handler *)
-      | RaiseExp of exp			(* raise an exception *)
+    (* exception handler *);      | RaiseExp of exp			(* raise an exception *)
       | IfExp of {test:exp, thenCase:exp, elseCase:exp}
 					(* if expression (derived form) *)
       | AndalsoExp of exp * exp		(* andalso (derived form) *)
@@ -93,8 +105,8 @@ struct
       | ListPat of pat list			(* [list,in,square,brackets] *)
       | TuplePat of pat list			(* tuple *)
       | FlatAppPat of pat list		        (* patterns before fixity parsing *) *)
-      | AppPat of {constr:pat, argument:pat}	(* constructor application *)
-      | ConstraintPat of {pattern:pat, constraint:ty}
+      | AppPat of {constr: path, argument: pat}	(* constructor application *)
+      | ConstraintPat of {pattern: pat, constraint: ty}
 						(* constraint *)
       | LayeredPat of {variable: S.symbol, main: pat}   (* as patterns *)
       | VectorPat of pat list			(* vector pattern *)
@@ -235,5 +247,5 @@ struct
       | TupleTy of ty list		  (* tuple *)
       | MarkTy of ty * SL.region          (* region-marked type *)
 
-
+end (* top local - imports *)
 end (* structure Ast *)

@@ -17,15 +17,15 @@ in
 
     val unitPat = Ast.RecordPat {def=nil,flexibility=false}
     val unitExp = Ast.RecordExp nil
-    val trueDcon = [S.varSymbol "true"]
-    val falseDcon = [S.varSymbol "false"]
-    val quoteDcon = [S.strSymbol "SMLofNJ", S.varSymbol "QUOTE"]
-    val antiquoteDcon = [S.strSymbol "SMLofNJ", S.varSymbol "ANTIQUOTE"]
+    val trueDcon = [S.valSymbol "true"]
+    val falseDcon = [S.valSymbol "false"]
+    val quoteDcon = [S.strSymbol "SMLofNJ", S.valSymbol "QUOTE"]
+    val antiquoteDcon = [S.strSymbol "SMLofNJ", S.valSymbol "ANTIQUOTE"]
     val arrowTycon = S.tycSymbol "->"
     val exnID = S.tycSymbol "exn"
-    val bogusID = S.varSymbol "BOGUS"
+    val bogusID = S.valSymbol "BOGUS"
     val symArg = S.strSymbol "<Parameter>"
-    val itsym = [S.varSymbol "it"]
+    val itsym = S.valSymbol "it"
 
     (* checkFix : IntInf.int * SL.region -> int *)
     fun checkFix (i: IntInf.int, region: SL.region) =
@@ -61,8 +61,8 @@ in
 
   (* Quotation *)    
 
-    fun quoteExp s = Ast.AppExp{function=Ast.VarExp quoteDcon,argument=Ast.StringExp s}
-    fun antiquoteExp e = Ast.AppExp{function=Ast.VarExp antiquoteDcon,argument= e}
+    fun quoteExp s = Ast.AppExp{function = Ast.VarExp quoteDcon, argument = Ast.StringExp s}
+    fun antiquoteExp e = Ast.AppExp{function = Ast.VarExp antiquoteDcon, argument = e}
 
 end (* top local (imports) *)
 end (* structure AstUtil *)

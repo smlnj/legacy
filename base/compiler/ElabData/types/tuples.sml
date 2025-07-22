@@ -1,10 +1,12 @@
+(* ElabData/types/tuples.sml *)
 (* Copyright 1989 by AT&T Bell Laboratories *)
-(* tuples.sml *)
+(* Copyright 2025 by The Fellowship of SML/NJ (www.smlnj.org) *)
 
 (* 
  * TUPLES and Tuples should be called RECORDS and Records, since 
  * records are the primary concept, and tuples are a derived form. 
  *)
+
 signature TUPLES = 
 sig
 
@@ -39,7 +41,9 @@ structure TyconArray = DynamicArrayFn (
   end)
 
 exception New
-structure Tbl = WordStringHashTable
+
+structure Tbl = Symbol.HashTable
+
 val tyconTable = Tbl.mkTable (32, New) : tycon Tbl.hash_table
 val tyconMap = Tbl.lookup tyconTable
 val tyconAdd = Tbl.insert tyconTable

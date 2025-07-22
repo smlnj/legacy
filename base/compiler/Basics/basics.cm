@@ -6,7 +6,7 @@
  * Basic definitions and utilities used within the SML/NJ compiler.
  *)
 
-Group
+Group  (* Exports *)
 
 	signature BASIC_CONTROL
 	structure BasicControl
@@ -18,12 +18,10 @@ Group
 	structure PrintUtil
 
 	signature SYMBOL
-	signature FASTSYMBOL
 	signature FIXITY
+
 	structure Symbol
-	structure FastSymbol
 	structure Fixity
-	structure SymbolHashTable
 	structure SpecialSymbols
 
 	signature PERSSTAMPS
@@ -61,14 +59,16 @@ Group
 
 	structure CompInfo
 
-is
+is  (* Member source files *)
+
 	control/basiccontrol.sml
 
 	symbol/symbol.sig
 	symbol/symbol.sml
-	symbol/fastsymbol.sig
-	symbol/fastsymbol.sml
-	symbol/symbol-hashtable.sml
+(*	symbol/fastsymbol.sig        -> SYMBOL (symbol.sig)
+	symbol/fastsymbol.sml        -> Symbol (symbol.sml))
+	symbol/symbol-hashtable.sml  -> Symbol.HashTable (symbol.sml)
+*)
 	symbol/fixity.sml
 	symbol/specialsyms.sml
 
@@ -131,6 +131,9 @@ is
 #else
 	compiler/target64.sml
 #endif
+
+
+(* Imported libraries *)
 
 	$smlnj/basis/basis.cm
 	$smlnj/smlnj-lib/smlnj-lib.cm

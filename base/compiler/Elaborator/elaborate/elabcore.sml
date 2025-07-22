@@ -221,8 +221,8 @@ type fundec0  (* fold accumulator argument in ast_clausesFolder -- a "subset" of
 					    * must be consistent across clauses *)
      clauses: ast_clause list}  (* the list of "reparsed" and analyzed function clauses or rules *)
 
-(* fundec adds lazyKind and region fields to fundec0 *)
-type fundec
+(* fundec1 adds lazyKind and region fields to fundec0 *)
+type fundec1
   = {funsym: S.symbol,   (* the symbol is the function name - must be consistent across clauses*)
      arity: int,         (* arity = length argpats - must be consistent across clauses *)
      resTyOp: (T.ty * TS.tyvarset) option, (* the elaborated optional result type - must be
@@ -1357,162 +1357,210 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 
 		     (* NOTE: patfixitems are produced (only) by the apat productions in the ml.grm grammar. *)
 
-		     (* Parsing the LHS of a Fb clause is rather complicated!
+(* Parsing the LHS of a Fb clause is rather complicated!
 
-			Parsing of LHS atomic patterns (a pat fixitem list) of an fb clause
-			is done by the parseLHS0 function, which checks for various cases: where the defined
-			function symbol is the first atomic pattern, or the cases where the where the defined
-			function symbol is infix and is used as infix (rather than "op f") in the clause LHS.
+   Parsing of LHS atomic patterns (a pat fixitem list) of an fb clause
+   is done by the parseLHS0 function, which checks for various cases: where the defined
+   function symbol is the first atomic pattern, or the cases where the where the defined
+   function symbol is infix and is used as infix (rather than "op f") in the clause LHS.
 
-			with an atomic pattern that is an infix identifier application. If so, it parses that
-                        first pattern.
-			If the result is a variable pattern (with a singleton path), it takes that
-			variable to be the function name.
-			it checks that there are more than one fixitems
-			(need both a function variable.  The problem being solved is that the LHS
-			of a Fb clause is a list of pattern fixitems that needs to be analyzed to
-			find the name (funSym) of the function being declared and bound. *)
+   with an atomic pattern that is an infix identifier application. If so, it parses that
+   first pattern.
+   If the result is a variable pattern (with a singleton path), it takes that
+   variable to be the function name.
+   it checks that there are more than one fixitems
+   (need both a function variable.  The problem being solved is that the LHS
+   of a Fb clause is a list of pattern fixitems that needs to be analyzed to
+   find the name (funSym) of the function being declared and bound.
 
-		        (* "Parse" a clause LHS, i.e., a list of pattern fixitems (derived from
-			   parsing the apats (atomic patterns) representing the LHS of a clause
-			   in the grammar.
-			   We first check whether a 3 element
-			 * patfixitem list should be parsed as an infix application
-			 * (of a datacon or the defined function variable)
-			 * Note. The resulting Ast.pat list may contain pats that need further parsing,
-			   i.e. FlatAppPats
-			 * We choose not to support mixing infix function notation and currying, e.g.
-			    fun x f y z w = ... where f is infix, and not even fun (x f y) z = ....
-			    If f is infix, the only options are fun p1 f p2 where p1 and p2 are atomic
-			    patterns (without "applied variables"). Thus we don't support case 31 below.
-			    Case 4c is not supported by the Defn (Revised) grammar.
-			Cases:
-			   1. fun f apat_1 ... apat_n =     -- f nonfix variable (valSymbol, not datacon)
-			                                       1st apat is VarPat [f]
-			   2. fun op f apat_1 ... apat_n =  -- f possibly infix id (doen't matter)
-			                                       1st apat is VarPat [f] even if f INfix
-			   3. fun (apat_1 f apat_2) =       -- f infix id (no currying! so exactly 3 patFixitems)
-			                                       1st apat is FlatAppPat [<apat_1>, <f>, <apat_2>]
-			   3c. fun (apat_1 f apat_2) apat_3 ... =
-			                                    -- f infix id, additional curried patterns !!
-			   4. fun apat_1 f apat_2 =         -- f infix id (2nd apat), no currying!)
-			                                       where apat_1 does not have var head operator
-			   4c. fun apat_1 f apat_2 apat_3 ... =
-			                                    -- f infix id, additional curried patterns !!
-			   5. fun apat_1 f apat_2 : ty =    -- like 4. with result type ascription
+   "Parse" a clause LHS, i.e., a list of pattern fixitems (derived from
+   parsing the apats (atomic patterns) representing the LHS of a clause
+   in the grammar.
+   We first check whether a 3 element
+   patfixitem list should be parsed as an infix application
+   (of a datacon or the defined function variable)
+   Note. The resulting Ast.pat list may contain pats that need further parsing,
+   i.e. FlatAppPats
 
-			   NOTES: (1) only 1. and 2. support currying (3c not supported).
-			          (2) Case 3 is the argpat1 = [item=FlatAppPat items, ...} case.
-				      where f is NONfix, non-dcon "head" of the (completely) parsed FlatAppPat.
-			          (3) Case 4 is the argpats = [a, <f>, b] case with f infix. a and b can contain variables
-			              and constructor ids. f is the funsym
+   We choose not to support mixing infix function notation and currying, e.g.
+   fun x f y z w = ... where f is infix, and not even fun (x f y) z = ....
+   If f is infix, the only options are fun p1 f p2 where p1 and p2 are atomic
+   patterns (without "applied variables"). Thus we don't support case 31 below.
+   Case 4c is not supported by the Defn (Revised) grammar.
 
-                           Example:
+   Cases:
+      1. fun f apat_1 ... apat_n =     -- f nonfix variable (valSymbol, not datacon)
+					  1st apat is VarPat [f]
+      2. fun op f apat_1 ... apat_n =  -- f possibly infix id (doen't matter)
+					  1st apat is VarPat [f] even if f INfix
+      3. fun (apat_1 f apat_2) =       -- f infix id (no currying! so exactly 3 patFixitems)
+					  1st apat is FlatAppPat [<apat_1>, <f>, <apat_2>]
+      3c. fun (apat_1 f apat_2) apat_3 ... =
+				       -- f infix id, additional curried patterns !!
+      4. fun apat_1 f apat_2 =         -- f infix id (2nd apat), no currying!)
+					  where apat_1 does not have var head operator
+      4c. fun apat_1 f apat_2 apat_3 ... =
+				       -- f infix id, additional curried patterns !!
+      5. fun apat_1 f apat_2 : ty =    -- like 4. with result type ascription
 
-                              fun a :: b f x :: y  -- f infix variable precedence 6 (weaker than "::")
-			        ==> fun (a :: b) f (x :: y)       (f ((a :: b), (x :: y)))
-				(reparse [a, ::, b, f, x, ::, y])  
+      NOTES: (1) only 1. and 2. support currying (3c not supported).
+	     (2) Case 3 is the argpat1 = [item=FlatAppPat items, ...} case.
+		 where f is NONfix, non-dcon "head" of the (completely) parsed FlatAppPat.
+	     (3) Case 4 is the argpats = [a, <f>, b] case with f infix. a and b can
+		 contain variables and datacon symbols. f is the definee funsym.
+
+   Example:
+
+	fun a :: b f x :: y  -- f infix variable precedence 2 (weaker than "::")
+	  [Clause (apats:[<<a>>, <<::>>, <<b>>, <<f>>, <<x>> <<::>> <<y>>], tyvars:*, region:* )]
+	  ==> fun (a :: b) f (x :: y)  ==>  fun f ((a :: b), (x :: y))
+	  (reparse [a, ::, b, f, x, ::, y])  [list of 7 atomic symbol patterns]
+
+   This example shows that the definee symbol ("f" here) may appear at some later
+   point in the LHS pattern list (in this case at position 4).  It may be preceeded
+   by several patterns that are parsed into an _argument_ pattern ([a, ::, b] here).
+
+   Defn of "head identifier" of a pattern
+     path if the pattern is VarPat path
+     path if the pattern is AppPat{constr=VarPat path, ...}
+     The head identifier of a "proper" argument pattern should name a dcon.
+     The head identifier of an "improper" pattern is the function name.
+       the top identifier (VarPat[f] or AppPat{constr=VarPat[f},...}.
+       f could be a variable or a dcon name, and we can use env to check whether
+       it is a datacon name ((val)symbol bound to a datacon name in the env).
+
+   The function name is either the head identifier of the first argpat, or that
+   of the 2nd argpat, (assuming it is a VarPat) if it is infix.  The head identifier
+   of a normal pattern should not be a variable; it instead should be bound to a dcon.
+   ASSERT: the type checker should verify that the rator identifier of an AppPat
+       names a dcon.
+
+   In example "fun x f y = x; -- where f infix" what prevented parseLHS0 from choosing x
+   as the function name in parseLHS0?
+   Here the LHS pats are:
+
+	VarPat [x],  -- fixity x: NONfix 
+	VarPat [f],  -- fixity f: INFix (l,r)
+	VarPat [y]]  -- fixity y: NONFIX 
+
+   where x, f, y are rawsymbols, not associated with a name space.  If f were bound
+   to a datacon, this would be ill-formed and should generate an error (can't determine
+   a function symbol being defined).
+
+   Do we need some look-ahead in parseLHS0 to prevent x from being chosen?
+   Or should parseLHS1 come first -- have priority over parseLHS0.  That is, should we check
+   first for the "fun p1 f p2" pattern with infix f?  Otherwise we REQUIRE that p1 provides
+   the function symbol, either as p1 = VarPat [f] or p1 = AppPat {constr=VarPat[f],...}
+   where f is a NONfix, non-constructor identifier.
+
+   Another Error example: "fun (x y) f z = ..." where f infix, non-dcon, if x is non-dcon.
+   i.e. if infix f is the function id, then the other pattern expressions should not contain
+   variables as constr (rators of applications). This is generally true of any argument
+   patterns other than the particular pattern term containing the function id.
+   All rators in such true argument patterns should, at some point, be checked to
+   name dcons.  Does the type checker do this? I would assume so.
+   Something to be verified.  (Note that all rators in proper pattern terms should
+   be VarPat (path), i.e. identifiers or qids.)
 
 
-			   Defn of "head identifier" of a pattern
-			      path if the pattern is VarPat path
-			      path if the pattern is AppPat{constr=VarPat path, ...}
-			      The head identifier of a "proper" argument pattern should name a dcon.
-			      The head identifier of an "improper" pattern is the function name.
-			     -- the top identifier (VarPat[f] or AppPat{constr=VarPat[f},...}.
-			     f could be a variable or a dcon name, and we can use env to check whether it is a dcon nmae.
+   parseLHS0 is used to check for the case where argpat has exactlhy three fixitems, the
+   second of which is an id f (VarPat [f]) where f is infix (non-dcon variable) (Case 3).
+   and the first and third fixitems are nonfix (if they are VarPat [x]).
+   Example: "fun x f y = ..." where x or y is an infix symbol is an error.
 
-			   The function name is either the head identifier of the first argpat, or that of the 2nd argpat,
-			   (assuming it is a VarPat) if it is infix.  The head identifier of a proper pattern should not be
-			   a variable; it instead should be bound to a dcon.
-			   ASSERT: the type checker should verify that the rator identifier of an AppPat names a dcon.
-			 *)
+   parseLHS1 (= old parseLHS) is used to check for the case where argpat1 is a FlatAppPat.
+   it is invoked after parseLHS0 has "failed".
+   We don't need to check for the FlattAppPat case. Instead parseLHS1 is passed
+   a complete parse of argpat1, so we just need to examine that pattern to see if
+   it is either a VarPat [f] or an AppPat{constr=VarPat [f], in which case we take
+   f to be the function symbol (ater looking it up to make sure it is not a datacon
+   name).
 
-			 (* In example "fun x f y = x; -- where f infix" what prevented parseLHS0 from choosing x
-			    as the function name in parseLHS0?
-			    Here argpats = [{item=VerPat [x], fixity=NONE, ...},
-					    {item=VarPat [f], fixity=SOME f, ...},
-					    {item=VarPat [y], fixity=NONE, ...}]
-			    Do we need some look-ahead in parseLHS0 to prevent x from being chosen?
-			    Or should parseLHS1 come first -- have priority over parseLHS0.  That is, should we check
-			    first for the "fun p1 f p2" pattern with infix f?  Otherwise we REQUIRE that p1 provides
-			    the function symbol, either as p1 = VarPat [f] or p1 = AppPat {constr=VarPat[f],...}
-			    where f is a NONfix, non-constructor identifier.
+   parseLHS2 parses the 3rd alternative afer parseLHS0 and parseLHS1 have "failed"
+     (i) check that there are at least 2 argpats (LHS Case 2.).
+     (ii) Then the first (fully parsed) argpat should be a either a nonfix (& non-dcon)
+   identifier pattern where the identifier is the function symbol, or
+   a compound (AppPat) where the constr field is an identifier pattern with
+   a nonfix symbol that is taken to be the function symbol.
 
-			    Another Error example: "fun (x y) f z = ..." where f infix, non-dcon, if x is non-dcon.
-			    i.e. if infix f is the function id, then the other pattern expressions should not contain
-			    variables as constr (rators of applications). This is generally true of any argument
-			    patterns other than the particular pattern term containing the function id.
-			    All rators in such true argument patterns should, at some point, be checked to
-			    name dcons.  Does the type checker do this? I would assume so.
-			    Something to be verified.  (Note that all rators in proper pattern terms should
-			    be VarPat (path), i.e. identifiers or qids.)
-			  *)
+   We make use of the fact that the operator in a compound (AppPat) pattern is always
+   VarPat path. If path is not a singleton path we assume it denotes a data
+   constructor (datacon). Otherwise it could be either a datacon or a variable, and
+   if it is a variable that the variable symbol will be the function symbol.
 
-			 (* parseLHS0 is used to check for the case where argpat has exactlhy three fixitems, the
-			  * second of which is an id f (VarPat [f]) where f is infix (non-dcon variable) (Case 3).
-			  * and the first and third fixitems are nonfix (if they are VarPat [x]).
-			  * Example: "fun x f y = ..." where x or y is an infix symbol is an error.
-			  *
-			  * parseLHS1 (= old parseLHS) is used to check for the case where argpat1 is a FlatAppPat.
-			  * it is invoked after parseLHS0 has "failed".
-			  * We don't need to check for the FlattAppPat case. Instead parseLHS1 is passed
-			  * a complete parse of argpat1, so we just need to examine that pattern to see if
-			  * it is either a VarPat [f] or an AppPat{constr=VarPat [f], in which case we take
-			  * f to be the function symbol (ater looking it up to make sure it is not a datacon
-			  * name).
-			  *
-			  * parseLHS2 parses the 3rd alternative afer parseLHS0 and parseLHS1 have "failed"
-			  *  (i) check that there are at least 2 argpats (LHS Case 2.).
-			  *  (ii) Then the first (fully parsed) argpat should be a either a nonfix (& non-dcon)
-			  * identifier pattern where the identifier is the function symbol, or
-			  * a compound (AppPat) where the constr field is an identifier pattern with
-			  * a nonfix symbol that is taken to be the function symbol.
-			  *
-                          * We make use of the fact that the operator in a compound (AppPat) pattern is always
-			  * VarPat path. If path is not a singleton path we assume it denotes a data
-			  * constructor (datacon). Otherwise it could be either a datacon or a variable, and
-			  * if it is a variable that the variable symbol will be the function symbol.
-			  *
-			  * We do not check to distinguish datacon identifiers from variable identifiers.
-			  * This distinction will be checked later in type checking, where look up the path
-			  * in the environment to see if it is bound to a datacon.
-			  * But what if the function symbol is the name of a datacon in the environment?
-			  * This should be an error (we can't rebind that symbol to a function).  So if we
-			  * have a candidate function symbol, we need to look it up to make sure that it is
-			  * not already bound to a datacon.
+   We do not check to distinguish datacon identifiers from variable identifiers.
+   This distinction will be checked later in type checking, where look up the path
+   in the environment to see if it is bound to a datacon.
+   But what if the function symbol is the name of a datacon in the environment?
+   This should be an error (we can't rebind that symbol to a function).  So if we
+   have a candidate function symbol, we need to look it up to make sure that it is
+   not already bound to a datacon.
 
-			  * Error case for no argpats in the LHS. (1 argpat case may be ok) *)
+   Error case for no argpats in the LHS. (1 argpat case may be ok)
 
-		     (* parseLHS0 : patfixitem list -> S.symbol * Ast.pat list
-		      * Case 4: infix funcition symbol as second argpat out of 3.
-		      *   1. argument is a list of 3 patfixitems ("argpats").
-		      *   2. argument 2 is an infix variable symbol (VarPat [f]).
-		      *   3. arguments 1 and 3 are "nonfix" (either atomic compound, or nonfix variable
-		      *      when completely parsed.
-		      *   4. all 3 arguments "completely parsed" to patterns, eliminating FlatAppPats.
-		      *      But actually, we might get away with only completely parsing patfixitem 2.
-		      *
-		      * The first patfixitem is a FlatAppPat of a triple of patfixitems,
-		      * where the middle one (#item b) could be an infix function variable.
-		      * From the grammar (ml.grm), we know that the pats are all patfixitems
-		      * because the LHS of a Clause is a list of apats which parse to patfixitems.
-		      * Apply parseFlatApp to the first patfixitem to determine its structure:
-		      *  1: it parses to a VarPat [v]. Then v is the candidate funsym.
-			    Could further check that env(v) is a variable, not a constructor.
-			 2: it parses to a VarPat (path) where path has length > 1. This is
-			    an error.
-			 3: It parses to an AppPat (p, argp) in which case we look at p as above
-			    as a candidate funsym.  If it qualifies, add argp to the remaining
-			    arguments patterns (items).
-			 4: If it parses to any other pattern (maybe except ConstraintPat, which
-			    we could strip down to its base pat) we keep the resulting pat and
-			    check whether the next (2nd) item (VarPat) is an infix symbol, in which
-			    case that symbol is the funsym.
-			 5. If we can't verify a funsym from this analysis, we look at the next
-			    pat to see if it is a variable, and thus a funsym candidate, if it turns
-			    out to be an infix variable.
-		      *)
+   Case 4: infix funcition symbol as second argpat out of 3.
+     1. argument is a list of 3 patfixitems ("argpats").
+     2. argument 2 is an infix variable symbol (VarPat [f]).
+     3. arguments 1 and 3 are "nonfix" (either atomic compound, or nonfix variable
+        when completely parsed.
+     4. all 3 arguments "completely parsed" to patterns, eliminating FlatAppPats.
+        But actually, we might get away with only completely parsing patfixitem 2.
+
+   The first patfixitem is a FlatAppPat of a triple of patfixitems,
+   where the middle one (#item b) could be an infix function variable.
+   From the grammar (ml.grm), we know that the pats are all patfixitems
+   because the LHS of a Clause is a list of apats which parse to patfixitems.
+   Apply parseFlatApp to the first patfixitem to determine its structure:
+
+     1: it parses to a VarPat [v]. Then v is the candidate funsym.
+	  Could further check that env(v) is a variable, not a constructor.
+     2: it parses to a VarPat (path) where path has length > 1. This is
+	  an error.
+     3: It parses to an AppPat (p, argp) in which case we look at p as above
+	  as a candidate funsym.  If it qualifies, add argp to the remaining
+	  arguments patterns (items).
+     4: If it parses to any other pattern (maybe except ConstraintPat, which
+	  we could strip down to its base pat) we keep the resulting pat and
+	  check whether the next (2nd) item (VarPat) is an infix symbol, in which
+	  case that symbol is the funsym.
+     5. If we can't verify a funsym from this analysis, we look at the next
+	  pat to see if it is a variable, and thus a funsym candidate, if it turns
+	  out to be an infix _variable_ (i.e. not an infix datacon).
+
+==========================================================================================
+Starting over ...
+
+   This above is rather complicated and yet still not quite right.
+   Here is a new approach:
+
+   1. Apply reparsePat (full, recursive reparsing of FlatAppPats) to each pattern in
+      the LHS pattern list of a Clause, using the current static env.
+      This eliminates all FlatAppPats once and for all, so we don't need to worry about
+      them. (This actually doesn't matter for contents of actual argument patterns, since
+      elabPat would later take care of reparsing any FlatAppPat patterns.  But it may be
+      relevant to analyzing however many patterns are connected (as arguments) to the definee
+      symbol.)
+
+   2. Call reparseFlatAppPat on the resulting list of pats. This results in an nested
+      application term, where infix patterns have been parsed into their cannonical form "(f (a,b))".
+      [We need to verify that the precedence parser used in this reparse will produce the
+       expected result when applied to the list of LHS pats.  Note that some infix datacons
+       can appear as operators in 2nd or lower level applications, but we don't have to deal
+       with these.]
+
+   3. (a) Check that the top/initial/outermost operator is a function symbol (VarPat [f]?),
+          in which case it is the definee symbol of the clause (and should not be a datacon symbol).
+      (b) Flatten the nested application to extract outermost operator (the definee symbol) and
+          the list of _argument_ patterns that follow in this nested sequence of applications.
+      (c) Reconstitue the clause (as an ast_clause record) for use in the creation of fundec0/fundec1
+          records.
+
+   Consistency of curried arity and definee symbol accross fb clauses can be done in this
+   initial analysis phase before proper elaboration, but perhaps consistency of (optional)
+   result types accross clauses can be done during Fb full elaboration, where it is natural 
+   to elaborate the result type expression, if present. So let's not elaborate result types yet.
+
+  *)
 
 		     (* parseLHS1 : patfixitem list -> (S.symbol * Ast.pat list) option
 			result type options are fully parsed
@@ -1520,8 +1568,8 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 			We try to extract the function symbol from the first patfixitem.
 			Thus we (completely) parse the first patfixitem and analyze the result to obtain the
 			function symbol (as top operator) and 1st argument pattern. *)
-  	             fun parseLHS1 (argpats as patfixitem1::rest: patfixitem list) =
-			 (case stripMarkPat (patCompleteParse patfixitem1)
+  	             fun parseLHS1 (lhspats as pat1::rest: pat list) =
+			 (case stripMarkPat (reparsePat pat1)
 			    of Ast.VarPat _ =>  (* in this case, rest should not be null *)
 			         (case getName (p, env, region)
 				    of NONE => (EM.errorRegion (region, "can't determine function symbol"); NONE)
@@ -1533,7 +1581,7 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 				    of NONE => (EM.errorRegion (region, "can't determine function symbol"); NONE)
 				     | SOME f => SOME (f, argument :: map ensureNonfix rest)) (* done! *)
 			     | pat => (EM.errorRegion (region,
-						       "can't extract function symbol from first patfixitem");
+						       "can't extract function symbol from first LHS pat");
 				       NONE))
 		       | parseLHS1 nil => (EM.errorRegion (region, "empty LHS in a clause"); NONE)
 
@@ -1547,8 +1595,8 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 			  original list of patfixitem arguments.
 			The resulting pat list (argument pattern(s) is a singleton list containing
 			the tuple pat Ast.TuplePat[p, q]. *)
-		     fun parseLHS (argpats : patfixitem list) : (S.symbol * Ast.pat list) option =
-			 (case argpats
+		     fun parseLHS (lhspats : patfixitem list) : (S.symbol * Ast.pat list) option =
+			 (case lhspats
 			    of [a , b as {item, fixity = SOME f,...}, c] =>
 			         (case LU.lookFix f
 			            of F.INfix _ =>
@@ -1557,9 +1605,9 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 					 (case getName (item, env, region)
 					    of NONE => bug "parseLHS"  (* item should be a VarPat in this case *)
 					     | SOME f => SOME (f, [Ast.TuplePat [ensureNonfix a, ensureNonfix c]]))
-				     | F.NONfix => parseLHS1 argpats)
+				     | F.NONfix => parseLHS1 lhspats)
 					     (* try Case 3 (argpat1 parses to an infix application) *)
-			     | _ => parseLHS1 argpats)
+			     | _ => parseLHS1 lhspats)
 
                     (* When parsing the list of clauses (Ast.Clause), we start with the first clause,
 		       get its funSym, arity, resultTy option,  then for subsequent clauses, check
@@ -1573,23 +1621,23 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 		     (* parseAClause : Ast.clause -> fundec0 *)
 		     (* used to parse a single Ast.clause from the Ast.fb clause list of an fb.
 		      * It yields a fundec value that contains this clause's idea of the function name,
-		      * the curry arity, and the (optional) result type.
+		      * the curried arity, and the (optional) result type (as an unelaborated Ast.ty).
 		      * Used to produce a base case and then used in parseClauseFolder to fold over the rest
 		      * of an fb's clauses. *)
  		     fun parseAClause (Ast.Clause {pats, resultty, exp}) : fundec0 option = 
 			 (case parseLHS pats
 			    of NONE => (EM.errorRegion (fbregion, "LHS of a clause failed to parse");
 					NONE)
-			     | SOME (funsym, argpats) =>
+			     | SOME (funsym, lhspats) =>
 			          let val resTyOp =
 					  (case resultty
 					     of NONE => NONE
 					      | SOME ast_ty => SOME (ET.elabType (ast_ty, env, region)))
-				   in SOME (funsym, length argpats, resTyOp, [{argpats=argpats, exp=exp}])
+				   in SOME (funsym, length lhspats, resTyOp, [{argpats=argpats, exp=exp}])
 				  end) 
 
                      (* ast_clausesFolder : Ast.clause * fundec0 -> fundec0 *)
-		     (* used to fold over the clauses of a single fb *)
+		     (* used to fold over the clauses of a single fb, accumulating a list of fundec0s *)
 		     fun ast_clausesFolder
 			     ((clause as Ast.Clause {pats, resultty, exp}),
 			      (fd as (funsym_c: S.symbol, arity_c: int, resTyOp_c: T.ty option,
@@ -1650,12 +1698,13 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 			      of NONE => NONE
 			       | SOME fundec0 => SOME (foldl ast_clausesFolder fundec0 rest)
 
-		     (* mkLazy : fundec0 * SE.staticEnv * SL.region -> fundec list * SE.staticEnv *)
+		     (* mkLazy : fundec0 * SE.staticEnv * SL.region -> fundec1 list * SE.staticEnv *)
 		     fun mkLazy ((funsym, arity, resTyOp, clauses): fundec0, env: SE.staticEnv, region: SL.region) = 
 			  let (* newArgPaths: (S.symbol list * int) -> S.symbol list; ASSERT: int >= 0 *)
 			      (* newArgPaths (nil, 3) ==> [[$1], [$2], [$3]] *)
 			      fun newArgPaths (args, 0) = args
-				| newArgPaths (args, n) = newArgPaths ([S.varSymbol("$"^Int.toString n)] :: args, n-1)
+				| newArgPaths (args, n) =
+				    newArgPaths ([S.varSymbol("$"^Int.toString n)] :: args, n-1)
 
 			      (* curryApp : Ast.exp * Ast.exp list -> Ast.exp *)
 			      fun curryApp (f, nil) = f
@@ -1670,22 +1719,25 @@ fun elabExp (exp: Ast.exp, env: SE.staticEnv, region: SL.region)
 				   {argpats = map Ast.VarPat outerArgPaths,
 				    exp = curryApp (Ast.VarExp [lazySym], map Ast.VarExp outerArgPaths)}
 
-			   in ([(lazySym, arity, resTyOp, clauses, FORCE, region),
-			        (funSym, arity, resTyOp, [outerClause], DELAY, region)],
+			   in ([{funSym = lazySym, arity = arity, resTyOp = resTyOp, clauses = clauses,
+				 lazy = FORCE, region = region},
+			        {funSym = funsym, arity, resTyOp = resTyOp, clauses = [outerClause],
+				 lazy = DELAY, region = region}],
 			       SE.bind (funSym, B.VALbind (newVALvar funsym),
 					SE.bind (lazySym, B.VALbind (newVALvar lazySym), env)))
-			  end
+			  end (* fun mkLazy *)
 
-		     (* mkStrict : fundec0 * SE.staticEnv * SL.region -> fundec * SE.staticEnv *)
+		     (* mkStrict : fundec0 * SE.staticEnv * SL.region -> fundec1 * SE.staticEnv *)
 		     fun mkStrict ((funsym, arity, resTyOp, clauses), env, region) =
-			        ((funsym, arity, resTyOp, clauses, STRICT, region),
-				   SE.bind (funSym, B.VALbind (newVALvar funsym), env))
+			   ({funsym = funsym, arity = arity, resTyOp = resTyOp, clauses = clauses,
+			     lazy = STRICT, region = region},
+			    SE.bind (funSym, B.VALbind (newVALvar funsym), env))
 
 		  in (case parseFb clauses_fb
 		        of NONE => bogusFundec  (* error recovery return value, probably useless *)
 			 | SOME fundec0 =>
 				  if lazyp
-				  then ( lazy function declaration *)
+				  then (* lazy function declaration *)
 				    let val (lazyfundecs, env_inc) = mkLazy (fundec0, env_fbf, fbregion)
 				     in (lazy_fundecs @ fundecs_c, env_inc)
 				    end

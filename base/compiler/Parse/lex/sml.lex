@@ -306,17 +306,17 @@ bad_escape="\\"[\000-\008\011\012\014-\031 !#$%&'()*+,\-./:;<=>?@A-Z\[\]_`c-eg-m
 <AQ>{id}        => (YYBEGIN Q;
                     let val hash = HashString.hashString yytext
                     in
-                    Tokens.AQID(FastSymbol.rawSymbol(hash,yytext),
+                    Tokens.AQID(Symbol.rawSymbol(hash,yytext),
 				yypos,yypos+(size yytext))
                     end);
 <AQ>{sym}+      => (YYBEGIN Q;
                     let val hash = HashString.hashString yytext
                     in
-                    Tokens.AQID(FastSymbol.rawSymbol(hash,yytext),
+                    Tokens.AQID(Symbol.rawSymbol(hash,yytext),
 				yypos,yypos+(size yytext))
                     end);
 <AQ>"("         => (YYBEGIN INITIAL;
                     brack_stack := ((ref 1)::(!brack_stack));
                     Tokens.LPAREN(yypos,yypos+1));
 <AQ>.           => (err (yypos,yypos+1) ("ml lexer: bad character after antiquote "^yytext);
-                    Tokens.AQID(FastSymbol.rawSymbol(0w0,""),yypos,yypos));
+                    Tokens.AQID(Symbol.rawSymbol(0w0,""),yypos,yypos));

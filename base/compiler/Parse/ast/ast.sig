@@ -74,13 +74,13 @@ sig
           | ListPat of pat list		        (*  [list,in,square,brackets] *)
 	  | TuplePat of pat list		(* tuple *)
           | FlatAppPat of pat list              (* patterns applications prior to fixity parsing *)
-	  | AppPat of {constr:pat,argument:pat} (* application *)
-	  | ConstraintPat of {pattern:pat,constraint:ty}
+	  | AppPat of {constr: path, argument: pat}  (* application of a datacon *)
+	  | ConstraintPat of {pattern: pat, constraint: ty}
 						(* constraint *)
 	  | LayeredPat of {varPat:pat,expPat:pat} (* as expressions *)
           | VectorPat of pat list               (* vector pattern *)
-	  | MarkPat of pat * SourceLoc.region	        (* mark a pattern *)
 	  | OrPat of pat list			(* or-pattern *)
+	  | MarkPat of pat * SourceLoc.region	        (* mark a pattern *)
 
   (* STRUCTURE EXPRESSION *)
   and strexp = VarStr of path			(* variable structure *)

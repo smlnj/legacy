@@ -66,22 +66,23 @@ signature SMLNJ_TOKENS =
     val ARROW : 'a * 'a -> (svalue,'a) token
     val AND : 'a * 'a -> (svalue,'a) token
     val ABSTYPE : 'a * 'a -> (svalue,'a) token
-    val TYVAR : FastSymbol.raw_symbol *  'a * 'a -> (svalue, 'a) token
-    val IDA : FastSymbol.raw_symbol *  'a * 'a -> (svalue, 'a) token
-    val IDS : FastSymbol.raw_symbol *  'a * 'a -> (svalue, 'a) token
+    val TYVAR : Symbol.rawSymbol *  'a * 'a -> (svalue, 'a) token
+    val IDA : Symbol.rawSymbol *  'a * 'a -> (svalue, 'a) token
+    val IDS : Symbol.rawSymbol *  'a * 'a -> (svalue, 'a) token
   end
 
 functor TokenTable (Tokens : SMLNJ_TOKENS) : sig
 
-    val checkId : (string * int) -> (Tokens.svalue,int) Tokens.token
-    val checkSymId : (string * int) -> (Tokens.svalue,int) Tokens.token
-    val makeTyvar : (string * int) -> (Tokens.svalue,int) Tokens.token
+    val checkId : (string * int) -> (Tokens.svalue, int) Tokens.token
+    val checkSymId : (string * int) -> (Tokens.svalue, int) Tokens.token
+    val makeTyvar : (string * int) -> (Tokens.svalue, int) Tokens.token
 
-  end = struct
+  end =
+  struct
 
     exception NotToken
 
-    structure Tbl = WordStringHashTable
+    structure Tbl = Symbol.HashTable
 
     val hashStr = HashString.hashString
 
@@ -163,32 +164,30 @@ functor TokenTable (Tokens : SMLNJ_TOKENS) : sig
     val overloadHash = hashStr "overload"
     val lazyHash = hashStr "lazy"
 
-  (* checkID: look-up an alphanumeric string in idTbl. If it is found, the corresponding
+  (* checkID: string * int -> (Tokens.svalue, int) Tokens.token
+   * look-up an alphanumeric string in idTbl. If it is found, the corresponding
    * reserved word token is generated, with the identifier's position info. Otherwise it is a regular
    * identifier, so generate an IDA (alphanumeric id) token with the same position info.
    *)
-    fun checkId (str, yypos) = let
-	  val hash = hashStr str
-	  in
-	    Tbl.lookup idTbl (hash, str) yypos
-	      handle NotToken =>
-		     Tokens.IDA(FastSymbol.rawSymbol(hash,str), yypos, yypos+size(str))
-    end
+    fun checkId (str: string, yypos) =
+	  let val symbol = Symbol.rawSymbol str
+	   in Tbl.lookup idTbl symbol yypos
+		handle NotToken => Tokens.IDA(symbol, yypos, yypos+size(str))
+	  end
 
-  (* checkSymId: look-up a symbolic string in idSymTbl. If it is found, the corresponding
+  (* checkSymId: string * int -> (Tokens.svalue, int) Tokens.token
+   * look-up a symbolic string in idSymTbl. If it is found, the corresponding
    * reserved symbol token is generated, with the identifier's position info. Otherwise it is a regular
    * symbolic identifier, so generate an IDS (symbolic identifier) token with the same position info.
    *)
-    fun checkSymId (str, yypos) = let
-	  val hash = hashStr str
-	  in
-	    Tbl.lookup symIdTbl (hash, str) yypos
-	      handle NotToken =>
-		     Tokens.IDS(FastSymbol.rawSymbol(hash,str), yypos, yypos+size(str))
+    fun checkSymId (str: string, yypos) =
+	  let val symbol = Symbol.rawSymbol str
+	   in Tbl.lookup symIdTbl (hash, str) yypos
+		handle NotToken => Tokens.IDS(symbol, yypos, yypos+size(str))
 	  end
 
-  (* makeTyvar: convert a tyvar string into a TYVAR token *)
-    fun makeTyvar (str, yypos) =
-        Tokens.TYVAR (FastSymbol.rawSymbol(hashStr str,str),yypos,yypos+size(str))
+  (* makeTyvar: string * int -> (Tokens.svalue, int) Tokens.token
+   * convert a tyvar string into a TYVAR token *)
+    fun makeTyvar (str, yypos) = Tokens.TYVAR (Symbol.rawSymbol str, yypos, yypos+size(str))
 
-  end
+  end (* functor TokenTable *)

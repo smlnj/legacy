@@ -6,7 +6,10 @@
  * Copyright (c) 2004 by The Fellowship of SML/NJ
  *
  * Author: Matthias Blume (blume@tti-c.org)
+ * 
+ * [DBM, 2025.07.18. Made redundant by Symbol.HashTable.
  *)
+
 structure WordStringHashTable =
     HashTableFn (struct type hash_key = word * string
 			fun hashVal (k : hash_key) = #1 k
