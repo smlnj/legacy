@@ -83,6 +83,9 @@ gforge bug tracker.
 | [.bugid]#363#
 | {issue-base}/363["default word size" in the documentation for Util/Random]
 | n.a.
+| [.bugid]#367#
+| {issue-base}/367[Compile error on Fedora 40 64-bit]
+| n.a.
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]
