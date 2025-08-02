@@ -26,10 +26,10 @@ fun markdec (d as MarkDec _, _, _) = d
 
 (* ID (identifiers) is split into IDA (alphanumeric) and IDS (symbolic)
    IDA,IDS, TYVAR, etc. originally denoted raw symbols, which needed to be mapped
-   to appropriate namespaces (val, tyc, str). Switched to having the lexer return
-   strings rather than symbols for various classes of identifiers (IDA, IDS, AQID,
-   TYVAR, etc.) allows us convert these strings into appropriate namespaced symbols
-   (and paths) in the parser actions without going through raw symbols.
+   to appropriate namespaces (val, tyc, str). I have switched to having the lexer return
+   strings rather than symbols as values for various classes of identifiers (IDA, IDS, AQID,
+   TYVAR, etc.). This allows us to convert these strings into appropriate namespaced symbols
+   (and paths) in the parser actions without having to use raw symbols as token values.
  *)
 
 %%
@@ -280,8 +280,8 @@ exp	: exp HANDLE match	(HandleExp{expr=exp,rules=match})
 	| CASE exp OF match	(markexp(CaseExp{expr=exp, rules=match},
 					 CASEleft,matchright))
 	| WHILE exp DO exp	(WhileExp
-                                   {test=markexp(exp1, exp1left, exp1right),
-				    expr=markexp(exp2, exp2left, exp2right)})
+                                   {test = markexp (exp1, exp1left, exp1right),
+				    expr = markexp (exp2, exp2left, exp2right)})
 	| IF exp THEN exp ELSE exp (IfExp{test=exp1,
 				   thenCase=markexp(exp2,exp2left,exp2right),
 				   elseCase=markexp(exp3,exp3left,exp3right)})
@@ -304,9 +304,9 @@ app_exp	: aexp	        ([{item=markexp(aexp,aexpleft,aexpright),
 				fixity=SOME f} :: app_exp
 			 end)
 
- aexp	: OP ident		(VarExp [S.toVal ident])
-	| OP IDA DOT qident	(VarExp (S.strSymbol IDA :: qident S.toVal))
-	| IDA DOT qident	(VarExp (S.strSymbol IDA :: qident S.toVal))
+ aexp	: OP ident		(VarExp [S.valSymbol ident])
+	| OP IDA DOT qident	(VarExp (S.strSymbol IDA :: qident S.valSymbol))
+	| IDA DOT qident	(VarExp (S.strSymbol IDA :: qident S.valSymbol))
 	| int			(IntExp int)
 	| WORD			(WordExp WORD)
 	| REAL			(RealExp REAL)
@@ -343,13 +343,13 @@ exp_2c	: exp COMMA exp_2c	(exp :: exp_2c)
 exp_list : exp			([exp])
 	 | exp COMMA exp_list	(exp :: exp_list)
 
-pat	: id AS pat		(markpat (LayeredPat {variable = S.toVal id, main = pat}, idleft, patright))
+pat	: id AS pat		(markpat (LayeredPat {variable = S.valSymbol id, main = pat}, idleft, patright))
 	| pat COLON ty		(markpat (ConstraintPat {pattern = pat, constraint = ty}, patleft, tyright))
 	| apats			(markpat (FlatAppPat apats, apatsleft, apatsright))
 
 apat	: apat'		        (markpat (apat', apat'left, apat'right))
 	| LPAREN pat RPAREN	(markpat (pat, mkregion (LPARENleft, RPARENright)))
-	| id			(markpat (VarPat [S.toVal id], idleft, idright)))
+	| id			(markpat (VarPat [S.valSymbol id], idleft, idright)))
 	| LPAREN RPAREN		(markpat (AU.unitPat, LPARENleft, RPARENright))
 	| LPAREN pat COMMA  pat_list RPAREN
   				(markpat (TuplePat(pat :: pat_list), LPARENleft, RPARENright))
@@ -357,9 +357,9 @@ apat	: apat'		        (markpat (apat', apat'left, apat'right))
 				(markpat (OrPat(pat :: or_pat_list), LPARENleft, RPARENright))
 
 (* FIXME: should be "OP id", but that breaks smlnj/init/built-in.sml *)
-apat'	: OP ident		(VarPat [S.toVal ident])
-	| OP IDA DOT qid	(VarPat (S.strSymbol IDA :: qid S.toVal))
-	| IDA DOT qid		(VarPat (S.strSymbol IDA :: qid S.toVal))
+apat'	: OP ident		(VarPat [S.valSymbol ident])
+	| OP IDA DOT qid	(VarPat (S.strSymbol IDA :: qid S.valSymbol))
+	| IDA DOT qid		(VarPat (S.strSymbol IDA :: qid S.valSymbol))
 	| int			(IntPat int)
 	| WORD			(WordPat WORD)
 	| STRING		(StringPat STRING)
@@ -377,15 +377,15 @@ apat'	: OP ident		(VarPat [S.toVal ident])
                                  end)
 
 plabel	: selector EQUALOP pat	((selector, pat))
-	| id			(labSymbol id, VarPat [S.toVal id])
+	| id			(labSymbol id, VarPat [S.valSymbol id])
 	| id AS pat		(labSymbol id,
-				 LayeredPat{variable = S.toVal id,
+				 LayeredPat{variable = S.valSymbol id,
 					    main = pat})
 	| id COLON ty		(labSymbol id,
-				 ConstraintPat {pattern=VarPat [S.toVal id],
+				 ConstraintPat {pattern=VarPat [S.valSymbol id],
 					        constraint=ty})
 	| id COLON ty AS pat	(labSymbol id,
-				 LayeredPat {variable = S.toVal id,
+				 LayeredPat {variable = S.valSymbol id,
 					     main = ConstraintPat {pattern = pat, constraint = ty}})
 
 plabels : plabel COMMA plabels	(let val (a,(b,fx))=(plabel, plabels)
@@ -423,7 +423,7 @@ rpat	: LPAREN rpat RPAREN	(rpat)
 				      }
 				  end)
 	| OP id constraint	(fn (lazy, exp) => Rvb{
-				    var = S.toVal id, fixity = NONE,
+				    var = S.valSymbol id, fixity = NONE,
 				    resultty = constraint,
 				    exp = exp, lazyp = lazy
 				  })
@@ -485,12 +485,12 @@ db	: idtyc EQUALOP constrs	         (Db {tyc = S.tycSymbol idtyc,
 constrs : constr		([constr])
 	| constr BAR constrs	(constr :: constrs)
 
-constr	: op_op id		(S.toVal id, NONE)
-	| op_op id OF ty	(S.toVal id, SOME ty)
+constr	: op_op id		(S.valSymbol id, NONE)
+	| op_op id OF ty	(S.valSymbol id, SOME ty)
 
-eb	: op_op id		([EbGen{exn=(S.toVal id),etype=NONE}])
-	| op_op id OF ty	([EbGen{exn=(S.toVal id),etype=SOME ty}])
-	| op_op id EQUALOP qid	([EbDef{exn=S.toVal id, edef=qid S.toVal}])
+eb	: op_op id		([EbGen{exn = (S.valSymbol id), etype = NONE}])
+	| op_op id OF ty	([EbGen{exn = (S.valSymbol id), etype = SOME ty}])
+	| op_op id EQUALOP qid	([EbDef{exn=S.valSymbol id, edef = qid S.valSymbol}])
 	| eb AND eb		(eb1 @ eb2)
 
 qid_p	: qid			([qid S.strSymbol])
@@ -520,9 +520,9 @@ ldec	: VAL vb		(ValDec(vb,nil))
 	| EXCEPTION eb		(ExceptionDec eb)
 	| OPEN qid_p		(OpenDec qid_p)
 	| fixity ops		(FixDec{fixity=fixity, ops=ops})
-	| OVERLOAD id AS exp_pa (OvldDec(S.toVal id, exp_pa))
+	| OVERLOAD id AS exp_pa (OvldDec(S. id, exp_pa))
 	| OVERLOAD id COLON ty AS exp_pa
-				(OvldDec(S.toVal id, exp_pa))
+				(OvldDec(S.valSymbol id, exp_pa))
 
 exp_pa	: exp			([exp])
 	| exp AND exp_pa	(exp :: exp_pa)
@@ -574,12 +574,12 @@ tyspec	: tyspec AND tyspec	(tyspec1 @ tyspec2)
         | tyvars idtyc EQUALOP ty  ([(S.tycSymbol idtyc,tyvars,SOME ty)])
 
 valspec	: valspec AND valspec	(valspec1 @ valspec2)
-	| op_op ident COLON ty  ([(S.toVal ident,ty)])
+	| op_op ident COLON ty  ([(S.valSymbol ident,ty)])
 
 
 exnspec : exnspec AND exnspec	(exnspec1 @ exnspec2)
-	| id			([(S.toVal id, NONE)])
-	| id OF ty		([(S.toVal id, <SOME ty)])
+	| id			([(S.valSymbol id, NONE)])
+	| id OF ty		([(S.valSymbol id, <SOME ty)])
 
 sharespec: sharespec AND sharespec	(sharespec1 @ sharespec2)
 	 | TYPE patheqn	([MarkSpec (ShareTycSpec (patheqn S.tycSymbol),

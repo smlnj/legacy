@@ -39,25 +39,19 @@ in
       | makeSEQdec (a, Ast.SeqDec b) = Ast.SeqDec(a::b)
       | makeSEQdec (a,b) = Ast.SeqDec[a,b]
 
-
+(* no longer needed -- delete
     (* We might not need the following two functions. Used in Reparse, and in ElabCore to
      * check whether a symbol is an infix function (variable) symbol in a function header LHS. *)
     (* patToSymbols : pat -> (S.symbol * string) option *)
     (* result symbol are in the VALspace and FIXspace namespaces, respectively *)
-    fun patToFixSymbol (Ast.VarPat [name]) =
-	  let val s = S.name name
-	   in SOME (S.fixSymbol s, s)
-	  end
-      | patToFixSymbol _ =  NONE
+    fun patToSymbol (Ast.VarPat [name]) = SOME name
+      | patToSymbol _ =  NONE
 
-    (* expToSymbols : exp -> (S.symbol * string) option *)
+    (* expToSymbol : exp -> (S.symbol) option *)
     (* result symbol is in the fixity namespace *)
-    fun expToSymbols (Ast.VarExp [name]) =
-	  let val s = S.name name
-	   in SOME (S.fixSymbol s, s)
-	  end
-      | expToaSymbols _ =  NONE
-
+    fun expToSymbol (Ast.VarExp [name]) = SOME name
+      | expToSymbol _ = NONE
+*)
 
   (* Quotation *)    
 

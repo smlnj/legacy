@@ -162,6 +162,9 @@ in
   (* toFsig : symbol (* raw *) -> symbol (FSIGspace) *)
   fun toFsig (h,n) = (h + nameSpaceOffset FSIGspace, n)
 
+  (* toFix : symbol -> symbol (* FIXsymbol *) *)
+  (* mapping arbitrary symbols to FIXsymbol symbol, recomputing the hash of the name *)
+  fun toFix ((_, name): symbol) = fixSymbol name
 
   (* compare : symbol * symbol -> order *)
   (* two symbols belonging to different name spaces (including none) cannot be equal *)

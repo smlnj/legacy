@@ -33,7 +33,9 @@ in
     (* to mark positions in files *)
     type srcpos = SL.charpos  (* character position from beginning of stream (base 1) *)
 
-    (* "raw" symbolic path as raw? symbol list (corresponds to Modules.spath) <> SymPath.path *)
+    (* It looks like the symbols in a path will be namespaced, with all but the last symbol
+     * in the list being in STRspace, while the last will be in VALspace, TYCspece, etc. as
+     * dictated by the context. *)
     type path = S.symbol list
 
   (* CHANGES:

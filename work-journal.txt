@@ -1,11 +1,13 @@
-[DBM, 2025.07.18]
+Work Journal
+legacy repository, branch dbm2
 
+* [DBM, 2025.07.18]
 Basics/symbol/fastsymbol.* made redundant (functionality merged into Symbol)
 Basics/util/wordstrhashtable.sml made redundant by Symbol.HashTable.
 Basics/symbol/symbol-hashtable.sml (replaced by Symbol.HashTable)
 Basics/basics.cm  -- above are eliminated from Basics/basics.cm
 
-[DBM, 2025.07.20]
+* [DBM, 2025.07.20]
 Issue of symbols and namespaces in Ast and parsing.
 Should the Ast structures contain only (namespace free) raw symbols, or should
 we use namespaced symbols in Ast.
@@ -21,7 +23,7 @@ should be in the STRspace or VALspace namespace.
 
 Note that FastSymbol has been eliminated, but this probably does not affect the issue.
 
-[DBM, 2025.07.21]
+* [DBM, 2025.07.21]
 Worked on issue of symbols and name spaces in ml.grm and Ast.  The lexer should
 produce strings rather than symbols for identifiers of various flavors (IDA, IDS, TYVAR
 
@@ -35,5 +37,22 @@ we could have IDA, etc. have atoms rather than strings as their values. This
 would provide more "uniqueness" for identifiers, and the symbols used in
 Ast would also be atoms.
  
-This required changing ml.grm and ml.lex (so ml.lex would produce strings
-rather than symbols.
+This required changing ml.grm and ml.lex, so ml.lex would produce strings
+rather than symbols, and ml.grm tokens would correspondingly have
+string values rather than (raw) symbols.  The parsing rules were
+edited to take these identifier strings and produce symbols (paths) in the
+appropriate name spaces.
+
+
+Files:
+  Parse/ast/ast.{sml,sig}
+  Parse/parse/ml.grm 
+  Parse/lex/ml.lex
+  Basics/symbol/symbol.{sml,sig}
+  
+* [DBM, 2025.07.22]
+Another attempt to preprocess (preparse?) the LHS of function
+declaration clauses.
+
+Files:
+Elaborator/elaborate/reparse.{sig,sml}

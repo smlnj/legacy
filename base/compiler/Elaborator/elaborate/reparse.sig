@@ -11,17 +11,20 @@ signature ITEM =
 sig
 
   type item
-  val apply: item * item -> item,
+  val infixApply: item * item -> item,
+  val nonfixApply: item * item -> item option
   val pair: item * item -> item:
-  val fixity : item * StaticEnv.staticEnv ->  (item * string * int * int) option
+  val isInfix : item * StaticEnv.staticEnv ->  (item * int * int) option
+  val name : item -> string option (* SOME if the item is essentially a symbol *)
 
 end  (* signature ITEM *)
 
 signature PRECEDENCE_PARSE = 
 sig
 
-  type item
+  type item  (* will be instantiated to Ast.pat and Ast.exp *)
   val precedenceParse: item list * StaticEnv.staticEnv * SourceMap.region -> item
+  val reparsePat : Ast.pat * StaticEnv.staticEnv * SourceLoc.region -> Ast..pat
 
 end (* signature PRECEDENCE_PARSE *)
 

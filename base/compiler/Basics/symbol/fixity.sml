@@ -1,5 +1,6 @@
+(* Basics/symbol/fixity.sml *)
 (* Copyright 1996 by AT&T Bell Laboratories *)
-(* fixity.sml *)
+(* Copyright 2025 by The Fellowship of SML/NJ (www.smlnj.org) *)
 
 signature FIXITY =
 sig
@@ -17,8 +18,8 @@ struct
   datatype fixity = NONfix | INfix of (int*int)
 
   (* building fixities *)
-  fun infixleft n = INfix (n+n, n+n+1)
-  fun infixright n = INfix (n+n+1, n+n)
+  fun infixleft n = INfix (2*n, 2*n+1)
+  fun infixright n = INfix (2*n+1, 2*n)
 
   fun fixityToString NONfix = "nonfix "
     | fixityToString (INfix (i,_)) =

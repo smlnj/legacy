@@ -13,8 +13,8 @@
  * using infix bindings provided by a static environment.
  *)
 
-(* Reparse probably should be a functor over the <item; apply, pair, fixity> signature.
- * Then this functor would be applied twice, for item = Ast.pat and item = Ast.exp. *)
+(* ReparseFct is a functor over the <item; apply, pair, fixity> signature.
+ * This functor will be applied twice, for item = Ast.pat and item = Ast.exp. *)
 
 
 functor ReparseFct (I: ITEM): PRECEDENCE_PARSE where type item = I.item = 
@@ -35,95 +35,125 @@ local (* imports *)
 
 in 
 
-  type item = I.item
+  type item = I.item  (* = Ast.pat or Ast.exp *)
 
   (* internal types *)
-  type token
-	 = Infix of item *    (* item is an infix symbol (in a pattern or expression) *)
-		    string *   (* infix symbol's name -- used in an error message *)
-		    int *      (* LBP -- left (precedence) binding power *)
-		    int        (* RBP -- right (precedence) binding power *)
-         | Nonfix of item     (* item is nonfix symbol or otherwise "non-binding" wrt precedence *)
+  (* a token is essentially an item annotated with precedence information if the item is an
+   * infix symbol *)
+  datatype token
+    = Infix of item *     (* item is a simple infix symbol (as a pattern or expression) *)
+	       int *      (* LBP -- left precedence binding power of the infix symbol *)
+	       int        (* RBP -- right precedence binding power of the infix symbol *)
+    | Nonfix of item      (* item is nonfix symbol, path, or atomic wrt "non-binding" *)
 
   (* the precedence parsing stack ('a = ST.pat, ST.exp) *)
   type stack = token list
 
   exception PRECEDENCE
+    (* raised on a precedence parsing error, but handled locally within
+     * the precedenceParse function. *)
 
-(* precedenceParse: I.item list * StaticEnv.staticEnv * SourceMap.region -> I.item
- * complete parsing of Ast exp or pattern (represented as partially parsed exp/pat ST.fixitem list)
- * using precedence parsing
- * - this is not using the regions found in the fixitems. Do they have any other uses? *)
-fun precedenceParse (items: I.item list, env: StaticEnv.staticEnv, region: SL.region) : I.item option =
-    let fun err (msg: string) = EM.errorRegion (region, "Reparse.precedenceParse: " ^ msg)
+  (* precedenceParse: I.item list * StaticEnv.staticEnv * SourceMap.region -> I.item list
+   * where I.item will be instantiated to Ast.pat or Ast.exp.
+   * complete parsing of Ast exp or pattern (represented as partially parsed exp/pat item list)
+   * using precedence parsing
+   * - regions found in the items are not useful and are not used? *)
+  fun precedenceParse (items: I.item list, env: StaticEnv.staticEnv, region: SL.region) : I.item option =
+      let fun err (msg: string) =
+	      (EM.errorRegion (region, "Reparse.precedenceParse: " ^ msg);
+	       raise PRECEDENCE)
 
-        (* parseItem : 'item token * 'item stack -> 'item stack *)
-	(* 1 step of parsing an expression - folder function used in body of main let *)
-	fun parseItem (item: I.item, stack: stack) : stack =
-	    let val token =
-		    (case I.fixity (item, env)
-		       of NONE => Nonfix item
-			| SOME args => Infix args)
+	  (* parseItem : 'item token * 'item stack -> 'item stack *)
+	  (* 1 step of parsing an expression - folder function used in body of main let *)
+	  fun parseItem (item: I.item, stack: stack) : stack =
+	      let val token =
+		      (case I.isInfix (item, env)
+			 of NONE => Nonfix item       (* not an infix symbol *))
+			  | SOME args => Infix args)  (* item is an infix symbol *)
 
-	     in case (token, stack)
-		 of (I.Nonfix item2, I.Nonfix item1 :: rest) =>
-		       I.Nonfix (I.apply (item1, item2)) :: rest  (* construct an application *)
+	       in case (token, stack)
+		   of (I.Nonfix item2, I.Nonfix item1 :: stack') =>
+		      (* application of a Nonfix to a Nonfix on top of the stack.
+		       * item2 always grabs item1 as an argument, but the application
+		       * can fail in the case of patterns if item2 is . *)
+		      (case I.apply (item1, item2)
+			 of SOME item => Nonfix item :: stack'
+			  | NONE => (* err "Nonfix application" *) token :: stack)
+			            (* push the token onto the stack without "applying" it *)
 
-		   | (I.Nonfix item, I.Infix _ :: _) => token :: stack
-		       (* OK, stack looking for an infix arg *)
-		       (* top of stack was an infix frame, push nonfix token *)
+		     | (I.Nonfix _, I.Infix _ :: _) => token :: stack
+			 (* infix operator on top of stack wants to grab a right argument,
+			  * the Nonfix token becomes its candidate right argument *)
 
-		   | (I.Infix (_, name, _, _), I.Infix _ :: _) => 
-		       (err (String.concat ["expression/pattern begins with infix identifier \"",
-					  name, "\""]);
-			raise PRECEDENCE) 
+		     | (I.Infix (item, _, _), I.Infix _ :: _) => 
+		         (* two infix operators in a row is an error *)
+			 err (String.concat ["term begins with infix symbol \"",
+					      Option.valOf (I.name item), "\""])
 
-		   | (I.Infix (item4, name4, lbp4, rbp4),
-		      I.Nonfix item1 :: I.Infix (item2, name2, _, rbp2) :: I.Nonfix item3 :: stack') =>
-		        (* rbp is the RBP of e2, which should be a an infix VALspace symbol *)
-		        if lbp4 > rbp2
-		        then token :: stack' (* infix token defeats item2 token, will grab item1 later *)
-		        else (if lbp2 = rbp4  (* check how precedences work *)
-			      then EM.warnRegion
-				      (region,
-				       "mixed left- and right-associative operators of same precedence")
-			      else ();
-			      (* "reduce" the three top-of-stack frames to one and push token *)
-			      token :: NONFIX (I.apply (item2, I.pair (item3, item1))) :: stack')
+		     | (I.Infix (item1, lbp1, rbp1),
+			I.Nonfix item3 :: I.Infix (item2, name2, _, rbp2) :: I.Nonfix item4 :: stack') =>
+		          (* the new Infix operator item1 on the right is fighting the left infix
+			     operator item2 for control of the Nonfix item3 that is at the top of
+			     the stack. *)
+		          (case compare (rbp1, lbp2)
+			     of GREATER => 
+				  (* item3, item2, item4 tripple reduced to a Nonfix application *)
+				  token :: NONFIX (I.apply (item2, I.pair (item4, item3))) :: stack')
+		              | LESS => token :: stack'
+				  (* item1 pushed on the stack, with item 3 becoming its left argument
+				     for later "reduction" after item1 gets it right argument. *)
+			      | EQUAL => (* tie goes to item2 -- left associativity in the mixed case *)
+			         (EM.warnRegion
+				    (region,
+				     "mixed left- and right-associative operators of same precedence");
+				  token :: NONFIX (I.apply (item2, I.pair (item4, item3))) :: stack')
 
-		   | (I.Infix _, I.Nonfix _ :: stack')  = 
-		       token :: stack (* top of stack is seeking a right argument with power rbp *)
 
-		   (* stack is empty => this is the first token *)
-		   | (I.Nonfix item , nil) => [token]
+		     | (I.Infix _, I.Nonfix _ :: stack')  = 
+		         (* token if infix operator:
+			  * The old nonfix token on top of the stack will be its left argument,
+		          * The infix operator, pushed onto the top of stack, is seeking a nonfix
+			  * right argument. *)
+			 token :: stack
 
-		   | (I.Infix (_, name, _, _), nil) =>  
-		       (err (String.concat ["expression/pattern begins with infix symbol \"",
-					    Symbol.name sym, "\""]);
-			raise PRECEDENCE)  (* error abort!? *)
+		     (* stack is empty => this is the first token; push it onto the empty stack *)
+		     | (I.Nonfix _ , nil) => [token]
 
-		   |  _ => EM.impossible "Precedence.parseItem: bad token or stack"
-	    end
+		     | (I.Infix (item, _, _), nil) =>  
+			 err (String.concat ["term begins with infix symbol \"",
+					      Option.valOf (I.name item), "\""])
+		     |  _ => EM.impossible "Precedence.parseItem: bad token or stack"
+	      end
 
-        (* finish: I.item stack -> I.item option *)
-	(* clean up the stack, checking for errors *)
-	fun finish (I.Nonfix arg2 :: I.Infix (operator, _, _, _) :: I.Nonfix arg1 :: stack') = 
-              (* infix application configuration of the stack;
-	       * e3 is earlier than e1,
-	       * e2 should be a variable exp or pat whose name symbol had an infix binding *)
-	      finish (I.Nonfix (I.apply (operator, I.pair (arg1, arg2))) :: stack')
-	  | finish [I.Nonfix e1] = SOME e1   (* success! *)
-	  | finish (I.Infix (item1, _, _, _) :: I.Nonfix item2 :: stack) = 
-	      (err ("expression or pattern ends with infix identifier \"" 
-		   ^ Symbol.name sym ^ "\"");
-	       NONE)
-	  | finish nil = EM.impossible "Precedence.parse:finish on nil stack"
-	  | finish _ = EM.impossible "Precedence.parse:finish"
+	  (* finish: token stack -> token stack *)
+	  (* finish parsing remaining infixes on the stack, checking for errors *)
+	  fun finish (I.Nonfix arg2 :: I.Infix (operator, _, _, _) :: I.Nonfix arg1 :: stack') = 
+		(* infix application configuration of the stack;
+		 * arg1 is "earlier" than (thus to the left of) arg2, thus already on the stack,
+		 * operator is an infix symbol pat or exp *)
+		finish (I.Nonfix (I.apply (operator, I.pair (arg1, arg2))) :: stack')
+	    | finish (I.Infix (item1, _, _) :: I.Nonfix _ :: stack) = 
+		(err ("expression or pattern ends with infix identifier \"" 
+		     ^ Symbol.name (Option.valOf (I.name item1)) ^ "\"");
+		 NONE)
+	    | finish stack = stack
+(*	    | finish [I.Nonfix e1] = SOME e1   (* success! for pat *) *)
 
-     in finish (foldl parseItem items nil)
-        handle PRECEDENCE => NONE
+          (* in the result token stack returned by finish, all tokens should be Nonfix. *)
 
-    end (* fun precedenceParse *)
+				 
+          (* tokenToItem : token -> I.item *)
+          fun tokenToItem (Nonfix item) = item
+	    | filterStack (Infix _) = EM.impossible "finish"
+
+          val reult =
+	      map (filterStack (foldl parseItem items nil)
+	      handle PRECEDENCE => nil
+
+       in result
+      end (* fun precedenceParse *)
+
+(* A bit of postprocessing will be required in both the pat and exp cases after using precedenceParse. *)
 
 end (* local -- imports *)
 end (* functor ReparseFct *)
@@ -138,31 +168,35 @@ struct
  
     type item = Ast.pat
 
-    (* apply_pat : ST.pat * ST.pat -> ST.pat
-     * Returned pat is always an AppPat (marked if both arguments were marked).
-     * ASSERT: region1 and region2 are not NULLregion.
-     *)
-    fun apply (c as ST.MarkPat (_,region1), p as ST.MarkPat(_,region2))
-	  ST.MarkPat (ST.AppPat {constr=c, argument=p}, SL.regionUnion (region1, region2))
-      | apply (c, p) = ST.AppPat {constr=c, argument=p}
+    (* apply : ST.pat * ST.pat -> ST.pat option *)
+    (* Check that rator is a VarPat, yielding an operator path.
+     * Thus this function can fail. *)
+    fun apply (oper: ST.pat, rator: ST.pat) =
+	  (case oper
+	     of ST.Varpat path => SOME (ST.AppPath {constr = path, argument = rator})
+	      | _ => NONE (* indicating that the oper was not a VarPat *)
 
-    (* pair_pat : ST.pat * ST.pat -> ST.pat
+    val nonfixApply = infixApply
+
+    (* pair : ST.pat * ST.pat -> ST.pat
      * Returned pat is always a TuplePat of length 2, marked if both args were marked.
      * Actually a pattern pairing function, taking 2 pats and producing a 2 element TuplePat.
      * ASSERT: region1 and region2 are not NULLregion.
      *)
-    fun pair (ST.MarkPat(pat1, region1), ST.MarkPat(pat2,region2)) =
-	  ST.MarkPat (ST.TuplePat[pat1, pat2], span (region1, region2))
-      | pair (a,b) = ST.TuplePat[a,b]
+    fun pair (a,b) = ST.TuplePat[a,b]
 
-    (* fixity : item -> (item * string * int * int) option *)
-    fun fixity pat =
-	(case AU.patToFixSymbol pat
-	   of NONE => NONE (* not an infix valSymbol pat *)
-	    | SOME (fixsym, name) =>
-	      (case LU.lookFix fixsym
-	         of  F.NONfix => Nonfix pat
-		  |  F.INFix (lbp, rbp) =>  SOME (pat, name, lbp, rbp)))
+    (* isInfix : item * SE.staticEnv -> (item * string * int * int) option *)
+    fun isInfix (pat: item, env: SE.staticEnv) =
+	(case pat
+  	   of Ast.VarPat [name] =>
+	        (case LU.lookFix (env, S.toFix name)
+	           of  F.NONfix => NONE
+		    |  F.INFix (lbp, rbp) =>  SOME (exp, name, lbp, rbp))
+            | _ => NONE)
+
+    (* name : item -> string option *)
+    fun name (Ast.VarPat [n]) = SOME (Symbol.name n)
+      | name _ = NONE
 
 end (* structure PatternItem *)	    
 
@@ -176,67 +210,81 @@ struct
  
     type item = ST.exp
      
-    (* apply_exp : item * item -> item
-     * Returned pat is always an AppPat (marked if both arguments were marked) *)
-    fun apply_exp (ST.MarkExp (e1, region1), ST.MarkExp (e2, region2)) =
-	  ST.MarkExp (ST.AppExp {function = e1, argument = e2}, SL.regionUnion (region1, region2))
-      | apply_exp (e1, e2) = ST.AppExp {function = e1, argument = e2}
+    (* apply : item * item -> item option
+     * Always succeeds and returns SOME (AppExp (item1, itemd2)) because any item1 exp
+     * is an acceptible operator at this point. *)
+    fun apply (item1, item2) =
+	  SOME (ST.AppExp {function = item1, argument = item2})  (* always succeeds *)
 
-    (* pair_exp : item * item -> item
+    (* pair : item * item -> item
      * Returned pat is always a TuplePat (marked if both args were marked).
-     * Actually a pattern pairing function, taking 2 pats and producing a 2 element TuplePat. *)
-    fun pair_exp (ST.MarkExp (e1, region1), ST.MarkExp(e2, region2)) =
-	  ST.MarkExp (ST.TupleExp [e1, e2], span (region1, region2))
-      | pair_exp (a,b) = ST.TupleExp [a,b]
+     * Actually a pattern pairing function, taking 2 pats and producing a 2 element TuplePat.
+     * We don't worry about location-marking the result. *)
+    fun pair (a,b) = ST.TupleExp [a,b]
 
-    (* fixity_exp : SE.staticEnv * item -> (item * string * int * int) option *)
-    fun fixity_exp (exp, env) =
-	(case AU.expToFixSymbol exp
-	   of NONE => NONE (* not an infix valSymbol exp *)
-	    | SOME (fixsym, name) =>
-	      (case LU.lookFix (env, fixsym)
-	         of  F.NONfix => Nonfix exp
-		  |  F.INFix (lbp, rbp) =>  SOME (exp, name, lbp, rbp)))
+    (* isInfix : item * SE.staticEnv -> (item * string * int * int) option *)
+    (* item (exp) is a variable that has an INFix binding in the given static environment *)
+    fun isInfix (exp, env) =
+	(case exp
+  	   of Ast.VarExp [name] =>
+	        (case LU.lookFix (env, S.toFix name)
+	           of  F.NONfix => NONE
+		    |  F.INFix (lbp, rbp) =>  SOME (exp, name, lbp, rbp))
+            | _ => NONE)
+
+    (* name : item -> string option *)
+    fun name (Ast.VarExp [n]) = SOME (Symbol.name n)
+      | name _ = NONE
 
 end (* structure ExpressionItem *)
 
+(* Example: exp items x y z w *)
+
+
+(* structure Reparse *)
+(* specializing the interpretation of the result of precedenceParse for patterns and
+ * expressions. *)
 
 structure Reparse : REPARSE =
 struct
-   
+    
   structure  ReparsePat = ReparseFct (PatternItem) 
   structure  ReparseExp = ReparseFct (ExpressionItem)
 
+  val reparsePats = ReparsePat.precedenceParse
+  val reparseExps = ReparseExp.precedenceParse
+
   (* FlatAppPat reparsing *)
-  val parseFlatAppPat = ReparsePat.precedenceParse
+  (* checks that reparsing a list of pats produces a single result pat *)
+  fun parseFlatAppPat pats =
+      case reparsePats pats
+        of [pat] => pat
+	 | _ => (* multiple patterns is an error!? *)
+	    EM.error "reparsePat: multiple patterns in result"
+
+  (* fundec clause analyisys *)
+  (* analyzes the result of reparseExps *)
+  fun foo () = ()
 
   (* FlatAppExp reparsing *)
+  fun parseFlatAppExp exps =
+
+
+  (* what about processing the case where the precedenceParse produces multiple exps? *)
   val parseFlatAppExp = ReparseExp.precedenceParse
 
-end (* structure Reparse *)
-
-
-(* An extra deep-reparsing function for patterns is possible, where a single global static
-   environment will be available.  This can be added to Reparse if needed.
-
-    (* reparsePat : ST.pat * SE.staticEnv * SL.region -> ST.pat
-     * Recursively reparse a pattern, eliminating _all_ embedded FlatAppPat subpatterns,
-     * recursing through the entire pat, eliminating any and all FlatAppPats nodes.
-     * We need to pass an env to identify infix constructor symbols and their fixity properties.
-     * Since there is no "let" form in patterns, a pattern and all of its subpatterns are
-     * in the scope of the same static environment and hence the same infix bindings, so we
-     * can safely recurse down through the whole pattern structure without changing the env.
-     *)
-     (* Do we really ever need to do a complete reparse, or is reparsing just the top node
-      -- when it is a FlatAppPat -- all we need to do.  This depends perhaps on how we 
-      do the initial "reparsing" pass on the lhs of a "fun" declaration (vb, rvb).
-     *)
-
-    fun reparsePat (pat: ST.pat, env: SE.staticEnv, region: SL.region) : ST.pat =
-	let fun recurse pat = 
+  (* reparsePat : ST.pat * SE.staticEnv * SL.region -> ST.pat
+   * Recursively reparse a pattern, eliminating _all_ embedded FlatAppPat subpatterns,
+   * recursing through the entire pat, eliminating any and all FlatAppPats nodes.
+   * We need to pass an env to identify infix constructor symbols and their fixity properties.
+   * Since there is no "let" form in patterns, a pattern and all of its subpatterns are
+   * in the scope of the same static environment and hence the same infix bindings, so we
+   * can safely recurse down through the whole pattern structure without changing the env. *)
+  fun reparsePat (pat: ST.pat, env: SE.staticEnv, region: SL.region) : ST.pat =
+        let fun recurse pat = 
 		(case pat
 		   of ST.MarkPat (pat', region') => MarkPat (reparsePat (pat', env, region'), region')
-	              (* preserve the orignial Marked region *)
+	              (* preserve the original Marked region *)
 		    | ST.ListPat pats =>
 	                ST.ListPat (map recurse pats)
 		    | ST.TuplePat pats =>
@@ -259,17 +307,18 @@ end (* structure Reparse *)
 	 in recurse pat
 	end
 
-   But a deep expression reparsing function of type
+(*
+   A similar full expression reparsing function of type
 
      reparseExp : ST.exp * SE.staticEnv * SL.region -> ST.exp
 
    is not possible, because bodies of embedded let subexpressions would need to
-   be called with a possibly augmented staticEnv argument for the body of let expressions.
-   Reparsing for expressions cannot be fully separated from general elaboration becuase of
-   the "let" case, which requires elaboration of the dec part of the let.
+   be called with a possibly augmented staticEnv argument. Thus full reparsing for
+   expressions cannot be separated from general elaboration becuase
 
-   Instead of using reparseExp, we use reparseFlatAppExp for the FlatAppExp case
-   in the elabExp function and depend on the recursive definition of elabExp (in ElabCore)
+   Instead, we have to use reparseFlatAppExp incrementally for the FlatAppExp case
+   in the elabExp function and depend on the recursive definition of ElabCore..elabExp
    to generate the appropriate static environments (and hence infix bindings) for let bodies.
-
 *)
+
+end (* structure Reparse *)
