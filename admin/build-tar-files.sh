@@ -78,10 +78,16 @@ rm -rf autom4te.cache
 ./configure
 #
 # generate the documentation into $here/doc/doc
-@
+#
 make doc || exit 1
 #
 # build tar file of generated documentation
 #
 tar -czf $here/doc.tgz doc
 
+# TODO: Add boot files
+tar -cf "$here/smlnj.tar" -C "$here" "doc"
+for d in $dirs; do tar -uf "$here/smlnj.tar" -C "$here" "$d"; done
+for d in $base_dirs; do tar -rf "$here/smlnj.tar" -C "$here" "base/$d"; done
+gzip --stdout "$here/smlnj.tar" > "$here/smlnj.tgz"
+rm -f "$here/smlnj.tar"
