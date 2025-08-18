@@ -10,7 +10,7 @@ set +x
 
 # export all source files into the smlnj directory
 #
-git clone git@github.com:smlnj/legacy.git smlnj
+git clone . smlnj
 cd smlnj
 here=`pwd`
 
