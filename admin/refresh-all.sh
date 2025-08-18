@@ -4,7 +4,7 @@
 #
 
 if [ $# -ge 1 ] ; then
-    cd $1
+    cd "$1" || exit
 fi
 
 git pull
