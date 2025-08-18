@@ -213,4 +213,6 @@ base/system/smlnj/internal/version.sml
 osx-dist/smlnj.dst
 osx-dist/smlnj-*.pkg
 win-dist/smlnj
+/LOG-*
+/smlnj
 
