@@ -96,6 +96,9 @@ gforge bug tracker.
   (see https://github.com/smlnj/smlnj/pull/308[Pull Request #308] and
   https://github.com/smlnj/smlnj/issues/310[Issue #310]).
 
+* Merge fix for development repository https://github.com/smlnj/smlnj/pull/322[Pull
+  Request #322 (Fix heap export inconsistency caused by pair arena offsets)].
+
 == Supported systems
 
 We believe that SML/NJ will build and run on the following systems, but have only
@@ -129,6 +132,7 @@ tested some of them:
 | | macOS 10.12 (Sierra) |
 | | macOS 10.13 (High Sierra) | Tested
 | | macOS 10.14 (Mojave) |
+| | macOS 10.15 (Sequoia) |
 | | Ubuntu 16.04.3 LTS |
 | | Other Linux variants |
 | | FreeBSD 12.0 |
