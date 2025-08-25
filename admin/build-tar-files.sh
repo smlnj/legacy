@@ -10,9 +10,9 @@ set +x
 
 # export all source files into the smlnj directory
 #
-git clone git@github.com:smlnj/legacy.git smlnj
-cd smlnj
-here=`pwd`
+git clone . smlnj
+cd smlnj || exit 1
+here="$(pwd)"
 
 # cleanup stuff that shouldn't be in the release
 #
@@ -43,17 +43,17 @@ for d in $dirs ; do
   #
   case $d in
     asdl)
-      cd asdl
+      cd asdl || exit 1
       autoheader -Iconfig
       autoconf -Iconfig
       rm -rf autom4te.cache
-      cd $here
+      cd "$here" || exit 1
     ;;
   esac
   #
   # build the tarball
   #
-  tar -czf $here/$d.tgz $d
+  tar -czf "$here/$d.tgz" "$d"
 done
 
 base_dirs="\
@@ -64,24 +64,30 @@ base_dirs="\
     old-basis \
   "
 
-cd $here/base
-for d in $base_dirs ; do
-  tar -czf $here/$d.tgz $d
+cd "$here/base" || exit 1
+for d in $base_dirs; do
+  tar -czf "$here/$d.tgz" "$d"
 done
 
 # building the documentation requires configuring it and then generating the manual pages
 # and HTML files
 #
-cd $here/doc
+cd "$here/doc" || exit 1
 autoconf -Iconfig || exit 1
 rm -rf autom4te.cache
 ./configure
 #
 # generate the documentation into $here/doc/doc
-@
+#
 make doc || exit 1
 #
 # build tar file of generated documentation
 #
-tar -czf $here/doc.tgz doc
+tar -czf "$here/doc.tgz" doc
 
+# TODO: Add boot files
+tar -cf "$here/smlnj.tar" -C "$here" "doc"
+for d in $dirs; do tar -uf "$here/smlnj.tar" -C "$here" "$d"; done
+for d in $base_dirs; do tar -rf "$here/smlnj.tar" -C "$here" "base/$d"; done
+gzip --stdout "$here/smlnj.tar" > "$here/smlnj.tgz"
+rm -f "$here/smlnj.tar"
