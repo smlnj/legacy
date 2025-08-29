@@ -1,0 +1,61 @@
+
+name: Compile SML/NJ
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - '**'
+
+jobs:
+  build-posix:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-22.04
+          - ubuntu-24.04
+          - macos-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile SML/NJ
+        run: |
+          ./config/install.sh
+
+      - name: Check that SML/NJ runs
+        run: |
+          ./bin/sml @SMLversion
+
+  build-windows:
+    strategy:
+      matrix:
+        os:
+          - windows-2025
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download the bootfile
+        run: |
+          $Version = (Get-Content .\config\version).Trim()
+          $Uri = "https://smlnj.cs.uchicago.edu/dist/working/$Version/boot.x86-win32.tgz"
+          Invoke-WebRequest -Uri $Uri -OutFile boot.x86-win32.tgz
+          tar -xf boot.x86-win32.tgz
+
+      - name: Compile SML/NJ
+        shell: cmd
+        run: |
+          set SMLNJ_HOME=%CD%
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
+          call .\config\install.bat
+
+      - name: Check that SML/NJ runs
+        run: |
+          $env:SMLNJ_HOME = $PWD
+          .\bin\sml
+
