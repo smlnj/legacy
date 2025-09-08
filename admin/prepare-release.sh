@@ -11,15 +11,15 @@
 #	admin/prepare-release.sh [-d <date>] <version>
 #
 
-THIS=$0
-HERE=`pwd`
+THIS="$0"
+HERE="$(pwd)"
 
-function usage {
+usage() {
   echo "usage: admin/prepare-release.sh [-d <date>] <version>"
   exit 1
 }
 
-function error_local_changes {
+error_local_changes() {
   echo "$THIS: !!!There are local changes in your repository that need to be pushed."
   echo "git status"
   git status
@@ -42,13 +42,13 @@ if [ x"$1" = x-d ] ; then
 elif [ $# -ne 1 ] ; then
   usage
 else
-  DATE=`date +"%B %d, %Y"`
+  DATE=$(date +"%B %d, %Y")
   VERSION=$1
 fi
 
 # the log file
 #
-LOG=$HERE/LOG-$VERSION
+LOG="$HERE/LOG-$VERSION"
 
 # determine the size of the installed version of SML that we are going to
 # use to build the release.
@@ -66,30 +66,30 @@ fi
 # function to compile to fixed point and build an installation from
 # the compiled code.  This corresponds to steps 2 -- 6 in the guide.
 #
-function build_from_fixpt {
+build_from_fixpt() {
   # compile to a fixed point
   echo "compiling to a fixed point ..."
-  echo "***** cd base/system" >> $LOG
-  cd base/system
-  echo "***** ./fixpt $SZ_OPT" >> $LOG
-  ./fixpt $SZ_OPT >> $LOG 2>&1 || exit 1
+  echo "***** cd base/system" >> "$LOG"
+  cd base/system || exit 1
+  echo "***** ./fixpt $SZ_OPT" >> "$LOG"
+  ./fixpt $SZ_OPT >> "$LOG" 2>&1 || exit 1
 
   # makeml
   echo "makeml ..."
-  echo "***** ./makeml $SZ_OPT" >> $LOG
-  ./makeml $SZ_OPT >> $LOG 2>&1 || exit 1
+  echo "***** ./makeml $SZ_OPT" >> "$LOG"
+  ./makeml $SZ_OPT >> "$LOG" 2>&1 || exit 1
 
   # installml
   echo "installml ..."
-  echo "***** ./installml $SZ_OPT -clean" >> $LOG
-  ./installml $SZ_OPT -clean >> $LOG 2>&1 || exit 1
+  echo "***** ./installml $SZ_OPT -clean" >> "$LOG"
+  ./installml $SZ_OPT -clean >> "$LOG" 2>&1 || exit 1
 
   # install.sh
   echo "config/install.sh ..."
-  echo "***** cd $HERE" >> $LOG
-  cd $HERE
-  echo "***** ./config/install.sh $SZ_OPT" >> $LOG
-  ./config/install.sh $SZ_OPT >> $LOG 2>&1 || exit 1
+  echo "***** cd $HERE" >> "$LOG"
+  cd "$HERE" || exit 1
+  echo "***** ./config/install.sh $SZ_OPT" >> "$LOG"
+  ./config/install.sh $SZ_OPT >> "$LOG" 2>&1 || exit 1
 }
 
 # step 0: check for local changes that have not been added/committed
@@ -106,35 +106,35 @@ fi
 # step 1: refresh output
 #
 echo "refresh sources ..."
-echo "***** git pull" > $LOG
-git pull >> $LOG 2>&1 || exit 1
-echo "***** git push" > $LOG
-git push >> $LOG 2>&1 || exit 1
+echo "***** git pull" > "$LOG"
+git pull >> "$LOG" 2>&1 || exit 1
+echo "***** git push" > "$LOG"
+git push >> "$LOG" 2>&1 || exit 1
 
 # steps 2-6
 build_from_fixpt
 
 # step 7: set version and releasedate
 echo "set version to $VERSION and releasedate to $DATE"
-echo "***** cd config" >> $LOG
-cd config
-echo "***** echo $VERSION > version" >> $LOG
+echo "***** cd config" >> "$LOG"
+cd config || exit 1
+echo "***** echo $VERSION > version" >> "$LOG"
 echo $VERSION > version
-echo "***** echo $DATE > releasedate" >> $LOG
+echo "***** echo $DATE > releasedate" >> "$LOG"
 echo $DATE > releasedate
-echo "***** git commit -a -m \"updating version number to $VERSION\"" >> $LOG
-git commit -a -m "updating version number to $VERSION" >> $LOG 2>&1 || exit 1
-echo "***** git push" >> $LOG
-git push >> $LOG 2>&1 || exit 1
-echo "***** cd $HERE" >> $LOG
-cd $HERE
+echo "***** git commit -a -m \"updating version number to $VERSION\"" >> "$LOG"
+git commit -a -m "updating version number to $VERSION" >> "$LOG" 2>&1 || exit 1
+echo "***** git push" >> "$LOG"
+git push >> "$LOG" 2>&1 || exit 1
+echo "***** cd $HERE" >> "$LOG"
+cd "$HERE" || exit 1
 
 # step 8: repeat steps 2-6
 build_from_fixpt
 
 # step 9: cross compile
 echo "cross compile ..."
-echo "***** cd base/system" >> $LOG
-cd base/system
-echo "***** ./allcross" >> $LOG
-./allcross $SZ_OPT >> $LOG 2>&1 || exit 1
+echo "***** cd base/system" >> "$LOG"
+cd base/system || exit 1
+echo "***** ./allcross" >> "$LOG"
+./allcross $SZ_OPT >> "$LOG" 2>&1 || exit 1
