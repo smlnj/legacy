@@ -283,7 +283,7 @@ fun mkPid (pid, t, l, nameOp) =
 		  let val (newMap, _) = PersMap.remove(map, key)
 		  in newMap
 		  end handle e => map
-              val newEntry = (occur, newPinfo)
+              val newEntry = (occur, npinfo)
 	   in persmap := PersMap.insert(rmv (pid, !persmap), pid, newEntry);
 	      var
 	  end
