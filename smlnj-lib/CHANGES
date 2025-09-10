@@ -11,7 +11,7 @@ SML/NJ 110.99.9
 
 [2025-07-17]
         Merged development pull request #308, which fixed a bug in the `IntBinarySet`
-        structure (Issue #310).
+        structure (Development Issue #310).
 
 [2025-07-17]
         Added a number of operations to the `MONO_HASH_SET` interface to make
