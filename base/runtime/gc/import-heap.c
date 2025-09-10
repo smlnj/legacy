@@ -106,6 +106,7 @@ ml_state_t *ImportHeapImage (const char *fname, heap_params_t *params)
         }
 
         inBuf.needsSwap = FALSE;
+        inBuf.base      = NIL(Byte_t *);
         inBuf.buf       = NIL(Byte_t *);
         inBuf.nbytes    = 0;
     } else {
