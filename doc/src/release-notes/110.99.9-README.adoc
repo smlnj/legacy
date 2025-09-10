@@ -31,17 +31,10 @@ FILES::
 
 == Summary
 
-// **** summary description of release
+This release fixes a number of bugs and enables running on *macOS 26*
+(Tahoe).
 
 == Details
-
-// **** details: include those sections that are relevant
-
-=== Compiler
-
-=== CM
-
-=== MLRISC
 
 === Runtime System
 
@@ -49,18 +42,13 @@ FILES::
 
 === Basis Library
 
+* Fixes to
 === SML/NJ Library
 
 * Added a number of operations to the `MONO_HASH_SET` interface to make
   it more compatible with the `ORD_SET` interface.
 
-=== Successor ML
-
-=== ML-LPT
-
-=== Documentation
-
-=== Installation
+* Add `LEB128` module to the Utility library
 
 == Bugs
 
@@ -88,9 +76,9 @@ gforge bug tracker.
 | [.bugid]#366#
 | {issue-base}/366[`SockUtil.recvVec` behaviour does not match documentation]
 | n.a.
-//| [.bugid]#@ID#
-//| {issue-base}/@ID[@DESCRIPTION]
-//| [old bug #@OLDID]
+| [.bugid]#367#
+| {issue-base}/367[`Compile error on Fedora 40 64-bit]
+| n.a.
 |=======
 
 // ***** include a list of unnumbered bugs here *****
