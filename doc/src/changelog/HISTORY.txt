@@ -8,6 +8,8 @@ The Fellowship of SML/NJ
 :note-caption: UPDATE
 :issue-base: https://github.com/smlnj/legacy/issues
 :pull-base: https://github.com/smlnj/legacy/pull
+:dev-issue-base: https://github.com/smlnj/sml/issues
+:dev-pull-base: https://github.com/smlnj/sml/pull
 
 This file documents changes to the *Standard ML of New Jersey* system since
 March of 2000 (around Version 110.26).  The change log  primarily covers
@@ -107,8 +109,22 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //====================================================================
 //== Recent updates
 
-//====================================================================
-== Version 110.99.8; 2025/04/25
+//--------------------------------------------------------------------
+[2025-09-10]::
+Ported fix for {dev-issue-base}/319[Development Issue #319
+(Nondeterministic import order)] from development repository to legacy.
+The description of this change, which is owed to Byron Zhong, is below.
++
+Changed the way external references are passed during translation to
+PLambda. Previously, the external references are grouped by the PIDs
+of their compilation units, and the units are sorted by the PIDs. As a
+result, the input order is a property of the external module. This
+change sorts the units by the order of their appearances in the source
+code; modules that are referenced earlier are put before those
+referenced later. This makes the input order a property of the code
+itself.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
 
 //--------------------------------------------------------------------
 [2025-05-05]::
@@ -116,6 +132,9 @@ Fixed an issue where trailing zeros were being included for the
 `GEN` mode float-point to string conversions.
 +
 owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//====================================================================
+== Version 110.99.8; 2025/04/25
 
 //--------------------------------------------------------------------
 [2025-04-25]::

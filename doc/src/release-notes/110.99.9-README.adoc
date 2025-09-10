@@ -89,11 +89,15 @@ gforge bug tracker.
   (see https://github.com/smlnj/smlnj/pull/308[Pull Request #308] and
   https://github.com/smlnj/smlnj/issues/310[Issue #310]).
 
+* Merge fix for development repository https://github.com/smlnj/smlnj/issues/319[Issue
+  #319 (Nondeterministic import order)].
+
 * Merge fix for development repository https://github.com/smlnj/smlnj/pull/322[Pull
   Request #322 (Fix heap export inconsistency caused by pair arena offsets)].
 
 * Merge fix for development repository https://github.com/smlnj/smlnj/pull/323[Pull
   Request #323 (Fix memory leaks in the runtime system)].
+
 
 == Supported systems
 
