@@ -119,15 +119,24 @@ xref:fun-IntervalSetFn.adoc[`[.kw]#functor# IntervalSetFn`]::
 xref:str-IOUtil.adoc[`[.kw]#structure# IOUtil`]::
   Provides support for redirecting the standard input and output streams.
 
+xref:str-JSON.adoc[`[.kw]#structure# JSON`]::
+  Defines the representation of *JSON* values as an *SML* datatype.  See
+  the xref:../json-lib.adoc[__JSON Library__] for operations on this
+  type.
+
 xref:fun-KeywordFn.adoc[`[.kw]#functor# KeywordFn`]::
   Provides a simple way to support a table of keyword
   (or reserved) identifiers in a scanner.
 
+// 30
+
+xref:str-LEB128.adoc[`[.kw]#structure# LEB128`]::
+  Provides binary encoding/decoding of integer and word types using the
+  https://en.wikipedia.org/wiki/LEB128[Little-Endian-Base-128 (LEB128)] format.
+
 xref:fun-LeftPriorityQFn.adoc[`[.kw]#functor# LeftPriorityQFn`]::
   Provides a functional implementation of priority
   queues using leaftist heaps.
-
-// 30
 
 xref:str-LibBase.adoc[`[.kw]#structure# LibBase`]::
   Provides some common definitions that are
@@ -158,13 +167,13 @@ xref:fun-MonoArrayFn.adoc[`[.kw]#functor# MonoArrayFn`]::
 xref:sig-MONO_HASH_TABLE.adoc[`[.kw]#signature# MONO_HASH_TABLE`]::
   Defines an interface to imperative hash tables with monomorphic keys.
 
+// 40
+
 xref:str-Native.adoc[`[.kw]#structure# NativeInt`]::
   An alias to the native-sized integer structure (_e.g._, `Int64`).
 
 xref:str-Native.adoc[`[.kw]#structure# NativeWord`]::
   An alias to the native-sized word structure (_e.g._, `Word64`).
-
-// 40
 
 xref:sig-ORD_KEY.adoc[`[.kw]#signature# ORD_KEY`]::
   Defines an interface to an abstract type
@@ -193,6 +202,8 @@ xref:str-Queue.adoc[`[.kw]#structure# Queue`]::
 xref:str-Rand.adoc[`[.kw]#structure# Rand`]::
   Provides a simple random number generator.
 
+// 50
+
 xref:str-Random.adoc[`[.kw]#structure# Random`]::
   Pseudo-random-number generation using the
   http://www.math.sci.hiroshima-u.ac.jp/m-mat/MT/emt.html[_Mersenne Twister_
@@ -200,8 +211,6 @@ xref:str-Random.adoc[`[.kw]#structure# Random`]::
 
 xref:str-RealOrderStats.adoc[`[.kw]#structure# RealOrderStats`]::
   **To be written**
-
-// 50
 
 xref:fun-RedBlackMapFn.adoc[`[.kw]#functor# RedBlackMapFn`]::
   Provides a red-black-tree implementation of the
@@ -232,13 +241,13 @@ xref:str-UnivariateStats.adoc[`[.kw]#structure# UnivariateStats`]::
 xref:str-URef.adoc[`[.kw]#structure# URef`]::
   Provides mutable references with __Union-Find__ semantics.
 
+// 60
+
+== Usage
+
 xref:str-UTF8.adoc[`[.kw]#structure# UTF8`]::
   Provides support for working with https://en.wikipedia.org/wiki/UTF-8[*UTF-8*]
   encoded strings.
-
-// 59
-
-== Usage
 
 By default, the *Util Library* is autoloaded by *CM*, which means that it is
 immediately available to interactive use in the *SML/NJ* REPL.
@@ -314,11 +323,15 @@ include::fun-IntervalSetFn.adoc[]
 
 include::str-IOUtil.adoc[]
 
+include::str-JSON.adoc[]
+
 include::fun-KeywordFn.adoc[]
 
-include::fun-LeftPriorityQFn.adoc[]
-
 // 30
+
+include::str-LEB128.adoc[]
+
+include::fun-LeftPriorityQFn.adoc[]
 
 include::str-LibBase.adoc[]
 
@@ -336,11 +349,11 @@ include::fun-MonoArrayFn.adoc[]
 
 include::sig-MONO_HASH_TABLE.adoc[]
 
+// 40
+
 include::str-Native.adoc[]
 
 include::sig-ORD_KEY.adoc[]
-
-// 40
 
 include::sig-ORD_MAP.adoc[]
 
@@ -358,11 +371,11 @@ include::str-Rand.adoc[]
 
 include::str-Random.adoc[]
 
+// 50
+
 include::str-RealOrderStats.adoc[]
 
 include::fun-RedBlackMapFn.adoc[]
-
-// 50
 
 include::fun-RedBlackSetFn.adoc[]
 
@@ -380,7 +393,7 @@ include::str-URef.adoc[]
 
 include::str-UTF8.adoc[]
 
-// 58 -- note that `str-Native.adoc` is referenced twice by the HTML,
+// 60 -- note that `str-Native.adoc` is referenced twice by the HTML,
 // but only once by the PDF
 
 // Return to normal title levels.

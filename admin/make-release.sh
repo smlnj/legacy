@@ -7,7 +7,7 @@
 #
 
 if [ $# -lt 1 ] ; then
-    echo Usage: $0 '<release-number>'
+    echo "Usage: $0 <release-number>"
     exit 1
 fi
 
@@ -15,5 +15,5 @@ relno=$1
 reltag="v"$relno
 
 git pull || exit 1
-git tag -a -m "tag release $relno" $reltag || exit 1
+git tag -a -m "tag release $relno" "$reltag" || exit 1
 git push || exit 1

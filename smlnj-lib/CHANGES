@@ -5,9 +5,17 @@ correspond to SML/NJ releases (past and future).
 SML/NJ 110.99.9
 -------------------
 
+[2025-09-13]
+        Added `LEB128` module, which implements packed encoding and decoding
+        of integer and word types using the Little Endian Base 128 encoding.
+
+[2025-09-09]
+	Fix Issue #366 (`SockUtil.recvVec` behaviour does not match
+	documentation).
+
 [2025-07-17]
         Merged development pull request #308, which fixed a bug in the `IntBinarySet`
-        structure (Issue #310).
+        structure (Development Issue #310).
 
 [2025-07-17]
         Added a number of operations to the `MONO_HASH_SET` interface to make

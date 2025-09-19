@@ -31,19 +31,14 @@ FILES::
 
 == Summary
 
-// **** summary description of release
+This release fixes a number of bugs and enables running on *macOS 26*
+(Tahoe).
 
 == Details
 
-// **** details: include those sections that are relevant
-
-=== Compiler
-
-=== CM
-
-=== MLRISC
-
 === Runtime System
+
+* Ported various fixes from the development repository.
 
 === Basis Library
 
@@ -52,13 +47,8 @@ FILES::
 * Added a number of operations to the `MONO_HASH_SET` interface to make
   it more compatible with the `ORD_SET` interface.
 
-=== Successor ML
-
-=== ML-LPT
-
-=== Documentation
-
-=== Installation
+* Added `LEB128` module, which implements packed encoding and decoding
+  of integer and word types using the _Little Endian Base 128_ encoding.
 
 == Bugs
 
@@ -83,12 +73,12 @@ gforge bug tracker.
 | [.bugid]#363#
 | {issue-base}/363["default word size" in the documentation for Util/Random]
 | n.a.
-| [.bugid]#367#
-| {issue-base}/367[Compile error on Fedora 40 64-bit]
+| [.bugid]#366#
+| {issue-base}/366[`SockUtil.recvVec` behaviour does not match documentation]
 | n.a.
-//| [.bugid]#@ID#
-//| {issue-base}/@ID[@DESCRIPTION]
-//| [old bug #@OLDID]
+| [.bugid]#367#
+| {issue-base}/367[`Compile error on Fedora 40 64-bit]
+| n.a.
 |=======
 
 // ***** include a list of unnumbered bugs here *****
@@ -98,6 +88,16 @@ gforge bug tracker.
 * Merge fix for the `IntBinarySet` structure from the development branch
   (see https://github.com/smlnj/smlnj/pull/308[Pull Request #308] and
   https://github.com/smlnj/smlnj/issues/310[Issue #310]).
+
+* Merge fix for development repository https://github.com/smlnj/smlnj/issues/319[Issue
+  #319 (Nondeterministic import order)].
+
+* Merge fix for development repository https://github.com/smlnj/smlnj/pull/322[Pull
+  Request #322 (Fix heap export inconsistency caused by pair arena offsets)].
+
+* Merge fix for development repository https://github.com/smlnj/smlnj/pull/323[Pull
+  Request #323 (Fix memory leaks in the runtime system)].
+
 
 == Supported systems
 
@@ -132,6 +132,7 @@ tested some of them:
 | | macOS 10.12 (Sierra) |
 | | macOS 10.13 (High Sierra) | Tested
 | | macOS 10.14 (Mojave) |
+| | macOS 10.15 (Sequoia) |
 | | Ubuntu 16.04.3 LTS |
 | | Other Linux variants |
 | | FreeBSD 12.0 |

@@ -86,8 +86,9 @@ PVT status_t ExportImage (ml_state_t *msp, int kind, FILE *file)
 
 #define SAVE_REG(dst, src)	{				\
 	    ml_val_t	__src = (src);				\
-	    if (isEXTERN(BIBOP, __src))				\
+	    if (isEXTERN(BIBOP, __src))	{			\
 		__src = ExportCSymbol(exportTbl, __src);	\
+            }                                                   \
 	    (dst) = __src;					\
 	}
 
@@ -118,6 +119,7 @@ PVT status_t ExportImage (ml_state_t *msp, int kind, FILE *file)
 	HeapIO_WriteImageHeader(wr, kind);
 	WR_Write(wr, &heapHdr, sizeof(heapHdr));
 	if (WR_Error(wr)) {
+            FreeExportTbl(exportTbl);
 	    WR_Free(wr);
 	    return FAILURE;
 	}
@@ -159,6 +161,7 @@ PVT status_t ExportImage (ml_state_t *msp, int kind, FILE *file)
     if (kind != EXPORT_FN_IMAGE)
 	RepairHeap (exportTbl, heap);
 
+    FreeExportTbl(exportTbl);
     WR_Free(wr);
 
     return status;
@@ -252,6 +255,7 @@ PrintRegionMap(rp);
     arenaHdrs = (heap_arena_hdr_t *) MALLOC (arenaHdrsSize);
     offset = WR_Tell(wr) + arenaHdrsSize;
     offset = ROUNDUP(offset, pagesize);
+    /* initialize the arena headers for this generation */
     for (p = arenaHdrs, i = 0;  i < heap->numGens;  i++) {
 	for (j = 0;  j < NUM_ARENAS;  j++, p++) {
 	    arena_t		*ap = heap->gen[i]->arena[j];
@@ -265,6 +269,9 @@ PrintRegionMap(rp);
 	}
 	for (j = 0;  j < NUM_BIGOBJ_KINDS;  j++, p++) {
 	    int			nObjs, nBOPages;
+            /* count the number of big-objects and big-object pages
+             * in this generation.
+             */
 	    bdp = heap->gen[i]->bigObjs[j];
 	    for (nObjs = nBOPages = 0;  bdp != NIL(bigobj_desc_t *);  bdp = bdp->next) {
 		nObjs++;
@@ -384,7 +391,5 @@ PVT void RepairHeap (export_table_t *tbl, heap_t *heap)
 	RepairArena(PAIR_INDX);
 	RepairArena(ARRAY_INDX);
     }
-
-    FreeExportTbl (tbl);
 
 } /* end of RepairHeap */
