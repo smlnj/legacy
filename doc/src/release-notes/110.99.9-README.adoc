@@ -42,13 +42,13 @@ This release fixes a number of bugs and enables running on *macOS 26*
 
 === Basis Library
 
-* Fixes to
 === SML/NJ Library
 
 * Added a number of operations to the `MONO_HASH_SET` interface to make
   it more compatible with the `ORD_SET` interface.
 
-* Add `LEB128` module to the Utility library
+* Added `LEB128` module, which implements packed encoding and decoding
+  of integer and word types using the _Little Endian Base 128_ encoding.
 
 == Bugs
 
