@@ -4,6 +4,7 @@
 :history: {dist-dir}HISTORY.html
 :issue-base: https://github.com/smlnj/legacy/issues/
 :pull-base: https://github.com/smlnj/legacy/pull/
+:dev-pull-base: https://github.com/smlnj/smlnj/pull
 :stem: latexmath
 :source-highlighter: pygments
 :stylesheet: release-notes.css
@@ -83,20 +84,23 @@ gforge bug tracker.
 
 // ***** include a list of unnumbered bugs here *****
 * Merged fix for the inverse power-of-five table from the development branch
-  (see https://github.com/smlnj/smlnj/pull/306[Pull Request #306]).
+  (see {dev-pull-base}/306[Pull Request #306]).
 
-* Merge fix for the `IntBinarySet` structure from the development branch
+* Merged fix for the `IntBinarySet` structure from the development branch
   (see https://github.com/smlnj/smlnj/pull/308[Pull Request #308] and
   https://github.com/smlnj/smlnj/issues/310[Issue #310]).
 
-* Merge fix for development repository https://github.com/smlnj/smlnj/issues/319[Issue
+* Merged fix for development repository https://github.com/smlnj/smlnj/issues/319[Issue
   #319 (Nondeterministic import order)].
 
-* Merge fix for development repository https://github.com/smlnj/smlnj/pull/322[Pull
-  Request #322 (Fix heap export inconsistency caused by pair arena offsets)].
+* Merged fix for development repository {dev-pull-base}/322[Pull Request #322
+  (Fix heap export inconsistency caused by pair arena offsets)].
 
-* Merge fix for development repository https://github.com/smlnj/smlnj/pull/323[Pull
-  Request #323 (Fix memory leaks in the runtime system)].
+* Merged fix for development repository {dev-pull-base}/323[Pull Request #323
+  (Fix memory leaks in the runtime system)].
+
+* Merged fix for development repository {dev-pull-base}/325[Pull Request #325
+  (`setPosOut` should return an `outstream`)].
 
 
 == Supported systems
