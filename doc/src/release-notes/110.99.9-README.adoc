@@ -1,5 +1,5 @@
 :version: 110.99.9
-:date: @DATE@
+:date: October 6, 2025
 :dist-dir: https://smlnj.org/dist/working/{version}/
 :history: {dist-dir}HISTORY.html
 :issue-base: https://github.com/smlnj/legacy/issues/
@@ -41,8 +41,6 @@ This release fixes a number of bugs and enables running on *macOS 26*
 
 * Ported various fixes from the development repository.
 
-=== Basis Library
-
 === SML/NJ Library
 
 * Added a number of operations to the `MONO_HASH_SET` interface to make
@@ -78,7 +76,10 @@ gforge bug tracker.
 | {issue-base}/366[`SockUtil.recvVec` behaviour does not match documentation]
 | n.a.
 | [.bugid]#367#
-| {issue-base}/367[`Compile error on Fedora 40 64-bit]
+| {issue-base}/367[Compile error on Fedora 40 64-bit]
+| n.a.
+| [.bugid]#370#
+| {issue-base}/370[`Int32` operations do not properly raise `Overflow`]
 | n.a.
 |=======
 
@@ -115,11 +116,13 @@ tested some of them:
 | | macOS 10.14 (Mojave) |
 | | macOS 10.15 (Catalina) |
 | | macOS 11 (Big Sur) |
-| | macOS 12 (Monterey) | Tested
-| | macOS 13 (Ventura) | Tested
-| | macOS 14 (Sonoma) | Tested
-| | Ubuntu 22.04.4 LTS | Tested
+| | macOS 12 (Monterey) |
+| | macOS 13 (Ventura) |
+| | macOS 14 (Sonoma) |
+| | macOS 15 (Sequoia) | Tested
+| | macOS 26 (Tahoe) | Tested
 | | Ubuntu 20.04.6 LTS | Tested
+| | Ubuntu 22.04.4 LTS | Tested
 | {nbsp} | |
 | Power PC | Mac OS X 10.5 (Leopard) |
 | | AIX |
@@ -136,13 +139,12 @@ tested some of them:
 | | macOS 10.12 (Sierra) |
 | | macOS 10.13 (High Sierra) | Tested
 | | macOS 10.14 (Mojave) |
-| | macOS 10.15 (Sequoia) |
-| | Ubuntu 16.04.3 LTS |
 | | Other Linux variants |
 | | FreeBSD 12.0 |
 | | Other BSD variants |
 | | Windows 7 |
 | | Windows 10 |
+| | Windows 11 | Lightly tested
 | | Cygwin (32-bit) |
 | {nbsp} | |
 |=======

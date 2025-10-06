@@ -109,6 +109,20 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //====================================================================
 //== Recent updates
 
+//====================================================================
+== Version 110.99.9; 2025/10/06
+
+//--------------------------------------------------------------------
+[2025-10-06]::
+Fix for {issue-base}/370[`Int32` operations do not properly raise
+`Overflow`].  `Int32.int` values are represented as 63-bit signed
+integers on 64-bit targets with explicit checks for overflow.  The
+problem was that the checks were disabled when converting the result
+of an operation to the default integer type.  I replaced the conversion,
+which was doing sign extension, with a cast.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
 //--------------------------------------------------------------------
 [2025-09-10]::
 Ported fix for {dev-issue-base}/319[Development Issue #319
