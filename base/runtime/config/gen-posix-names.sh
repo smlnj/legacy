@@ -9,10 +9,6 @@
 # Usage: gen-posix-names.sh <prefix> <outfile>
 #
 
-# redefine PATH so that we get the right versions of the various tools
-#
-PATH=/bin:/usr/bin
-
 # set locale variables so that sort works right
 #
 export LC_CTYPE LC_COLLATE

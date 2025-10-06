@@ -11,9 +11,6 @@
 #			   by $HEAP_OPSYS
 #
 
-export PATH
-PATH="/bin:/usr/bin"
-
 # the default size; this is set by the config/install.sh script
 #
 SIZE=@SIZE@
