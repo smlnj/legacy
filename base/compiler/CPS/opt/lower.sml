@@ -11,7 +11,7 @@
  *	  (on 32-bit targets only).
  *
  *	- replace conversions that involve the `IntInf.int` type with
- *	  calls to the pre-basis library code (see `system/smlnj/init`),
+ *	  calls to the pre-basis library code (see `system/smlnj/init`).
  *
  *	- replace the `round-to-negative-infinity` division operations
  *	  (i.e., `div` and `mod`) with native arithmetic operations.
