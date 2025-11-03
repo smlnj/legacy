@@ -51,7 +51,7 @@ structure IntImp : INTEGER =
     val op < 	: int * int -> bool = Int.<
     val op <= 	: int * int -> bool = Int.<=
 
-    fun fmt radix = (NumFormat32.fmtInt radix) o InlineT.Int32.fromInt
+    val fmt = NumFormat.fmtInt
 
     fun scan radix = let
 	  val scanInt32 = NumScan32.scanInt radix

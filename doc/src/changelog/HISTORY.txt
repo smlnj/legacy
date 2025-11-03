@@ -110,7 +110,20 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //== Recent updates
 
 //====================================================================
-== Version 110.99.9; 2025/10/06
+== Version 110.99.9; 2025/11/04
+
+//--------------------------------------------------------------------
+[2025-10-06]::
+Fix for {issue-base}/372[`Int32.toString` can generate an `Overflow`
+exception].  This issue was fixed by refactoring the modules for
+conversions between strings and numbers.  There are now conversion
+modules for 32-bit int/word types, the default int/word types, and
+64-bit int/word types.  On 64-bit targets, the first two of these
+are just wrappers around the 64-bit conversions, while on 32-bit targets,
+the default conversions are implemented as wrappers around the 32-bit
+conversions.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
 
 //--------------------------------------------------------------------
 [2025-10-06]::

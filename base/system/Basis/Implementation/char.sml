@@ -245,7 +245,7 @@ structure Char : sig
 
     val fromString = StringCvt.scanString scan
 
-    val itoa = (NumFormat32.fmtInt StringCvt.DEC) o InlineT.Int32.fromInt
+    val itoa = NumFormat.fmtInt StringCvt.DEC
 
     fun toString #"\a" = "\\a"
       | toString #"\b" = "\\b"
@@ -321,14 +321,14 @@ structure Char : sig
       | toCString c = if (isPrint c)
 	  then InlineT.PolyVector.sub (PreString.chars, ord c)
 	  else let
-	    val i = InlineT.Int32.fromInt(ord c)
-	    val prefix = if InlineT.Int32.<(i, 8)
+	    val i = ord c
+	    val prefix = if InlineT.Int.<(i, 8)
 		    then "\\00"
-		  else if InlineT.Int32.<(i, 64)
+		  else if InlineT.Int.<(i, 64)
 		    then "\\0"
 		    else "\\"
 	    in
-	      PreString.concat2(prefix, NumFormat32.fmtInt StringCvt.OCT i)
+	      PreString.concat2(prefix, NumFormat.fmtInt StringCvt.OCT i)
 	    end
 
   end (* Char *)

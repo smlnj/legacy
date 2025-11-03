@@ -393,8 +393,6 @@ is
         char.sml
         list.sml
         scan-util.sml
-        num-scan32.sml
-        num-format32.sml
         num-scan64.sml
         num-format64.sml
         bool.sml
@@ -476,6 +474,10 @@ is
         Target32Bit/int.sml
         Target32Bit/int64.sml
         Target32Bit/intinf-to-real64.sml
+        Target32Bit/num-format.sml
+        Target32Bit/num-format32.sml
+        Target32Bit/num-scan.sml
+        Target32Bit/num-scan32.sml
         Target32Bit/pack-word-b64.sml
         Target32Bit/pack-word-l64.sml
         Target32Bit/pointer.sml
@@ -487,6 +489,10 @@ is
         Target64Bit/int.sml
         Target64Bit/int64.sml
         Target64Bit/intinf-to-real64.sml
+        Target64Bit/num-format.sml
+        Target64Bit/num-format32.sml
+        Target64Bit/num-scan.sml
+        Target64Bit/num-scan32.sml
         Target64Bit/pack-word-b64.sml
         Target64Bit/pack-word-l64.sml
         Target64Bit/pointer.sml

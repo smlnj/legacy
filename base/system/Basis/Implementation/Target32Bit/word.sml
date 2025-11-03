@@ -59,7 +59,7 @@ structure WordImp : WORD =
     val min : word * word -> word = Word.min
     val max : word * word -> word = Word.max
 
-    fun fmt radix = (NumFormat32.fmtWord radix) o Word.toWord32
+    val fmt = NumFormat.fmtWord
     val toString = fmt StringCvt.HEX
 
     fun scan radix = let

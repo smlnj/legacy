@@ -1,5 +1,5 @@
 :version: 110.99.9
-:date: October 6, 2025
+:date: November 4, 2025
 :dist-dir: https://smlnj.org/dist/working/{version}/
 :history: {dist-dir}HISTORY.html
 :issue-base: https://github.com/smlnj/legacy/issues/
@@ -80,6 +80,9 @@ gforge bug tracker.
 | n.a.
 | [.bugid]#370#
 | {issue-base}/370[`Int32` operations do not properly raise `Overflow`]
+| n.a.
+| [.bugid]#372#
+| {issue-base}/372[`Int32.toString` can generate an `Overflow` exception]
 | n.a.
 |=======
 
