@@ -107,7 +107,7 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //////////////////////////////////////////////////////////////////////
 
 //====================================================================
-//== Recent updates
+== Recent updates
 
 //====================================================================
 == Version 110.99.9; 2025/11/04
@@ -157,6 +157,16 @@ owner:cs.uchicago.edu/~jhr[John Reppy]
 [2025-05-05]::
 Fixed an issue where trailing zeros were being included for the
 `GEN` mode float-point to string conversions.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
+[2025-04-30]::
+Changed the type of the `pow5Tbl` table in the `FRepToReal64` structure
+to `Word64.word vector` (from `word vector`), since the latter does not
+have sufficient bits on 32-bit systems.  This change fixes {issue-base}/356[
+Issue #356 (Problem with `Real.fromString` evaluating non-whole number
+strings on 32-bit systems)].
 +
 owner:cs.uchicago.edu/~jhr[John Reppy]
 
