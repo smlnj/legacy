@@ -1,6 +1,6 @@
 (* char.sml
  *
- * COPYRIGHT (c) 2018 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2025 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *)
 
@@ -159,10 +159,10 @@ structure Char : sig
 	  fun next (x::r) = SOME(x, r)
 	    | next [] = NONE
 	  in
-	    case (NumScan32.scanInt radix next l)
+	    case (NumScan.scanInt radix next l)
 	     of NONE => NONE
-	      | SOME(i, _) => if InlineT.Int32.<(i, 256)
-		  then SOME(chr(InlineT.Int32.toInt i), strm)
+	      | SOME(i, _) => if InlineT.Int.<(i, 256)
+		  then SOME(chr i, strm)
 		  else NONE
 	    (* end case *)
 	  end
