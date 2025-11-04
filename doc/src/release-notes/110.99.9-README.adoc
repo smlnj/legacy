@@ -49,6 +49,10 @@ This release fixes a number of bugs and enables running on *macOS 26*
 * Added `LEB128` module, which implements packed encoding and decoding
   of integer and word types using the _Little Endian Base 128_ encoding.
 
+* moved the `JSON` structure from the *JSON* Library to the *Util* Library.  This
+  change was made to allow code to produce/consume *JSON* values without depending
+  on the *JSON* library.
+
 == Bugs
 
 Here is a list of the issues that are fixed (or closed) with this release.
