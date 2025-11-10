@@ -92,4 +92,7 @@ signature UNSAFE =
 
     val sigHandler : ((int * int * unit Cont.cont) -> unit Cont.cont) ref
 
+    (* Check for pointer equality. Can return false even when equal. *)
+    val ptrEq : 'a * 'a -> bool
+
   end;
