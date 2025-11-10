@@ -2,6 +2,9 @@
  *
  * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
+ *
+ * This module amended to include 'Execute as a script' change done by Dayanandan Natarajan, Heriot Watt University
+ *
  *)
 
 signature INTERACT =
@@ -27,6 +30,7 @@ signature INTERACT =
     val useFile : string -> bool
 
     val useStream : TextIO.instream -> unit
+    val useScriptFile : string * TextIO.instream -> unit (* Addded as part of Execute as a script change *)
     val evalStream : TextIO.instream * Environment.environment -> Environment.environment
 
     val withErrorHandling : bool -> (* true: treat all exns like usercode exns *)
