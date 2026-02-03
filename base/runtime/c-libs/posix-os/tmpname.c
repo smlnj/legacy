@@ -17,7 +17,6 @@
 #define PATH_MAX 256
 #endif
 
-#ifdef
 /* _ml_OS_tmpname:
  */
 ml_val_t _ml_OS_tmpname (ml_state_t *msp, ml_val_t arg)
