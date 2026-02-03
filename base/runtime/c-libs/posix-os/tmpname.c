@@ -13,6 +13,11 @@
 #include "ml-objects.h"
 #include "cfun-proto-list.h"
 
+#ifndef PATH_MAX
+#define PATH_MAX 256
+#endif
+
+#ifdef
 /* _ml_OS_tmpname:
  */
 ml_val_t _ml_OS_tmpname (ml_state_t *msp, ml_val_t arg)
@@ -20,33 +25,28 @@ ml_val_t _ml_OS_tmpname (ml_state_t *msp, ml_val_t arg)
 #if defined(HAS_MKSTEMP) && defined(P_tmpdir)
 
   /* mkstemp was added to the IEEE Std 1003.1 in 2004, so most systems should support it */
-#ifdef PATH_MAX
-    char	template[PATH_MAX];
-#else
-    char	template[256];
-#endif
+    char template[PATH_MAX];
     int sts;
-    const char *tmpdir = getenv("TMPDIR");
+    const char *tmpdir = getenv ("TMPDIR");
 
-    if (tmpdir != NULL) {
-        int r = snprintf(template, sizeof(template),
-                "%s/SMLNJ-XXXXXX", tmpdir);
+    if (tmpdir != NIL(char *)) {
+        int r = snprintf (template, PATH_MAX, "%s/SMLNJ-XXXXXX", tmpdir);
         if (r < sizeof(template)) {
-            sts = mkstemp(template);
+            sts = mkstemp (template);
             if (sts >= 0) {
-                close(sts);
+                close (sts);
                 return ML_CString(msp, template);
             }
         }
     }
 
-    strcpy(template, P_tmpdir "/SMLNJ-XXXXXX");
-    sts = mkstemp(template);
+    strcpy (template, P_tmpdir "/SMLNJ-XXXXXX");
+    sts = mkstemp (template);
     if (sts < 0) {
         return RAISE_SYSERR(msp, sts);
     } else {
-        close(sts);
-        return ML_CString(msp, template);
+        close (sts);
+        return ML_CString (msp, template);
     }
 
 #else /* for old systems */
