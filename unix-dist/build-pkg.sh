@@ -144,6 +144,6 @@ done
 # package up the source tree as a compressed tar file
 #
 cd $ROOT
-make_tar smlnj-$ARCH-unix-$VERSION.tgz smlnj
+make_tarball smlnj-$ARCH-unix-$VERSION.tgz smlnj
 
 cleanup
