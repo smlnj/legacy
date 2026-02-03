@@ -27,20 +27,27 @@ complain() {
 #
 # Function to make a directory including its ancestors.
 #
-makedir() {
+make_dir() {
   if [ x"$1" = x ] ; then
     :
   elif [ -d "$1" ] ; then
     :
   else
     makedirtmp=`dirname "$1"`
-    makedir "$makedirtmp"
+    make_dir "$makedirtmp"
     if mkdir "$1" ; then
       :
     else
       complain "$CMD: !!! Unable to make directory $1!"
     fi
   fi
+}
+
+make_tarball() {
+  if [ x"$OPSYS" = xdarwin ] ; then
+     TARFLAGS="--no-mac-metadata $TARFLAGS"
+  fi
+  tar $TARFLAGS -czf "$1" "$2" || exit 1
 }
 
 SIZE="64"
@@ -95,7 +102,7 @@ fi
 #
 # create the base source subdirectory
 #
-makedir "$BASEDIR"
+make_dir "$BASEDIR"
 
 "$CONFIGDIR"/unpack . runtime
 "$CONFIGDIR"/unpack . "$BOOT_ARCHIVE"
@@ -137,6 +144,6 @@ done
 # package up the source tree as a compressed tar file
 #
 cd $ROOT
-tar -czf smlnj-$ARCH-unix-$VERSION.tgz smlnj
+make_tar smlnj-$ARCH-unix-$VERSION.tgz smlnj
 
 cleanup
