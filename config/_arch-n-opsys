@@ -117,13 +117,12 @@ case `uname -s` in
       *86)
 	ARCH=x86
       # version 4.9 is the oldest "supported" version of Linux, so we
-      # only go back to the 3.x versions
+      # blacklist older versions
 	case `uname -r` in
-	  3.*) ;; # 2011 -- 2015
-	  4.*) ;; # 2015 -- 2018
-	  5.*) ;; # 2019 -- 2022
-	  6.*) ;; # 2022 --
-	  *) exit 1 ;;
+	  0.*) exit 1 ;;
+	  1.*) exit 1 ;;
+	  2.*) exit 1 ;;
+	  *) ;;
 	esac
 	;;
       x86_64)

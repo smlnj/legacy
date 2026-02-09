@@ -71,6 +71,9 @@ gforge bug tracker.
 | [.bugid]#374#
 | {pull-base}/374[`OS.FileSys.tmpName` should support `TMPDIR`]
 | n.a.
+| [.bugid]#375#
+| {pull-base}/375[Remove Linux version check from `_arch-n-opsys`]
+| n.a.
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]
