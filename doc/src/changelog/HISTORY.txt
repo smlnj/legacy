@@ -107,7 +107,14 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //////////////////////////////////////////////////////////////////////
 
 //====================================================================
-//== Recent updates
+== Recent updates
+
+[2026-02-26]::
+Modified **CM** so that the "required privileges" message is no longer
+printed when the CM verbose flag is set to `false` (_e.g._, by using
+the command-line option `-Ccm.verbose=false`)
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
 
 //====================================================================
 == Version 110.99.9; 2025/11/04
