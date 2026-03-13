@@ -2,6 +2,13 @@ This is a list of changes to the SML/NJ Library; the version numbers
 correspond to SML/NJ releases (past and future).
 
 --------------------------------------------------------------------------------
+SML/NJ 110.99.10
+-------------------
+
+[2026-03-10]
+        Added the `sizeOfValue` function to the `JSON_STREAM_OUTPUT` signature.
+
+--------------------------------------------------------------------------------
 SML/NJ 110.99.9
 -------------------
 
