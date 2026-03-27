@@ -33,7 +33,7 @@ supported:
 
 \section{Views and View Entities}
 
-Currently, there are two views supported by \asdlgen{}: \texttt{cxx} for
+Currently, there are two views supported by \asdlgen{}: \texttt{cpp} for
 when generating \Cplusplus{} code and \texttt{sml} for when generating Standard
 ML code.
 
@@ -87,7 +87,7 @@ In the discussion below, we specify the interpretation of the view-entry values,
 the views that accept them, and the kinds of view entities that they may be applied to.
 
 \newcommand{\PROP}[4]{%
-  \item[\fbox{\texttt{#1}~~\normalfont\textit{#2}}]\hfill{\fbox{#3 / #4}}\\ }
+  \item[\fbox{\texttt{#1}~~\normalfont\textit{#2}}]\hfill{\fbox{#3 / #4}}\\[0.25em] }
 
 \subsection{Overriding the Default Names}
 The view mechanism provides a fair amount of flexibility for overriding the
@@ -109,10 +109,10 @@ default names used for modules and functions in the generated code.
   \PROP{pickler_name}{identifier}{\texttt{c++},\texttt{sml}}{Module}
     Specifies the name to give to the target module that implements both file
     and memory pickling.
-    For the \sml{} target, this affects the name of the pickler signature, but
+    For the \sml{} view, this specifies the name of the pickler signature, but
     not the pickler structures, since different modules are generated
     for memory and file pickling.
-  \PROP{sexp_pickle_name}{identifier}{\texttt{sml}}{Module}
+  \PROP{sexp_pickler_name}{identifier}{\texttt{sml}}{Module}
     Specifies the name to give to the target module that implements S-Expression pickling.
 \end{description}%
 
@@ -124,7 +124,7 @@ the addition of user-code to the generated modules.\footnote{
   In the case of a target language like \sml{}, where multiple modules
   are generated, the code is added to the base module that contains the
   generated type definitions.
-} 
+}
 \begin{description}
   \PROP{interface\char`\_prologue}{text}{\texttt{c++},\texttt{sml}}{File,Module}
     Include text verbatim after the introduction of the base
@@ -133,18 +133,18 @@ the addition of user-code to the generated modules.\footnote{
   \PROP{interface\char`\_epilogue}{text}{\texttt{c++},\texttt{sml}}{File,Module}
     Include text verbatim after all types defined in the module
     interface have been defined.
-	
+
   \PROP{implementation\char`\_prologue}{text}{\texttt{c++},\texttt{sml}}{File,Module}
     Include text verbatim after the introduction of the base
     environment, but before any other implementation code is defined.
-	
+
   \PROP{implementation\char`\_epilogue}{text}{\texttt{c++},\texttt{sml}}{File,Module}
     Include text verbatim after all definitions defined in the module
-    implementation.  
+    implementation.
 
 %  \PROP{is\char`\_library}{bool}{\texttt{c++},\texttt{sml}}{Module}
 %    Default value is false. If true assume all types can be used
-%    as lists or options and generate any needed code, rather than ?? 
+%    as lists or options and generate any needed code, rather than ??
 
   \PROP{suppress}{names}{\texttt{c++},\texttt{sml}}{File,Module}
     Specifies which aspects of the generated code should be suppressed (\ie{},
@@ -158,25 +158,25 @@ the addition of user-code to the generated modules.\footnote{
     that nothing is suppressed, and ``\cd{all},'' which means that all code generation
     for the entity is suppressed.
     It is often a good idea to first generate code and then
-    set this entry, so that the generated code can be used as stubs for the 
+    set this entry, so that the generated code can be used as stubs for the
     user implementation.
 
   \PROP{private_code}{text}{\texttt{c++}}{Type,Con}
     Add the text to the class generated for the type or constructor with private scope.
-  
+
   \PROP{protected_code}{text}{\texttt{c++}}{Type,Con}
     Add the text to the class generated for the type or constructor with protected scope.
-  
+
   \PROP{public_code}{text}{\texttt{c++}}{Type,Con}
      Add the text to the class generated for the type or constructor with public scope.
- 
+
 \end{description}%
 
 The precise meaning of interface and implementation for the different
 target languages is as follows:
 \begin{description}
   \item[\Cplusplus{}]
-    The interface is the \texttt{.hxx} file and the implementation is the \texttt{.cxx}
+    The interface is the \texttt{.hpp} file and the implementation is the \texttt{.cpp}
     file.
     Code that is specified for the file entity will appear outside any namespace, whereas
     code that is specified for a module entity will appear inside the module's namespace.
@@ -187,9 +187,59 @@ target languages is as follows:
     or structure body.
 \end{description}%
 
-\subsection{Choosing a Different Representation}
+\subsection{Pickling Existing Types}
 
-The \asdl{} module
+\asdlgen{} provides several mechanisms to support integrating existing
+\sml{} types into an \asdl{} specification.
+The first of these is to use a primitive module (see \secref{sec:primitive-syntax})
+to define the representation of a type.
+This approach has the disadvantage that the user must supply all of the
+pickling and unpickling code for the type.
+
+A second mechanism, which is only supported by the \sml{} view, for using existing types
+in an \asdl{} specification is the \lstinline!is_datatype! property.
+\begin{description}
+  \PROP{is\char`\_datatype}{identifier}{\texttt{sml}}{Type}
+    Specifies that the \asdl{} type should be defined using
+    a datatype-replication declaration, where the identifier
+    specifies the datatype being replicated.
+\end{description}
+For example, assume that we had an existing structure
+%
+\begin{code}\begin{lstlisting}[language=SML]
+structure Color = struct
+    datatype t = RED | GREEN | BLUE
+  end
+\end{lstlisting}\end{code}%
+%
+and that our \asdl{} specification contains the equivalent type declaration
+%
+\begin{code}\begin{lstlisting}[language=ASDL]
+module ColorPkl {
+  color = RED | GREEN | BLUE
+}
+view SML {
+  ColorPkl.color <= is_datatype : Color.t
+}
+\end{lstlisting}\end{code}%
+By including the \lstinline!is_datatype! property, the generated type
+definitions will be
+%
+\begin{code}\begin{lstlisting}[language=SML]
+structure ColorPkl = struct
+    datatype color = datatype Color.t
+  end
+\end{lstlisting}\end{code}%
+%
+While the definition of the \lstinline!color! type is replicated, \asdlgen{} will still
+generate the pickling and unpickling code for the type as it is defined in the \asdl{}
+specification.
+
+The third mechanism provides a way to translate between a program's internal representation
+of a type and its \asdl{} representation.
+For example, consider the following \asdl{} specification for finite maps between
+integers:
+%
 \begin{code}\begin{lstlisting}[language=ASDL]
 module IntMap {
   int_map = (int size, entries map)
@@ -198,6 +248,7 @@ module IntMap {
   map_pair = (int_map, int_map)
 }
 \end{lstlisting}\end{code}%
+%
 is one possible abstract description of a mapping from integers to
 integers.
 Such an implementation is not particularly efficient; we might prefer to
@@ -221,14 +272,15 @@ to allow clients to use a specialized representation for ASDL types.\footnote{
   Primitive modules are another way to solve this problem, but they require
   all of the pickling and unpickling code be provided by the user.
 }
-\begin{description} 
+\begin{description}
   \PROP{natural\char`\_type}{identifier}{\texttt{c++},\texttt{sml}}{Type}
-    The type to use in place of the original type in all the resulting code. 
+    Specifies the type to use in place of the original type in all of the
+    generated code.
     Supported by all output languages.
 
   \PROP{natural\char`\_type\char`\_con}{identifier}{\texttt{c++},\texttt{sml}}{Type}
     A unary type constructor to apply to the old type to get a new type to
-    use in all the resulting code; \eg{}, \lstinline@ref@ in \sml to make a type
+    use in all the resulting code; \eg{}, \lstinline@ref@ in \sml{} to make a type
     mutable.
     \emph{Support for \Cplusplus{} templates will be added in the near future.}
 
@@ -253,11 +305,13 @@ remain, but all other references to the original type in constructors, picklers,
 and other type definitions that referred to it are replaced with the new type.
 The original definition must remain to support pickling of the type. Pickling
 is achieved by appropriately coercing the new type to the old type and vice
-versa with functions specified by \lstinline!wrapper! and \lstinline!unwrapper! 
+versa with functions specified by \lstinline!wrapper! and \lstinline!unwrapper!
 properties.
 
-For example, we could use the \smlnj{} Library's \lstinline@IntRedBlackMap@ structure
-to implement the \lstinline!int_map! type as follows:
+For example, we can use the \smlnj{} Library's \lstinline@IntRedBlackMap@ structure
+to implement the \lstinline!int_map! type by adding the following view declaration
+for the \lstinline!IntMap! module:
+%
 \begin{code}\begin{lstlisting}[language=ASDL]
 view sml {
   module IntMap <= {
@@ -270,14 +324,11 @@ view sml {
     implementation_epilogue
 %%
     fun wrap_int_map ({map={entries}, ...} : int_map_pkl) =
-          List.foldl
-            (fn ({key, value}, imap) => IntMap.insert(imap, key, value))
-              IntMap.empty
-                entries
+          List.foldl IntMap.insert' IntMap.empty entries
     fun unwrap_int_map (imap : int_map) = {
             size = IntMap.numItems imap,
             map = {entries = IntMap.foldri
-              (fn (k, v, entries) => {key = k, value = v} :: entries)
+              (fn (k, v, ents) => {key = k, value = v} :: ents)
                 []
                   imap}
           }
@@ -291,6 +342,7 @@ view sml {
   }
 }
 \end{lstlisting}\end{code}%
+%
 In this view, we rename \lstinline@int_map@ to \lstinline@int_map_pkl@ and add a type
 definition for \lstinline!int_map! to both the interface
 (signature) and implementation (structure).
@@ -331,16 +383,26 @@ for the module in question.
 \asdlgen{} will still generate the pickler modules, but not the type
 definitions.
 
+\subsection{Target-Specific Properties}
+
+\subsubsection{\Cplusplus{} Properties}
+The following properties are only valid for the \Cplusplus{} view.
+\begin{description}
+  \PROP{arena_alloc}{boolean}{\texttt{c++}}{File}
+    Setting this property to \texttt{true} will enable use of an arena allocator
+    when unpickling a value~\cite{arena-alloc}.
+\end{description}%
+
 \subsection{Other Properties}
 \begin{description}
-  \PROP{doc\char`\_string}{text}{}{}
+  \PROP{doc\char`\_string}{text}{any}{any}
     All entities have this property. Its value is interpreted as a
     string. Currently only the \lstinline!--doc! command recognizes the
     property. It includes the property value in the HTML documentation
     produced for the module.
 
-  \PROP{user\char`\_attribute}{identifier}{}{}
-    Property of types only.	The value is interpreted as a qualified 
+  \PROP{user\char`\_attribute}{identifier}{c++}{Type}
+    Property of types only.	The value is interpreted as a qualified
     identifier. Add a field called \lstinline!client_data! as an
     attribute to the type. The value is the qualified identifier that
     represents an arbitrary user type of the field. The \lstinline!client_data!
@@ -348,31 +410,30 @@ definitions.
     constructors. This property is currently only recognized when
     outputting \Cplusplus{}.
 
-  \PROP{user\char`\_init}{identifier}{}{}
-    Property of types only. The value is interpreted as a qualified
-    identifier. Call the function specified by the value before
-    returning the data structure created by a constructor function.
-    This property is currently only recognized when outputting C.
+%  \PROP{user\char`\_init}{identifier}{}{}
+%    Property of types only. The value is interpreted as a qualified
+%    identifier. Call the function specified by the value before
+%    returning the data structure created by a constructor function.
+%    This property is currently only recognized when outputting C.
 
-  \PROP{base\char`\_class}{identifier}{}{Type}
+  \PROP{base\char`\_class}{identifier}{c++}{Type}
     Property of types only. The value is interpreted as a qualified
     identifier. The name of the class from which all classes generated
-    for that type should inherit from. This property is recognized only
-    when outputting \Cplusplus{}.
-    
-  \PROP{reader}{identifier}{}{Type}
+    for that type should inherit from.
+
+  \PROP{reader}{identifier}{\texttt{c++},\texttt{sml}}{Type}
    Property of types only. The value is interpreted as a qualified
    identifier.  Replace the body of the read pickle function for this
-   type with a call to a function with the proper arguments. 
+   type with a call to a function with the proper arguments.
 
-  \PROP{writer}{identifier}{}Type
+  \PROP{writer}{identifier}{\texttt{c++},\texttt{sml}}{Type}
    Property of types only. The value is interpreted as a qualified
    identifier.  Replace the body of the writer pickle function for this
-   type with a call to a function with the proper arguments. 
+   type with a call to a function with the proper arguments.
 
   \PROP{enum\char`\_value}{integer}{\texttt{c++}}{Con}
    Property of constructors only.
    Use this integer value as the \emph{internal} tag value for the
-   constructor. The external pickle tag remains unchanged. 
+   constructor. The external pickle tag remains unchanged.
 
 \end{description}%
