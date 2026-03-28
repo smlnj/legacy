@@ -1,9 +1,11 @@
 :version: 110.99.10
 :date: @DATE@
-:dist-dir: https://smlnj.org/dist/working/{version}/
-:history: {dist-dir}HISTORY.html
-:issue-base: https://github.com/smlnj/legacy/issues/
-:pull-base: https://github.com/smlnj/legacy/pull/
+:dist-dir: https://smlnj.org/dist/working/{version}
+:history: {dist-dir}/HISTORY.html
+:issue-base: https://github.com/smlnj/legacy/issues
+:pull-base: https://github.com/smlnj/legacy/pull
+:dev-issue-base: https://github.com/smlnj/smlnj/issues
+:dev-pull-base: https://github.com/smlnj/smlnj/pull
 :stem: latexmath
 :source-highlighter: pygments
 :stylesheet: release-notes.css
@@ -25,13 +27,13 @@
 SML/NJ HOME::
   https://www.smlnj.org/index.html[[.tt]#https://smlnj.org#]
 FILES::
-  {dist-dir}index.html[[.tt]#{dist-dir}#]
+  {dist-dir}/index.html[[.tt]#{dist-dir}#]
 --
 ''''''''
 
 == Summary
 
-// **** summary description of release
+This release fixes a few bugs and should work on Linux 7.
 
 == Details
 
@@ -41,6 +43,9 @@ FILES::
 
 === CM
 
+* The "required privileges" message is no longer printed when the CM verbose
+  flag is false
+
 === MLRISC
 
 === Runtime System
@@ -49,9 +54,7 @@ FILES::
 
 === SML/NJ Library
 
-=== Successor ML
-
-=== ML-LPT
+* Added `sizeOfValue` function to the `JSON_STREAM_OUTPUT` signature
 
 === ASDL
 
@@ -60,6 +63,8 @@ The ASDL tools and libraries have been updated to the latest version.
 === Documentation
 
 === Installation
+
+self contained tarballs for Unix systems
 
 == Bugs
 
@@ -72,6 +77,9 @@ gforge bug tracker.
 | Issue
 | Description
 | Gforge Bug
+| [.bugid]#374#
+| {pull-base}/374[`OS.FileSys.tmpName` should support `TMPDIR`]
+| n.a.
 | [.bugid]#375#
 | {issue-base}/375[Remove Linux version check from `_arch-n-opsys`]
 | n.a.
@@ -129,7 +137,7 @@ The system also works on Apple Silicon using Rosetta2.
 
 === 32-bit macOS issues
 
-While the {dist-dir}smlnj-x86-{version}.pkg[x86 installer]
+While the {dist-dir}/smlnj-x86-{version}.pkg[x86 installer]
 for {version} works on **macOs** 10.14 Mojave, building from source
 requires some extra steps because the version of **Xcode**
 distributed for Mojave does not include a 32-bit SDK.
