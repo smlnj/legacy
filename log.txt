@@ -1,0 +1,22 @@
+~/sml/Dev/github/legacy/log.txt  [branch Issue376]
+
+Log of work on fixing smlnj/legacy Issue 376 (a compiler performance issue)
+
+* 2026.04.17
+
+(0) made sure that legacy was in branch main and was up-to-date
+
+(1) made sure that banch main was up to date and could compile itself using
+
+  cd base/system
+  rm -r sml.b* [deleting old sml.bin.amd64-unix and sml.boot.am64-unix]
+  ./cmb-make
+  ./makeml
+  ./installml -clean
+  cd ../.. (back to top github/legacy directory)
+  config/install (rebuild mlyacc, etc. tools)
+
+(3) switch to branch Issue376
+
+(4) creat this log.txt file
+
