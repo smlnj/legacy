@@ -162,6 +162,7 @@ end (* functor ReparseFct *)
 structure PatternItem : ITEM =
 struct 
 
+    structure S = Symbol
     structure SL = SourceLocation
     structure ST = Ast
     structure F = Fixity
@@ -181,21 +182,21 @@ struct
     (* pair : ST.pat * ST.pat -> ST.pat
      * Returned pat is always a TuplePat of length 2, marked if both args were marked.
      * Actually a pattern pairing function, taking 2 pats and producing a 2 element TuplePat.
-     * ASSERT: region1 and region2 are not NULLregion.
+     * Ignoring possible region markings of arguments a and b.
      *)
     fun pair (a,b) = ST.TuplePat[a,b]
 
-    (* isInfix : item * SE.staticEnv -> (item * string * int * int) option *)
+    (* isInfix : item * SE.staticEnv -> (item * int * int) option *)
     fun isInfix (pat: item, env: SE.staticEnv) =
 	(case pat
-  	   of Ast.VarPat [name] =>
+  	   of Ast.VarPat [name] =>  (* name denotes a variable or local datacon *)
 	        (case LU.lookFix (env, S.toFix name)
 	           of  F.NONfix => NONE
-		    |  F.INFix (lbp, rbp) =>  SOME (exp, name, lbp, rbp))
+		    |  F.INFix (lbp, rbp) =>  SOME (pat, lbp, rbp))
             | _ => NONE)
 
     (* name : item -> string option *)
-    fun name (Ast.VarPat [n]) = SOME (Symbol.name n)
+    fun name (Ast.VarPat [n]) = SOME (S.name n)
       | name _ = NONE
 
 end (* structure PatternItem *)	    
@@ -204,6 +205,7 @@ end (* structure PatternItem *)
 structure ExpressionItem : ITEM =
 struct 
 
+    structure S = Symbol
     structure SL = SourceLocation
     structure ST = Ast
     structure F = Fixity		       
@@ -222,28 +224,29 @@ struct
      * We don't worry about location-marking the result. *)
     fun pair (a,b) = ST.TupleExp [a,b]
 
-    (* isInfix : item * SE.staticEnv -> (item * string * int * int) option *)
+    (* isInfix : item * SE.staticEnv -> (item * int * int) option *)
     (* item (exp) is a variable that has an INFix binding in the given static environment *)
     fun isInfix (exp, env) =
 	(case exp
   	   of Ast.VarExp [name] =>
 	        (case LU.lookFix (env, S.toFix name)
 	           of  F.NONfix => NONE
-		    |  F.INFix (lbp, rbp) =>  SOME (exp, name, lbp, rbp))
+		    |  F.INFix (lbp, rbp) =>  SOME (exp, lbp, rbp))
             | _ => NONE)
 
     (* name : item -> string option *)
-    fun name (Ast.VarExp [n]) = SOME (Symbol.name n)
+    fun name (Ast.VarExp [n]) = SOME (S.name n)
       | name _ = NONE
 
 end (* structure ExpressionItem *)
 
-(* Example: exp items x y z w *)
-
+(* Examples:
+     exps = [x, y, z, w]; reparseExps exps ==> [((x y) z) w]
+     pats = [x, y, z, w]; reparsePats pats ==> [(x y), z, w]
+*)
 
 (* structure Reparse *)
-(* specializing the interpretation of the result of precedenceParse for patterns and
- * expressions. *)
+(* specializing precedenceParse for patterns and expressions. *)
 
 structure Reparse : REPARSE =
 struct
@@ -264,11 +267,13 @@ struct
 
   (* fundec clause analyisys *)
   (* analyzes the result of reparseExps *)
-  fun foo () = ()
+  fun reparseClauseLHS pats = reparsePats pats
 
   (* FlatAppExp reparsing *)
   fun parseFlatAppExp exps =
-
+      case reparseExps exps
+        of [exp] => exp
+	 | _ => EM.impossible "Reparse.parseFlatAppExp"
 
   (* what about processing the case where the precedenceParse produces multiple exps? *)
   val parseFlatAppExp = ReparseExp.precedenceParse

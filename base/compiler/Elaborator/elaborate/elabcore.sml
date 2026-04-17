@@ -181,7 +181,7 @@ datatype lazyKind = STRICT | DELAY | FORCE  (* attribute of (Ast) fundec (a pars
    actual argument pattern list are extracted by the parseLHS function
    (elabFunDec#fb_folder#parseLHS). *)
 
-type fb_clause =  {pats: pat list, resultty: ty option, exp:exp}
+type fb_clause =  {pats: Ast.pat list, resultty: Ast.ty option, exp: Ast.exp}
 
 (* ast_clause -- the basic, fully parsed, fb clause, the elements, containing just 
  * two things: the argpats (derived from the LHS) and exp (RHS), derived by parsing an fb_clause,
@@ -192,8 +192,7 @@ type fb_clause =  {pats: pat list, resultty: ty option, exp:exp}
  *              same for all clauses of a function declaration (i.e., an Ast.fb).
  * -- exp:      the RHS expression of the clause. *)
 
-type ast_clause = {argpats: Ast.pat list, exp: Ast.exp}  (* belongs in ElabUtil? *)
-
+type ast_clause = {funsym : S.symbol, argpats: Ast.pat list, rsulttyOp : Ast.ty option, exp: Ast.exp}  (* belongs in ElabUtil? *)
 (* fundec0, fundec -- information about a function declaration (fb) accumulated in the
  * _parsing_ of its clauses in ast_clausesFolder, fundec0 corresponds to a "re-parsed" fb.
  * This re-parsing is mostly pre-elaboration, but optional result types are elaborated
@@ -217,8 +216,7 @@ type ast_clause = {argpats: Ast.pat list, exp: Ast.exp}  (* belongs in ElabUtil?
 type fundec0  (* fold accumulator argument in ast_clausesFolder -- a "subset" of fundec *)
   = {funsym: S.symbol,   (* the symbol is the function name - must be consistent across clauses*)
      arity: int,         (* arity = length argpats - must be consistent across clauses *)
-     resTyOp: (T.ty * TS.tyvarset) option  (* the elaborated optional result type -
-					    * must be consistent across clauses *)
+     Op: Ast.ty option  (* the optional, un-elaborated result type (must be consistent across clauses) *)
      clauses: ast_clause list}  (* the list of "reparsed" and analyzed function clauses or rules *)
 
 (* fundec1 adds lazyKind and region fields to fundec0 *)
@@ -1541,16 +1539,17 @@ Starting over ...
       relevant to analyzing however many patterns are connected (as arguments) to the definee
       symbol.)
 
-   2. Call reparseFlatAppPat on the resulting list of pats. This results in an nested
-      application term, where infix patterns have been parsed into their cannonical form "(f (a,b))".
+   2. Call reparsePats (in reparseLHS) on the resulting list of pats. This results in a list
+      of pats, where infix AppPats have been parsed into their cannonical form "(f (a,b))".
       [We need to verify that the precedence parser used in this reparse will produce the
        expected result when applied to the list of LHS pats.  Note that some infix datacons
        can appear as operators in 2nd or lower level applications, but we don't have to deal
        with these.]
 
-   3. (a) Check that the top/initial/outermost operator is a function symbol (VarPat [f]?),
-          in which case it is the definee symbol of the clause (and should not be a datacon symbol).
-      (b) Flatten the nested application to extract outermost operator (the definee symbol) and
+   3. (a) Check that the top/initial/outermost operator is a function symbol (AppPat{constr=[f], argument}),
+          in which case f is the definee symbol of the clause (further elaboration will check that it is
+          not the name of a datacon).
+      (b) Flatten the initial application to extract outermost operator (the definee symbol) and
           the list of _argument_ patterns that follow in this nested sequence of applications.
       (c) Reconstitue the clause (as an ast_clause record) for use in the creation of fundec0/fundec1
           records.
@@ -1558,57 +1557,30 @@ Starting over ...
    Consistency of curried arity and definee symbol accross fb clauses can be done in this
    initial analysis phase before proper elaboration, but perhaps consistency of (optional)
    result types accross clauses can be done during Fb full elaboration, where it is natural 
-   to elaborate the result type expression, if present. So let's not elaborate result types yet.
+   to elaborate the result type expression, if present. So we don't elaborate result types yet.
+*)
 
-  *)
 
-		     (* parseLHS1 : patfixitem list -> (S.symbol * Ast.pat list) option
-			result type options are fully parsed
-			parseLHS1 continues the parsing of the original patfixitem list when parseLHS gives up.
-			We try to extract the function symbol from the first patfixitem.
-			Thus we (completely) parse the first patfixitem and analyze the result to obtain the
-			function symbol (as top operator) and 1st argument pattern. *)
-  	             fun parseLHS1 (lhspats as pat1::rest: pat list) =
-			 (case stripMarkPat (reparsePat pat1)
-			    of Ast.VarPat _ =>  (* in this case, rest should not be null *)
-			         (case getName (p, env, region)
-				    of NONE => (EM.errorRegion (region, "can't determine function symbol"); NONE)
-				     | SOME f => SOME (f, map ensureNonfix rest)) (* done! *)
-			     | Ast.AppPat {constr = Ast.VarPat [f], argument} => (* in this case, rest could be null *)
-			         (* first parses to AppPat, constr must be a single id pat,
-				  * the id of which might denote a datacon or might be the function symbol.*)
-			         (case getName (constr, env, region)
-				    of NONE => (EM.errorRegion (region, "can't determine function symbol"); NONE)
-				     | SOME f => SOME (f, argument :: map ensureNonfix rest)) (* done! *)
-			     | pat => (EM.errorRegion (region,
-						       "can't extract function symbol from first LHS pat");
-				       NONE))
-		       | parseLHS1 nil => (EM.errorRegion (region, "empty LHS in a clause"); NONE)
-
-		     (* parseLHS : patfixitem list -> (S.symbol * Ast.pat list) option
-                        parseLHS deals with the case (Case 3) where the function symbol is infix and is the 2nd
-			of exactly three patfixitems: "fun p f q = ..." where
-			-- f is an infix identifier (VARpat[f]), which must not be bound to a datacon in the env.
-			-- p and q are atomic (i.e. pat fixitems) and are NONfix (not infix identifiers).
-			Note that we are not allowing (unparenthesized) infix function declarations with currying.
-			If these conditions are not met, we call parseLHS1 as a backup with the
-			  original list of patfixitem arguments.
-			The resulting pat list (argument pattern(s) is a singleton list containing
-			the tuple pat Ast.TuplePat[p, q]. *)
-		     fun parseLHS (lhspats : patfixitem list) : (S.symbol * Ast.pat list) option =
-			 (case lhspats
-			    of [a , b as {item, fixity = SOME f,...}, c] =>
-			         (case LU.lookFix f
-			            of F.INfix _ =>
-					 (* ensureNonfix ensures that a and b are "nonfix and completely parses them
-					  * getName ensures that v (var of f) is not a datacon name *)
-					 (case getName (item, env, region)
-					    of NONE => bug "parseLHS"  (* item should be a VarPat in this case *)
-					     | SOME f => SOME (f, [Ast.TuplePat [ensureNonfix a, ensureNonfix c]]))
-				     | F.NONfix => parseLHS1 lhspats)
-					     (* try Case 3 (argpat1 parses to an infix application) *)
-			     | _ => parseLHS1 lhspats)
-
+		     (* reparseLHS : pat list -> (S.symbol * Ast.pat list) option
+			Analysis (reparsing) of the LHS of function declaration clauses.
+                        Calls reparsePats to deal with the various posibilities for where the function symbol occurs.
+		        If there is only one pat, it must be an AppPat whose constr is the definee function
+		        symbol (VarPat [f]).  The tail of lhspats, if not empty, contains curried argument
+		        patterns. *)
+		     fun reparseLHS (lhspats : Ast.pat list) : (S.symbol * Ast.pat list) option =
+			 (case reparsePats lhspats
+			    of pat1 :: rest =>  (* what if rest is nil? *)
+			         (case pat1
+				    of Ast.AppPat {constr, argument} =>
+				         (case constr
+					    of Ast.VarPat [f] => SOME (f, argument :: rest)
+					     | _ =>
+					       (MS.error "can't find function symbol in clause LHS";
+						NONE)
+				     | _ => NONE)
+			     | nil =>
+			         (EM.errorRegion (region, "empty LHS of function declaration clause");
+				  NONE)
                     (* When parsing the list of clauses (Ast.Clause), we start with the first clause,
 		       get its funSym, arity, resultTy option,  then for subsequent clauses, check
 		       that they have the same funSym, arity, and (if SOME) the same resultTy.
@@ -1625,15 +1597,15 @@ Starting over ...
 		      * Used to produce a base case and then used in parseClauseFolder to fold over the rest
 		      * of an fb's clauses. *)
  		     fun parseAClause (Ast.Clause {pats, resultty, exp}) : fundec0 option = 
-			 (case parseLHS pats
+			 (case reparseLHS pats
 			    of NONE => (EM.errorRegion (fbregion, "LHS of a clause failed to parse");
 					NONE)
-			     | SOME (funsym, lhspats) =>
+			     | SOME (funsym, argpats) =>
 			          let val resTyOp =
 					  (case resultty
 					     of NONE => NONE
 					      | SOME ast_ty => SOME (ET.elabType (ast_ty, env, region)))
-				   in SOME (funsym, length lhspats, resTyOp, [{argpats=argpats, exp=exp}])
+				   in SOME (funsym, length argpats, resultty, [{argpats=argpats, exp=exp}])
 				  end) 
 
                      (* ast_clausesFolder : Ast.clause * fundec0 -> fundec0 *)
