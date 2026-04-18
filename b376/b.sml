@@ -12,9 +12,9 @@
   fun  f8 z = next  f7 z
   fun  f9 z = next  f8 z
   fun f10 z = next  f9 z
-(*
   fun f11 z = next f10 z
   fun f12 z = next f11 z
+(*
   fun f13 z = next f12 z
   fun f14 z = next f13 z
   fun f15 z = next f14 z
@@ -33,9 +33,9 @@
   fun  c8 from =  c7 from  f8
   fun  c9 from =  c8 from  f9
   fun c10 from =  c9 from f10
-(*
   fun c11 from = c10 from f11
   fun c12 from = c11 from f12
+(*
   fun c13 from = c12 from f13
   fun c14 from = c13 from f14
   fun c15 from = c14 from f15
@@ -74,9 +74,9 @@ fun makeUpdate7 z = makeUpdate  c7 z
 fun makeUpdate8 z = makeUpdate  c8 z
 fun makeUpdate9 z = makeUpdate  c9 z
 fun makeUpdate10 z = makeUpdate c10 z
-(*
 fun makeUpdate11 z = makeUpdate c11 z
 fun makeUpdate12 z = makeUpdate c12 z
+(*
 fun makeUpdate13 z = makeUpdate c13 z
 fun makeUpdate14 z = makeUpdate c14 z
 fun makeUpdate15 z = makeUpdate c15 z
