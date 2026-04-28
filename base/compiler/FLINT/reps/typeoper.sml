@@ -234,7 +234,38 @@ fun tagInt i = INT{ival = IntInf.fromInt i, ty = Target.defaultIntSz}
  *                      TYPED INTERPRETATION OF UNTAGGED                    *
  ****************************************************************************)
 
-(** tc is of kind Omega; this function tests whether tc can be a tagged int ? *)
+(** tc is of kind Omega; this function tests whether tc can be a tagged int ?
+ *    YES: some inhabitants of the type `tc` may be represented as a tagged
+ *      integer. Therefore, when this type is given an UNTAGGED representation
+ *      in a datatype: e.g. datatype t = A | B of tc, where A is represented by
+ *      a constant, and (B x), by box(x). Pattern matching on (a: t) is compiled
+ *      as (see utgd below):
+ *        if boxed(a) then
+ *          a' = unwrap[tuple[tc]](a)
+ *          x  = select a' 0
+ *        else
+ *          ...
+ *    NO: all inhabitants of type `tc` are represented by pointers, so (B x) as
+ *      defined above is represented by identity(x). Pattern matching on (a: T)
+ *      is compiled as follows:
+ *        if boxed(a) then
+ *          x = unwrap[tc](a)
+ *        else
+ *          ...
+ *    MAYBE(runtime_type_code): this cannot be decided statically, so the cases
+ *      are selected based on a runtime type code.
+ *        if boxed(a) then
+ *          x =
+ *            if runtime_type_code = tcode_void then
+ *              .. YES branch ..
+ *            else
+ *              .. NO branch ..
+ *        else
+ *          ..
+ * This function must adhere to the logic of ConRep.infer
+ * (compiler/ElabData/types/conrep.sml).
+ *                                                                         -BZ
+ * *)
 fun tcTag (kenv, tc) =
   let fun loop x =     (* a lot of approximations in this function *)
 	(case (tc_out x)
@@ -249,7 +280,7 @@ fun tcTag (kenv, tc) =
 	   | (TC_FIX _) => YES
 	   | (TC_APP(tx, _)) =>
 		(case tc_out tx
-		  of (TC_APP _ | TC_PROJ _ | TC_VAR _) =>
+		  of (TC_APP _ | TC_PROJ _ | TC_VAR _ | TC_NVAR _) =>
 		       MAYBE (tcLexp kenv x)
 		   | _ => YES)
 	   | _ => (MAYBE (tcLexp kenv x)))
