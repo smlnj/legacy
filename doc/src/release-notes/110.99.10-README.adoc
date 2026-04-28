@@ -77,18 +77,19 @@ gforge bug tracker.
 | Issue
 | Description
 | Gforge Bug
+| [.bugid]#353#
+| {pull-base}/353[Inconsistent datatype representation causes segfault]
+| n.a.
+| [.bugid]#368#
+| {pull-base}/368["bogus overflow fault" in code using functors]
+| n.a.
 | [.bugid]#374#
 | {pull-base}/374[`OS.FileSys.tmpName` should support `TMPDIR`]
 | n.a.
 | [.bugid]#375#
 | {issue-base}/375[Remove Linux version check from `_arch-n-opsys`]
 | n.a.
-//| [.bugid]#@ID#
-//| {issue-base}/@ID[@DESCRIPTION]
-//| [old bug #@OLDID]
 |=======
-
-// ***** include a list of unnumbered bugs here *****
 
 == Supported systems
 
