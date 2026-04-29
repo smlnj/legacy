@@ -109,6 +109,22 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 //====================================================================
 == Recent updates
 
+//--------------------------------------------------------------------
+[2026-04-28]::
+Fixed a long-standing FLINT representation-analysis bug for untagged,
+polymorphic values. The `tcTag` function in `FLINT/reps/typeoper.sml`
+handled de-Bruijn-indexed type variables (`LT.TC_VAR`) but not named
+type variables (`LT.TC_NVAR`). Since `deb2name` runs before `reify`,
+type variables had already been converted back to named variables,
+causing FLINT to incorrectly omit some representation coercions.
++
+This change fixes issues {issue-base}/353[#353] and {issue-base}/368[#368].
+See {dev-pull-base}/345[Pull Request #345 (Fix missing case in
+`FLINT/reify`)] for details.
++
+owner:cs.uchicago.edu/~byronzhong[Byron Zhong]
+
+//--------------------------------------------------------------------
 [2026-02-26]::
 Modified **CM** so that the "required privileges" message is no longer
 printed when the CM verbose flag is set to `false` (_e.g._, by using
