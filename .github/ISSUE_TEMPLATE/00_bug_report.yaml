@@ -118,10 +118,10 @@ body:
     validations:
       required: true
   - type: dropdown
-    id: also_legacy
+    id: also_dev
     attributes:
       label: "Is this issue also present in the \"development\" version of the system?"
-      description: Note, that if the answer is "Yes," you should still only file one issue report.
+      description: Note, that if the answer is "Yes," you should still file only one issue report.
       options:
         - Unknown
         - "Yes"
