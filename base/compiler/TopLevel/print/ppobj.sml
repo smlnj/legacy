@@ -41,7 +41,7 @@ structure PPObj : PPOBJ =
 
     fun gettag obj = Obj.toInt (Obj.nth(obj, 0))
 
-    fun switch(obj, dcons) = let
+    fun switch (obj, dcons) = let
           fun chk (f, tag : int) =
                 (f obj = tag) handle Obj.Representation => false
           fun try ((d as {name,rep,domain})::r) = (case rep
@@ -201,7 +201,7 @@ structure PPObj : PPOBJ =
           family as {members,...} : T.dtypeFamily
         ) = let
           fun dtmemberToTycon(n, {tycname,arity,dcons,eq,sign,lazyp}, l) =
-	        T.GENtyc{
+                T.GENtyc{
                     stamp=Vector.sub(stamps,n), arity=arity, eq=ref T.YES,
                     path=InvPath.IPATH[tycname],
                     kind=T.DATATYPE{index=n,
@@ -239,7 +239,6 @@ structure PPObj : PPOBJ =
       fun zeros n = CharVector.tabulate(n, fn _ => #"0")
       fun prependZeros (0, frags) = frags
         | prependZeros (n, frags) = zeros n :: frags
-      val prec = 12 (* default 12 digits max *)
     in
     (* `raToString prec approx` converts the decimal approximation to a string.
      * The `prec` argument is the max number of significant digits to print
@@ -308,6 +307,8 @@ structure PPObj : PPOBJ =
                   end
             (* end case *)
           end
+
+    val real64ToString = (raToString 12) o Real64.toDecimal
     end (* local *)
 
     (* printing for monomorphic primitive types (i.e., the types in BasicTypes) *)
@@ -326,15 +327,15 @@ structure PPObj : PPOBJ =
               (BT.word64Tycon,          wordPrefx o Word64.toString o Obj.toWord64),
               (BT.charTycon,            char2str),
 (* FIXME: REAL32 *)
-              (BT.realTycon,            (raToString 12) o Real64.toDecimal o Obj.toReal64),
-              (BT.exnTycon,		exn2str),
+              (BT.realTycon,            real64ToString o Obj.toReal64),
+              (BT.exnTycon,             exn2str),
               (BT.pointerTycon,         fn _ => "<cptr>"),
               (BT.stringTycon,          PrintUtil.formatString o Obj.toString),
 (* FIXME: actually print the values *)
-              (BT.chararrayTycon,	fn _ => "<chararray>"),
-              (BT.word8vectorTycon,	fn _ => "<word8vector>"),
-              (BT.word8arrayTycon,	fn _ => "<word8array>"),
-              (BT.real64arrayTycon,	fn _ => "<real64array>"),
+              (BT.chararrayTycon,       fn _ => "<chararray>"),
+              (BT.word8vectorTycon,     fn _ => "<word8vector>"),
+              (BT.word8arrayTycon,      fn _ => "<word8array>"),
+              (BT.real64arrayTycon,     fn _ => "<real64array>"),
               (BT.arrowTycon,           fn _ => "<fn>"),
               (BT.contTycon,            fn _ => "<cont>")
             ]
@@ -715,5 +716,3 @@ structure PPObj : PPOBJ =
         end (* fun ppObj *)
 
   end (* structure PPObj *)
-
-
