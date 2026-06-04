@@ -41,8 +41,6 @@ structure PPObj : PPOBJ =
 
     fun gettag obj = Obj.toInt (Obj.nth(obj, 0))
 
-    exception Switch
-
     fun switch(obj, dcons) = let
           fun chk (f, tag : int) =
                 (f obj = tag) handle Obj.Representation => false
