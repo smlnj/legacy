@@ -110,6 +110,16 @@ recent to oldest, I've edited back to release 110.46 (2004/06/17).
 == Recent updates
 
 //--------------------------------------------------------------------
+[2026-06-04]::
+Add specialized code to support the printing of reals in the REPL,
+which fixes {issue-base}/330[Issue 330 (REPL should always print
+reals as valid SML real literals)].  This code should be forward-compatible
+with 32-bit reals, since it works by converting `IEEEReal.decimal_approx`
+values to strings.
++
+owner:cs.uchicago.edu/~jhr[John Reppy]
+
+//--------------------------------------------------------------------
 [2026-04-28]::
 Fixed a long-standing FLINT representation-analysis bug for untagged,
 polymorphic values. The `tcTag` function in `FLINT/reps/typeoper.sml`
@@ -118,7 +128,7 @@ type variables (`LT.TC_NVAR`). Since `deb2name` runs before `reify`,
 type variables had already been converted back to named variables,
 causing FLINT to incorrectly omit some representation coercions.
 +
-This change fixes issues {issue-base}/353[#353] and {issue-base}/368[#368].
+This change fixes Issues {issue-base}/353[#353] and {issue-base}/368[#368].
 See {dev-pull-base}/345[Pull Request #345 (Fix missing case in
 `FLINT/reify`)] for details.
 +
