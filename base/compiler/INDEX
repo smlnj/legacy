@@ -271,6 +271,10 @@ MODULEUTIL
   ElabData/modules/moduleutil.sig
 ModuleUtil
   ElabData/modules/moduleutil.sml
+MUTECOMPILER
+  TopLevel/interact/mutecompiler.sig
+Mutecompiler
+  TopLevel/interact/mutecompiler.sml
 PARSER_CONTROL
   Parse/main/parsercontrol.sml
 ParserControl
