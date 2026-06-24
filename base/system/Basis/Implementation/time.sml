@@ -31,6 +31,7 @@ structure TimeImp : sig
     val op quot = LInt.quot
 
     val zeroTime = PB.TIME { usec = 0 }
+    val tick = PB.TIME { usec = 1 }
 
     val fractionsPerSecond : LargeInt.int = 1000000
     fun toFractions (PB.TIME { usec }) = usec

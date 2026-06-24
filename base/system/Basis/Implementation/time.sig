@@ -12,6 +12,7 @@ signature TIME =
     exception Time
 
     val zeroTime : time
+    val tick     : time
 
     val fromReal : real -> time
     val toReal   : time -> real
