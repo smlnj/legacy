@@ -158,8 +158,7 @@ base/system/sml.boot*
 base/system/sml.*-*
 doc/mk/doc-rules.gmk
 doc/Makefile
-doc/doc/html
-doc/doc/pdf
+doc/doc
 doc/src/Makefile
 doc/src/changelog/Makefile
 doc/src/changelog/HISTORY.html

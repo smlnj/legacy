@@ -17,7 +17,6 @@ SMLNJ_DATE =	@SMLNJ_DATE@
 
 MAN_OUT_DIR =	@OUT_DIR@/man
 HTML_OUT_DIR =	@OUT_DIR@/html/man
-WEB_OUT_DIR =	@WEB_OUT_DIR@/man
 
 ATTRS =		--attribute=version=$(SMLNJ_VERSION) \
 		--attribute=release-date="$(SMLNJ_DATE)"

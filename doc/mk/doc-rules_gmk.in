@@ -1,0 +1,22 @@
+# doc-rules.gmk
+#
+# COPYRIGHT (c) 2014 The Fellowship of SML/NJ (http://www.smlnj.org)
+# All rights reserved.
+#
+# common variables and rules for building the SML/NJ documentation.
+#
+# @configure_input@
+
+# delete default suffixes to improve make performance
+#
+.SUFFIXES:
+
+SHELL =			/bin/sh
+
+# paths and flags for documentation toolchain
+#
+ASCIIDOCTOR =		@ASCIIDOCTOR@
+ASCIIDOCTOR_PDF =	@ASCIIDOCTOR_PDF@
+
+LATEXMK =		@LATEXMK@
+LATEXMK_PDF =		$(LATEXMK) -pdf

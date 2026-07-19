@@ -21,7 +21,7 @@ help:
 	@echo "                   and building; the resulting tree has the same"
 	@echo "                   files as the distribution."
 	@echo "The following additional targets are primarily for developers:"
-	@echo "  devclean      -- remove everything that is not part of the SVN"
+	@echo "  devclean      -- remove everything that is not part of the git"
 	@echo "                   repository."
 
 doc:
@@ -37,6 +37,6 @@ DISTCLEAN_FILES +=	Makefile config.status config.log \
 			autom4te*.cache
 
 DEVCLEAN_FILES =	configure \
-			doc/html doc/man doc/pdf
+			doc
 
 include @ROOT_DIR@/mk/clean-rules.gmk
