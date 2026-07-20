@@ -45,9 +45,9 @@ are often out of date.
 | Package Manager | Installation Command |
 | --- | --- |
 | [![Arch Linux package](https://img.shields.io/archlinux/v/extra/x86_64/smlnj?logo=archlinux&label=arch)](https://archlinux.org/packages/extra/x86_64/smlnj/) | `pacman -S smlnj` |
-| [![Debian Unstable](https://img.shields.io/debian/v/smlnj?logo=debian)](https://packages.debian.org/sid/smlnj) | `apt install smlnj` |
-| [![Gentoo](https://img.shields.io/badge/gentoo-110.99.6.1-blue?logo=gentoo)](https://packages.gentoo.org/packages/dev-lang/smlnj) | `emerge --ask dev-lang/smlnj` |
-| [![Nixpkgs Unstable](https://img.shields.io/badge/nixpkgs-110.99.7.1-blue?logo=nixos)](https://search.nixos.org/packages?channel=unstable&show=smlnj&from=0&size=1&sort=relevance&type=packages&query=smlnj) | `nix-shell -p smlnj` |
+| [![Debian Unstable](https://img.shields.io/debian/v/smlnj/bookworm?logo=debian)](https://packages.debian.org/sid/smlnj) | `apt install smlnj` |
+| [![Gentoo](https://img.shields.io/badge/gentoo-110.99.9-blue?logo=gentoo)](https://packages.gentoo.org/packages/dev-lang/smlnj) | `emerge --ask dev-lang/smlnj` |
+| [![Nixpkgs Unstable](https://img.shields.io/badge/nixpkgs-110.99.9-blue?logo=nixos)](https://search.nixos.org/packages?channel=unstable&show=smlnj&from=0&size=1&sort=relevance&type=packages&query=smlnj) | `nix-shell -p smlnj` |
 | [![Ubuntu Unstable](https://img.shields.io/ubuntu/v/smlnj?logo=ubuntu)](https://launchpad.net/ubuntu/plucky/+package/smlnj) | `apt install smlnj` |
 | [![openSUSE](https://img.shields.io/badge/opensuse-110.99.5-blue?logo=suse)](https://software.opensuse.org/package/smlnj) | `zypper install smlnj` |
 
