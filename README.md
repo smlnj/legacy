@@ -6,8 +6,8 @@ We will continue to fix bugs and make minor improvements while
 the main development branch matures.  We will also backport
 additions to the **SML/NJ Library** and other components.
 
-The latest legacy version is [110.99.8](https://smlnj.org/dist/working/110.99.8),
-which was released on April 25, 2025.
+The latest legacy version is [110.99.9](https://smlnj.org/dist/working/110.99.9),
+which was released on November 4, 2025.
 
 ## Documentation
 
