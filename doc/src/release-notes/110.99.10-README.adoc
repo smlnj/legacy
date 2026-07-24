@@ -33,7 +33,8 @@ FILES::
 
 == Summary
 
-This release fixes a few bugs and should work on Linux 7.
+This release fixes a number of bugs and enables running on *Linux 7* and
+*macOS 27* (Golden Gate).
 
 == Details
 
@@ -43,9 +44,6 @@ This release fixes a few bugs and should work on Linux 7.
 
 === CM
 
-* The "required privileges" message is no longer printed when the CM verbose
-  flag is false
-
 === MLRISC
 
 === Runtime System
@@ -54,17 +52,13 @@ This release fixes a few bugs and should work on Linux 7.
 
 === SML/NJ Library
 
-* Added `sizeOfValue` function to the `JSON_STREAM_OUTPUT` signature
+=== Successor ML
 
-=== ASDL
-
-The ASDL tools and libraries have been updated to the latest version.
+=== ML-LPT
 
 === Documentation
 
 === Installation
-
-self contained tarballs for Unix systems
 
 == Bugs
 
@@ -81,18 +75,23 @@ gforge bug tracker.
 | {issue-base}/330[REPL should always print reals as valid SML real literals]
 | n.a.
 | [.bugid]#353#
-| {pull-base}/353[Inconsistent datatype representation causes segfault]
+| {issue-base}/353[Inconsistent datatype representation causes segfault]
 | n.a.
 | [.bugid]#368#
-| {pull-base}/368["bogus overflow fault" in code using functors]
-| n.a.
-| [.bugid]#374#
-| {pull-base}/374[`OS.FileSys.tmpName` should support `TMPDIR`]
+| {issue-base}/368["bogus overflow fault" in code using functors]
 | n.a.
 | [.bugid]#375#
 | {issue-base}/375[Remove Linux version check from `_arch-n-opsys`]
 | n.a.
+| [.bugid]#378#
+| {issue-base}/378[SML/NJ crashes when `environ` is too big]
+| n.a.
+//| [.bugid]#@ID#
+//| {issue-base}/@ID[@DESCRIPTION]
+//| [old bug #@OLDID]
 |=======
+
+// ***** include a list of unnumbered bugs here *****
 
 == Supported systems
 
@@ -109,6 +108,9 @@ tested some of them:
 | | macOS 12 (Monterey) | Tested
 | | macOS 13 (Ventura) | Tested
 | | macOS 14 (Sonoma) | Tested
+| | macOS 15 (Sequoia) | Tested
+| | macOS 26 (Tahoe) |
+| | macOS 27 (Golden Gate) |
 | | Ubuntu 22.04.4 LTS | Tested
 | | Ubuntu 20.04.6 LTS | Tested
 | {nbsp} | |
@@ -127,12 +129,12 @@ tested some of them:
 | | macOS 10.12 (Sierra) |
 | | macOS 10.13 (High Sierra) | Tested
 | | macOS 10.14 (Mojave) |
-| | Ubuntu 16.04.3 LTS |
-| | Other Linux variants |
-| | FreeBSD 12.0 |
-| | Other BSD variants |
-| | Windows 7 |
+| | macOS 26 (Tahoe) |
+| | macOS 27 (Golden Gate) |
+| | Linux variants |
+| | BSD variants |
 | | Windows 10 |
+| | Windows 11 | Lightly tested
 | | Cygwin (32-bit) |
 | {nbsp} | |
 |=======
