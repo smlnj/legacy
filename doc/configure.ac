@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
+dnl COPYRIGHT (c) 2026 The Fellowship of SML/NJ (http://www.smlnj.org)
 dnl All rights reserved.
 dnl
 dnl This the configuration script for autoconf version 2.60+.
@@ -8,7 +8,7 @@ dnl This the configuration script for autoconf version 2.60+.
 AC_INIT([smlnj-doc],[1.0],[],[],[http://smlnj.org])
 
 AC_PREREQ(2.70)
-AC_COPYRIGHT([[COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)]])
+AC_COPYRIGHT([[COPYRIGHT (c) 2026 The Fellowship of SML/NJ (https://smlnj.org)]])
 AC_CONFIG_SRCDIR(src/man/smlnj.7.adoc)
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
@@ -94,15 +94,17 @@ dnl
 dnl ******************** check for asciidoctor ********************
 dnl
 AC_PATH_PROGS([ASCIIDOCTOR], [asciidoctor], [none])
+AC_PATH_PROGS([ASCIIDOCTOR_PDF], [asciidoctor-pdf], [none])
 
-dnl
-dnl error check for availability of tools
-dnl
 if test x"$ASCIIDOCTOR" = xnone ; then
   AC_MSG_ERROR([documentation generation requires asciidoctor])
 fi
+if test x"$ASCIIDOCTOR_PDF" = xnone ; then
+  AC_MSG_ERROR([documentation generation requires asciidoctor-pdf])
+fi
 
 AC_SUBST(ASCIIDOCTOR)
+AC_SUBST(ASCIIDOCTOR_PDF)
 
 dnl
 dnl ******************** check for latexmk ********************
@@ -120,7 +122,7 @@ dnl ******************** write output ********************
 dnl
 AC_CONFIG_FILES(
 dnl ***** Makefiles *****
-  mk/doc-rules.gmk:config/doc-rules_gmk.in
+  mk/doc-rules.gmk:mk/doc-rules_gmk.in
   Makefile
   src/Makefile
   src/changelog/Makefile

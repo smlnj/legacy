@@ -78,7 +78,7 @@ rm -rf autom4te.cache
 ./configure
 #
 # generate the documentation into $here/doc/doc
-@
+#
 make doc || exit 1
 #
 # build tar file of generated documentation

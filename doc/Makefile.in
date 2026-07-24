@@ -21,7 +21,7 @@ help:
 	@echo "                   and building; the resulting tree has the same"
 	@echo "                   files as the distribution."
 	@echo "The following additional targets are primarily for developers:"
-	@echo "  devclean      -- remove everything that is not part of the SVN"
+	@echo "  devclean      -- remove everything that is not part of the GitHub"
 	@echo "                   repository."
 
 doc:
