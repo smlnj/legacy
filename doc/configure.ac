@@ -10,8 +10,7 @@ AC_INIT([smlnj-doc],[1.0],[],[],[http://smlnj.org])
 AC_PREREQ(2.70)
 AC_COPYRIGHT([[COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)]])
 AC_CONFIG_SRCDIR(src/man/smlnj.7.adoc)
-AC_CONFIG_AUX_DIR(config)
-AC_CONFIG_MACRO_DIR(config)
+AC_CONFIG_AUX_DIR(build-aux)
 
 dnl
 dnl get host information
@@ -36,18 +35,12 @@ case "$host_os" in
 esac
 SRC_DIR=$ROOT_DIR/src
 OUT_DIR=$ROOT_DIR/doc
-WEB_OUT_DIR=$ROOT_DIR/htdocs
 MK_DIR=$ROOT_DIR/mk
-SRC_CONFIG_DIR=$SRC_DIR/config
-SRC_STYLES_DIR=$SRC_DIR/styles
 
 AC_SUBST(ROOT_DIR)
 AC_SUBST(OUT_DIR)
-AC_SUBST(WEB_OUT_DIR)
 AC_SUBST(SRC_DIR)
 AC_SUBST(MK_DIR)
-AC_SUBST(SRC_CONFIG_DIR)
-AC_SUBST(SRC_STYLES_DIR)
 
 dnl
 dnl ******************** get SML/NJ release number and date ********************
@@ -91,28 +84,26 @@ AC_MSG_NOTICE(["SML/NJ release date: $SMLNJ_DATE"])
 AC_SUBST(SMLNJ_DATE)
 
 dnl
-dnl ******************** check for asciidoctor ********************
+dnl ******************** check for documentation tools ********************
 dnl
 AC_PATH_PROGS([ASCIIDOCTOR], [asciidoctor], [none])
+AC_PATH_PROGS([ASCIIDOCTOR_PDF], [asciidoctor-pdf], [none])
+AC_PATH_PROGS([LATEXMK], [latexmk], [none])
 
-dnl
-dnl error check for availability of tools
-dnl
 if test x"$ASCIIDOCTOR" = xnone ; then
   AC_MSG_ERROR([documentation generation requires asciidoctor])
 fi
 
-AC_SUBST(ASCIIDOCTOR)
-
-dnl
-dnl ******************** check for latexmk ********************
-dnl
-AC_PATH_PROGS([LATEXMK], [latexmk], [none])
+if test x"$ASCIIDOCTOR_PDF" = xnone ; then
+  AC_MSG_ERROR([documentation generation requires asciidoctor-pdf])
+fi
 
 if test x"$LATEXMK" = xnone ; then
   AC_MSG_ERROR([documentation generation requires latexmk (from texlive)])
 fi
 
+AC_SUBST(ASCIIDOCTOR)
+AC_SUBST(ASCIIDOCTOR_PDF)
 AC_SUBST(LATEXMK)
 
 dnl
@@ -120,7 +111,7 @@ dnl ******************** write output ********************
 dnl
 AC_CONFIG_FILES(
 dnl ***** Makefiles *****
-  mk/doc-rules.gmk:config/doc-rules_gmk.in
+  mk/doc-rules.gmk:mk/doc-rules_gmk.in
   Makefile
   src/Makefile
   src/changelog/Makefile

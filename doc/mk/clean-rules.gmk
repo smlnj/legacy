@@ -27,7 +27,7 @@ sub-clean:
 	dirs="$(CLEAN_SUBDIRS)"; \
         if test -n "$$dirs" ; then \
 	  for dir in $$dirs ; do \
-	    (cd $$dir && $(MAKE) clean) \
+	    test -d $$dir && (cd $$dir && $(MAKE) clean) ; \
 	  done \
 	fi
 
@@ -42,7 +42,7 @@ sub-distclean:
 	dirs="$(CLEAN_SUBDIRS)"; \
         if test -n "$$dirs" ; then \
 	  for dir in $$dirs ; do \
-	    (cd $$dir && $(MAKE) distclean) \
+	    test -d $$dir && (cd $$dir && $(MAKE) distclean) ; \
 	  done \
 	fi
 
@@ -56,7 +56,7 @@ sub-devclean:
 	dirs="$(CLEAN_SUBDIRS)"; \
         if test -n "$$dirs" ; then \
 	  for dir in $$dirs ; do \
-	    (cd $$dir && $(MAKE) devclean) \
+	    test -d $$dir && (cd $$dir && $(MAKE) devclean) ; \
 	  done \
 	fi
 

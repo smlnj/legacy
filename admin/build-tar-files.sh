@@ -73,12 +73,12 @@ done
 # and HTML files
 #
 cd $here/doc
-autoconf -Iconfig || exit 1
+autoconf -Ibuild-aux || exit 1
 rm -rf autom4te.cache
 ./configure
 #
 # generate the documentation into $here/doc/doc
-@
+#
 make doc || exit 1
 #
 # build tar file of generated documentation
