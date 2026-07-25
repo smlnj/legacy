@@ -1,6 +1,7 @@
-/* exece.c
+/*! \file exece.c
  *
- * COPYRIGHT (c) 1995 by AT&T Bell Laboratories.
+ * COPYRIGHT (c) 2026 The Fellowship of SML/NJ (https://smlnj.org)
+ * All rights reserved.
  */
 
 #include "ml-base.h"
@@ -29,17 +30,18 @@ ml_val_t _ml_P_Process_exece (ml_state_t *msp, ml_val_t arg)
         nArgs++;
     }
 
-    cp = PTR_MLtoC(char *, ML_AllocRaw(msp, BYTES_TO_WORDS((nArgs + 1) * sizeof(char *))));
+    cp = PTR_MLtoC(char *, ML_AllocRaw64(msp, BYTES_TO_WORDS((nArgs + 1) * sizeof(char *))));
     argv = cp;
     for (p = arglst;  p != LIST_nil;  p = LIST_tl(p)) {
         *cp++ = STR_MLtoC(LIST_hd(p));
     }
-    *cp++ = 0;  /* terminate the argv[] */
+    *cp++ = NIL(char);  /* terminate the argv[] */
 
     envp = cp;
-    for (p = envlst;  p != LIST_nil;  p = LIST_tl(p))
+    for (p = envlst;  p != LIST_nil;  p = LIST_tl(p)) {
         *cp++ = STR_MLtoC(LIST_hd(p));
-    *cp++ = 0;  /* terminate the envp[] */
+    }
+    *cp++ = NIL(char);  /* terminate the envp[] */
 
     sts = execve(STR_MLtoC(path), argv, envp);
 
