@@ -95,6 +95,10 @@ ml_val_t ML_CStringList (ml_state_t *msp, char **strs)
     }
     if (NeedGC (msp, nbytes)) {
         InvokeGC (msp, 0);
+        if (NeedGC (msp, nbytes)) {
+            /* the amount of allocation exceeds the nursery, so we bail */
+            Die ("ML_CStringList: list size exceeds available space");
+        }
     }
 
     p = LIST_nil;
