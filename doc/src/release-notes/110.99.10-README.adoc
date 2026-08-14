@@ -86,6 +86,9 @@ gforge bug tracker.
 | [.bugid]#378#
 | {issue-base}/378[SML/NJ crashes when `environ` is too big]
 | n.a.
+| [.bugid]#380#
+| {pull-base}/380[properly initialize runtime system variables]
+| n.a.
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]
