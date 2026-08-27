@@ -22,7 +22,8 @@ it is fast.
 
 [source,sml]
 ------------
-structure Rand
+signature RAND
+structure Rand : RAND
 ------------
 
 == Interface
