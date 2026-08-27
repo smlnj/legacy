@@ -5,6 +5,9 @@ correspond to SML/NJ releases (past and future).
 SML/NJ 110.99.10
 -------------------
 
+[2026-08-27]
+        Added the `Trilean` structure to the utility library.
+
 [2026-03-10]
         Added the `sizeOfValue` function to the `JSON_STREAM_OUTPUT` signature.
 
