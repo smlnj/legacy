@@ -5,6 +5,9 @@
  *   completely redone by M.Blume (5/1998)
  *   ... and again in the course of switching over to the new CM
  *       (M. Blume, 7/1999)
+ *
+ * This module amended to include 'Execute as a script' change done by Dayanandan Natarajan, Heriot Watt University
+ *
  *)
 signature BOOTENV = sig
     val init:
@@ -15,6 +18,7 @@ functor BootEnvF (datatype envrequest = AUTOLOAD | BARE
 		  val architecture: string
 		  val cminit : string * DynamicEnv.env * envrequest
 			       * (TextIO.instream -> unit)(* useStream *)
+			       * (string * TextIO.instream -> unit) (* useScriptFile - added as part of 'Execute as a script' change *)
 			       * (string -> unit) (* useFile *)
 			       * ((string -> unit) -> (string -> unit))
 			                          (* errorwrap *)
@@ -70,6 +74,7 @@ functor BootEnvF (datatype envrequest = AUTOLOAD | BARE
 	      U.pStruct := U.NILrde;
 	      cminit (bootdir, de, er,
 		      Backend.Interact.useStream,
+		      Backend.Interact.useScriptFile, (* added as part of Execute as a script change *)
 		      errorwrap false useFile,
 		      errorwrap true,
 		      Backend.Interact.installCompManagers)
