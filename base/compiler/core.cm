@@ -164,6 +164,10 @@ TopLevel/interact/evalloop.sml
 TopLevel/interact/interact.sig
 TopLevel/interact/interact.sml
 
+(* mutecompiler added as part of 'Excute as a script' change done by Dayanandan Natarajan Heriot Watt University *)
+TopLevel/interact/mutecompiler.sig
+TopLevel/interact/mutecompiler.sml
+
 TopLevel/backend/backend.sig
 TopLevel/backend/backend-fn.sml
 
