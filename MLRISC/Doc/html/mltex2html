@@ -56,12 +56,18 @@ $PAPER_WIDTH = "8.5in";
 @AUTHORS=("Lal George", "Allen Leung");
 @EMAILS=('george@research.bell-labs.com','leunga@cs.nyu.edu');
 $PWD=`pwd`;
-$DATE=`date`;
-$HOSTNAME=`hostname`;
-chop $HOSTNAME;
-chop $DATE;
 chop $PWD;
-$USER=$ENV{"USER"};
+if (defined $ENV{"SOURCE_DATE_EPOCH"}) {
+    # reproducible builds: a fixed date, and no user or host name
+    $MODIFIED = gmtime($ENV{"SOURCE_DATE_EPOCH"}) . " UTC";
+} else {
+    $DATE=`date`;
+    $HOSTNAME=`hostname`;
+    chop $HOSTNAME;
+    chop $DATE;
+    $USER=$ENV{"USER"};
+    $MODIFIED = "$DATE by $USER\@$HOSTNAME";
+}
 $WWWHOST="www.cs.nyu.edu";
 $URLPREFIX="leunga/MLRISC/Doc/html/";
 
@@ -451,7 +457,7 @@ $FOOTER= <<"END";
   </tr>
   <tr> <td>
     <font size="-2">
-    Last modified: $DATE by $USER\@$HOSTNAME
+    Last modified: $MODIFIED
     </font>
     </td>
   </tr>
