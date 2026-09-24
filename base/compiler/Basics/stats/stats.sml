@@ -134,17 +134,21 @@ structure Stats :> STATS =
       end
       val last = ref (gettime())
     in 
-    fun reset() = (
-	  last := gettime();
+    fun clear() = (
 	  app (fn PHASE{this,accum,...} => (this := zeros; accum := zeros)) 
             (!allPhases);
 	  app (fn STAT{tot,...} => app (fn C{c,...} => c:=0) tot) (!allStats))
+    fun reset() = (last := gettime(); clear())
 
     structure CU = SMLofNJ.Internals.CleanUp
     val _ = CU.addCleaner (
 	  "CompilerStats",
 	  [CU.AtExportML, CU.AtExportFn, CU.AtInit],
-	  fn CU.AtInit => reset() | _ => last := zeros)
+	  (* when exporting, clear the counters without reading the clock,
+	   * so that the exported image does not record how long the build
+	   * took (the counters are reset when the image is resumed)
+	   *)
+	  fn CU.AtInit => reset() | _ => (last := zeros; clear()))
 
     fun since() = let
 (***
