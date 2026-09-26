@@ -2,7 +2,7 @@
  *
  * COPYRIGHT (c) 1990,1991 by John H. Reppy.  See COPYRIGHT file for details.
  *
- * This is the code for the root thread of a window heirarchy.  A top-level
+ * This is the code for the root thread of a window hierarchy.  A top-level
  * window thread gets a stream of X-events from the window registry.
  *)
 
