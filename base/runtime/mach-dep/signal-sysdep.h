@@ -234,16 +234,17 @@ extern void SetFSR(int);
     /* PPC, Linux */
 
 #    include <signal.h>
-     typedef struct sigcontext_struct SigContext_t;
 
 #    define SIG_OVERFLOW                SIGTRAP
 
-#    define SIG_GetPC(scp)              ((scp)->regs->nip)
-#    define SIG_SetPC(scp, addr)        { (scp)->regs->nip = (Addr_t)(addr); }
-#    define SIG_ZeroLimitPtr(scp)       { ((scp)->regs->gpr[15] = 0); } /* limitptr = 15 (see src/runtime/mach-dep/PPC.prim.asm) */
-#    define SIG_GetCode(info,scp)       ((scp)->regs->gpr[PT_FPSCR])
-#    define SIG_ResetFPE(scp)           { (scp)->regs->gpr[PT_FPSCR] = 0x0; }
-     typedef void SigReturn_t;
+/* the handler is passed a ucontext_t; on 32-bit PowerPC its uc_mcontext
+ * has a "regs" member that points at the saved registers
+ */
+#    define SIG_GetPC(scp)              ((scp)->uc_mcontext.regs->nip)
+#    define SIG_SetPC(scp, addr)        { (scp)->uc_mcontext.regs->nip = (Addr_t)(addr); }
+#    define SIG_ZeroLimitPtr(scp)       { ((scp)->uc_mcontext.regs->gpr[15] = 0); } /* limitptr = 15 (see src/runtime/mach-dep/PPC.prim.asm) */
+#    define SIG_GetCode(info,scp)       ((scp)->uc_mcontext.regs->gpr[PT_FPSCR])
+#    define SIG_ResetFPE(scp)           { (scp)->uc_mcontext.regs->gpr[PT_FPSCR] = 0x0; }
 
 #  elif defined(OPSYS_OPENBSD)
    /** PPC, OpenBSD **/
