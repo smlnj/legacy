@@ -712,10 +712,10 @@ functor InvokeGC (
 	    | eqF (T.FLOAD(_,ea1,_), T.FLOAD(_,ea2,_)) = eqEA(ea1, ea2)
 	    | eqF _ = false
 	  in
-	    ListPair.all eqR (b1, b2)
+	    ListPair.allEq eqR (b1, b2)
 	      andalso eqR(ret1, ret2)
-	      andalso ListPair.all eqR (i1, i2)
-	      andalso ListPair.all eqF (f1, f2)
+	      andalso ListPair.allEq eqR (i1, i2)
+	      andalso ListPair.allEq eqF (f1, f2)
 	  end
       | sameCallingConvention _ = false
 
