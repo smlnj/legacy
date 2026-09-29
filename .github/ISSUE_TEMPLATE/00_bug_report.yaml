@@ -10,20 +10,30 @@ body:
 
         Please use this form to report problems in the **legacy** version (*e.g.*, 110.99.9)
         of [**Standard ML of New Jersey**](https://smlnj.org).
-        To report bugs in the development version (*e.g.*, 2026.1), use the
+        To report bugs in the development version (*e.g.*, 2026.2, use the
         [development version form](https://github.com/smlnj/smlnj/issues/new?template=bug_report.yaml).
+
+        To request a new feature, please use the
+        [feature-request form](https://github.com/smlnj/legacy/issues/new?template=feature_request.yaml).
+
+        ## Guidelines
+
+        Before creating a new issue, please search the
+        [open issues](https://github.com/smlnj/legacy/issues) to see if your
+        problem has already been reported (if so, please add your information
+        to the existing issue).
+
+        Please use individual issues for independent problems, but if a common problem
+        affects multiple modules (e.g., every monomorphic vector structure), it should
+        be a single issue.
 
         Please follow the structure of the form.  In particular, an example of the problem
         with a transcript of the behavior is very useful to us.  Including a description
         or example of the expected result is also useful.
 
-        To request a feature, please use the
-        [feature-request form](https://github.com/smlnj/legacy/issues/new?template=feature_request.yaml).
+        If you have a simple fix, please include that in the "Additional Information"
+        section.  Larger, more complicated fixes should be submitted as pull requests.
 
-        Before creating a new bug report, please search the
-        [open issues](https://github.com/smlnj/legacy/issues) to see if your
-        problem has already been reported (if so, please add your information to the existing
-        issue).
   - type: markdown
     attributes:
       value: >
