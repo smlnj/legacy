@@ -71,6 +71,9 @@ gforge bug tracker.
 | Issue
 | Description
 | Gforge Bug
+| [.bugid]#299#
+| {issue-base}/299[`PackWord64Big.update` is nondeterministic]
+| n.a.
 | [.bugid]#330#
 | {issue-base}/330[REPL should always print reals as valid SML real literals]
 | n.a.
