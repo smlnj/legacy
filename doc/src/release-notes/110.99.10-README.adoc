@@ -99,6 +99,12 @@ gforge bug tracker.
 
 // ***** include a list of unnumbered bugs here *****
 
+* Merged fix for development repository {dev-issue-base}/453[Issue #453 `Math.pow`
+  is unusually inaccurate)].
+
+* Merged fix for development repository {dev-issue-base}/465[Issue #465 (Unbound
+  exception identifier causes compiler bug)]
+
 == Supported systems
 
 We believe that SML/NJ will build and run on the following systems, but have only

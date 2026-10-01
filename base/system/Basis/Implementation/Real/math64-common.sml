@@ -1,6 +1,6 @@
 (* math64-common.sml
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *
  * This structure implements the common subset of the 64-bit Math structure for
@@ -205,7 +205,7 @@ structure Math64Common : sig
     fun exp (x:real) = let  (* propagates and generates inf's and nan's correctly *)
 	  fun exp_norm x = let
 	      (* argument reduction : x --> x - k*ln2 *)
-		val k = floor(invln2*x+copysign(half,x)) (* k=NINT(x/ln2) *)
+		val k = trunc(invln2*x+copysign(half,x)) (* k=NINT(x/ln2) *)
 		val K = real k
 	      (* express x-k*ln2 as z+c *)
 		val hi = x-K*ln2hi
