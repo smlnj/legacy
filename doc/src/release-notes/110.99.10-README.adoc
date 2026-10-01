@@ -52,6 +52,8 @@ This release fixes a number of bugs and enables running on *Linux 7* and
 
 === SML/NJ Library
 
+* ported a number of library fixes from the development branch
+
 === Successor ML
 
 === ML-LPT
