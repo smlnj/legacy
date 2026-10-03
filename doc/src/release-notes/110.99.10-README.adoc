@@ -52,7 +52,14 @@ This release fixes a number of bugs and enables running on *Linux 7* and
 
 === SML/NJ Library
 
-* ported a number of library fixes from the development branch
+* A large number of *SML/NJ Library* bug fixes were ported from the development
+  repo (see the `smlnj-lib/CHANGES` file for details).
+
+* Added `listKeys` function to `HASH_TABLE` and `MONO_HASH_TABLE` signatures.
+
+* Added the `Timestamp` module to the Utility library.  This module supports
+  generating timestamps that respect the `SOURCE_DATE_EPOCH` environment
+  variable.
 
 === Successor ML
 

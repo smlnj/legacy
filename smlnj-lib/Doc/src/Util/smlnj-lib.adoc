@@ -235,13 +235,18 @@ xref:str-TimeLimit.adoc[`[.kw]#structure# TimeLimit`]::
   Provides a mechanism for limiting the execution
   time of a computation.
 
+xref:str-Timestamp.adoc[`[.kw]#structure# Timestamp`]::
+  Provides a mechanism for generating timestamps that respect the
+  https://reproducible-builds.org/specs/source-date-epoch[`SOURCE_DATE_EPOCH`
+  environment variable].
+
 xref:str-Trilean.adoc[`[.kw]#structure# Trilean`]::
   Provides an implementation of three-valued logic.
 
+// 60
+
 xref:str-UnivariateStats.adoc[`[.kw]#structure# UnivariateStats`]::
   **To be written**
-
-// 60
 
 xref:str-URef.adoc[`[.kw]#structure# URef`]::
   Provides mutable references with __Union-Find__ semantics.
@@ -390,14 +395,16 @@ include::fun-SplaySetFn.adoc[]
 
 include::str-TimeLimit.adoc[]
 
+include::str-Timestamp.adoc[]
+
 include::str-Trilean.adoc[]
 
 include::str-UnivariateStats.adoc[]
 
-include::str-URef.adoc[]
-
 // 60 -- note that `str-Native.adoc` is referenced twice by the HTML,
 // but only once by the PDF
+
+include::str-URef.adoc[]
 
 include::str-UTF8.adoc[]
 
