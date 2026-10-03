@@ -24,6 +24,7 @@ signature INTERNALS = sig
 
   (* reset the total real and CPU time timers *)
     val resetTimers : unit -> unit
+    val zeroTimers : unit -> unit
 
   (* generic trace/debug/profile control; M.Blume 10/2004 *)
     structure TDP : sig
