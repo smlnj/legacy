@@ -93,6 +93,16 @@ else
     usage no CM description file specified
 fi
 
+# The name of the generated SML file below is recorded in the heap image
+# that we are about to build, so base the temporary file names on the heap
+# file rather than on the process id; otherwise the image depends on the
+# pid of this script.
+xx=`basename "$heap"`
+smlfile=$xx-export.sml
+cmfile=$xx-export.cm
+listfile=$xx-BOOTLIST
+linkargsfile=$xx-LINKARGS
+
 rare=XYZ_XXX_0123
 
 cat >$smlfile <<EOF

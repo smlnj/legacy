@@ -9,6 +9,7 @@ structure InternalTimer : sig
     include TIMER
 
     val resetTimers : unit -> unit
+    val zeroTimers : unit -> unit
 
   end = struct
 
@@ -47,6 +48,16 @@ structure InternalTimer : sig
     fun resetTimers () =
 	(initCPUTime := startCPUTimer ();
 	 initRealTime := startRealTimer ())
+    (* set the timers to zero; this is used when exporting an image, so that
+     * the image does not record the time at which it was built (the timers
+     * are reset when the image is resumed anyway)
+     *)
+    fun zeroTimers () = let
+	  val zero = { usr = Time.zeroTime, sys = Time.zeroTime }
+	  in
+	    initCPUTime := CPUT { nongc = zero, gc = zero };
+	    initRealTime := RealT Time.zeroTime
+	  end
     end (* local *)
 
     local

@@ -274,9 +274,18 @@ structure SmlInfo :> SMLINFO = struct
 		fun setguid g = (guid_cache := SOME g; tofile g)
 		fun saveguid g = (setguid g; g)
 		fun getguid () = let
+		    (* for reproducible builds, SOURCE_DATE_EPOCH takes the
+		     * place of the current time *)
+		    fun timestamp () = (case OS.Process.getEnv "SOURCE_DATE_EPOCH"
+			   of SOME s => (case LargeInt.fromString s
+				 of SOME t => Time.fromSeconds t
+				  | NONE => Time.now ()
+				(* end case *))
+			    | NONE => Time.now ()
+			  (* end case *))
 		    fun newguid () =
 			concat ["guid-", SrcPath.descr sourcepath, "-",
-				Time.toString (Time.now ()), "\n"]
+				Time.toString (timestamp ()), "\n"]
 		in
 		    case !guid_cache of
 			SOME g => g

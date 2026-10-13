@@ -1137,9 +1137,10 @@ struct
                   | SELECT(p, bs, x) => 
                     let val (s, h) = visit(x, PVs)
                         val s  = add(s, PVAR p)
-                        val bs = foldr (fn ((p,_),S) => add(S,PVAR p)) s bs 
-                        val fvs = diff(s, bs)
-                    in  occurs bs; 
+                        val bound = foldr (fn ((p,_),S) => add(S,PVAR p))
+                                          empty bs 
+                        val fvs = diff(s, bound)
+                    in  occurs (union(s, bound)); 
                         (set(freeVars, fvs), setH(height,h+1)) 
                     end 
                   | CONT(k, x) =>

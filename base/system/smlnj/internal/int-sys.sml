@@ -71,9 +71,11 @@ structure InteractiveSystem : sig end =
     local
       structure I = SMLofNJ.Internals
       structure C = I.CleanUp
-      fun reset _ = (I.resetTimers (); Stats.reset ())
+      fun reset C.AtInit = (I.resetTimers (); Stats.reset ())
+	| reset _ = I.zeroTimers ()
     in
-    val _ = C.addCleaner ("initialize-timers-and-stats", [C.AtInit], reset)
+    val _ = C.addCleaner ("initialize-timers-and-stats",
+			  [C.AtInit, C.AtExportML, C.AtExportFn], reset)
     end (* local *)
 
     (* initialize control *)

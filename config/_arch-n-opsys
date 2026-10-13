@@ -128,7 +128,7 @@ case `uname -s` in
       x86_64)
 	ARCH=$(pick_arch x86 amd64)
 	;;
-      ppc)
+      ppc* | powerpc*)
 	ARCH=$(pick_arch ppc ppc64)
 	case `uname -r` in
 	  *osfmach*) OPSYS=mklinux ;;
