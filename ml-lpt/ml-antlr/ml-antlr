@@ -1,6 +1,10 @@
 #!/bin/sh
 #
-# Wrapper for ml-antlr heap image
+# COPYRIGHT (c) 2026 The Fellowship of SML/NJ (https://smlnj.org)
+# All rights reserved.
+#
+# Wrapper for ml-antlr heap image; this script is for debugging the tool
+# during devlopment
 #
 
 mlantlrdir=$0
@@ -20,7 +24,7 @@ case `uname -s` in
       *.11.*) OPSYS=hpux ;;
       *) exit 1 ;;
     esac
-    ;; 
+    ;;
   IRIX*)
     ARCH=mipseb
     OPSYS=irix
@@ -67,7 +71,7 @@ case `uname -s` in
 	esac
         ;;
       *) exit 1 ;;
-    esac 
+    esac
     ;;
   Linux)
     OPSYS=linux
