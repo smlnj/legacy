@@ -146,15 +146,14 @@ fun lookArTyc (env, path, arity, err) =
 	     else tycon)
 
 (*** looking for an exception ***)
-fun lookExn (env, path, err) : T.datacon = (case lookIdPath (env,path,err)
-       of AS.CON(dcon as T.DATACON{rep=(A.EXN _), ...}) => dcon
-        | AS.CON _ =>
+fun lookExn (env,path,err) : V.datacon = (case lookVal(env, path,err)
+       of V.CON(c as T.DATACON{rep=(A.EXN _), ...}) => c
+        | V.CON _ =>
             (otherError("found data constructor instead of exception", err);
-             AU.bogusEXN)
-        | AS.VAR _ =>
+             V.bogusEXN)
+        | V.VAL _ =>
             (otherError("found variable instead of exception", err);
-             AU.bogusEXN)
-        | AS.ERRORid => AU.bogusEXN
+             V.bogusEXN)
       (* end case *))
 
 end (* local *)
