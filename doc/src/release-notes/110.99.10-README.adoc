@@ -105,6 +105,9 @@ gforge bug tracker.
 | [.bugid]#380#
 | {pull-base}/380[properly initialize runtime system variables]
 | n.a.
+| [.bugid]#392#
+| {pull-base}/392[Type checker unsoundness related to pattern matching]
+| n.a.
 //| [.bugid]#@ID#
 //| {issue-base}/@ID[@DESCRIPTION]
 //| [old bug #@OLDID]
