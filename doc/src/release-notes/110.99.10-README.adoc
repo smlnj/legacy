@@ -135,6 +135,8 @@ gforge bug tracker.
 
 * fixed various boundary cases in the `Array2` structure.
 
+* fix broken code generation in `nowhere` program.
+
 == Supported systems
 
 We believe that SML/NJ will build and run on the following systems, but have only
