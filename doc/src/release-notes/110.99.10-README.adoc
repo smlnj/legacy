@@ -73,6 +73,8 @@ This release fixes a number of bugs and enables running on *Linux 7* and
 
 === Installation
 
+* A number of changes have been made to improve reproducibility of builds.
+
 == Bugs
 
 Here is a list of the issues that are fixed (or closed) with this release.
