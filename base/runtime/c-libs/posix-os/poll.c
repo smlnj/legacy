@@ -37,7 +37,7 @@
 PVT ml_val_t ML_Poll (ml_state_t *msp, ml_val_t pollList, struct timeval *timeout);
 
 
-/* _ml_OS_poll : ((int * word) list * (Int32.int * int) option) -> (int * word) list
+/* _ml_OS_poll : ((int * word ref) list * (Int32.int * int) option) -> bool
  */
 ml_val_t _ml_OS_poll (ml_state_t *msp, ml_val_t arg)
 {
@@ -75,8 +75,8 @@ PVT ml_val_t ML_Poll (ml_state_t *msp, ml_val_t pollList, struct timeval *timeou
 {
     int             tout, sts;
     struct pollfd   *fds, *fdp;
-    int             nfds, i, flag;
-    ml_val_t        l, item;
+    int             nfds, flag;
+    ml_val_t        l, item, flagRef;
 
     if (timeout == NIL(struct timeval *)) {
         tout = -1;
@@ -98,7 +98,7 @@ PVT ml_val_t ML_Poll (ml_state_t *msp, ml_val_t pollList, struct timeval *timeou
     for (l = pollList, fdp = fds;  l != LIST_nil;  l = LIST_tl(l), fdp++) {
         item = LIST_hd(l);
         fdp->fd = REC_SELINT(item, 0);
-        flag = REC_SELINT(item, 1);
+        flag = INT_MLtoC(DEREF(REC_SEL(item, 1)));
         if ((flag & RD_BIT) != 0)
             fdp->events |= POLLIN;
         if ((flag & WR_BIT) != 0)
@@ -112,12 +112,16 @@ PVT ml_val_t ML_Poll (ml_state_t *msp, ml_val_t pollList, struct timeval *timeou
     if (sts < 0) {
         FREE(fds);
         return RAISE_SYSERR(msp, sts);
-    }
-    else {
-        for (i = nfds-1, l = LIST_nil;  i >= 0;  i--) {
-            fdp = &(fds[i]);
+    } else if (sts == 0) {
+        /* timeout, so return `false` */
+        return ML_false;
+    } else {
+        for (l = pollList, fdp = fds;  l != LIST_nil;  l = LIST_tl(l), fdp++) {
+            item = LIST_hd(l);
+            fdp->fd = REC_SELINT(item, 0);
+            flagRef = REC_SEL(item, 1);
+            flag = 0;
             if (fdp->revents != 0) {
-                flag = 0;
                 if ((fdp->revents & POLLIN) != 0) {
                     flag |= RD_BIT;
                 }
@@ -127,12 +131,12 @@ PVT ml_val_t ML_Poll (ml_state_t *msp, ml_val_t pollList, struct timeval *timeou
                 if ((fdp->revents & POLL_ERROR) != 0) {
                     flag |= ERR_BIT;
                 }
-                REC_ALLOC2(msp, item, INT_CtoML(fdp->fd), INT_CtoML(flag));
-                LIST_cons(msp, l, item, l);
             }
+            /* update the flag reference with the resulting bits */
+            ASSIGN(flagRef, INT_CtoML(resFlag));
         }
         FREE(fds);
-        return l;
+        return ML_true;
     }
 
 } /* end of ML_Poll */
@@ -148,14 +152,14 @@ PVT ml_val_t ML_Poll (ml_state_t *msp, ml_val_t pollList, struct timeval *timeou
     fd_set      rset, wset, eset;
     fd_set      *rfds, *wfds, *efds;
     int         maxFD, sts, fd, flag;
-    ml_val_t    l, item;
+    ml_val_t    l, item, flagRef;
 
     rfds = wfds = efds = NIL(fd_set *);
     maxFD = 0;
     for (l = pollList;  l != LIST_nil;  l = LIST_tl(l)) {
-        item    = LIST_hd(l);
-        fd      = REC_SELINT(item, 0);
-        flag    = REC_SELINT(item, 1);
+        item = LIST_hd(l);
+        fd = REC_SELINT(item, 0);
+        flag = INT_MLtoC(DEREF(REC_SEL(item, 1)));
         if ((flag & RD_BIT) != 0) {
             if (rfds == NIL(fd_set *)) {
                 rfds = &rset;
@@ -185,41 +189,28 @@ PVT ml_val_t ML_Poll (ml_state_t *msp, ml_val_t pollList, struct timeval *timeou
     if (sts < 0) {
         return RAISE_SYSERR(msp, sts);
     } else if (sts == 0) {
-        return LIST_nil;
+        /* timeout, so return `false` */
+        return ML_false;
     } else {
-        ml_val_t        *resVec = NEW_VEC(ml_val_t, sts);
-        int             i, resFlag;
-
-        for (i = 0, l = pollList;  l != LIST_nil;  l = LIST_tl(l)) {
-            item        = LIST_hd(l);
-            fd          = REC_SELINT(item, 0);
-            flag        = REC_SELINT(item, 1);
-            resFlag     = 0;
-            if (((flag & RD_BIT) != 0) && FD_ISSET(fd, rfds)) {
-                resFlag |= RD_BIT;
+        for (l = pollList;  l != LIST_nil;  l = LIST_tl(l)) {
+            item = LIST_hd(l);
+            fd = REC_SELINT(item, 0);
+            flagRef = REC_SEL(item, 1);
+            flag = 0;
+            if ((rfds != NIL(fd_set *)) && FD_ISSET(fd, rfds)) {
+                flag |= RD_BIT;
             }
-            if (((flag & WR_BIT) != 0) && FD_ISSET(fd, wfds)) {
-                resFlag |= WR_BIT;
+            if ((wfds != NIL(fd_set *)) && FD_ISSET(fd, wfds)) {
+                flag |= WR_BIT;
             }
-            if (((flag & ERR_BIT) != 0) && FD_ISSET(fd, efds)) {
-                resFlag |= ERR_BIT;
+            if ((efds != NIL(fd_set *)) && FD_ISSET(fd, efds)) {
+                flag |= ERR_BIT;
             }
-            if (resFlag != 0) {
-                REC_ALLOC2 (msp, item, INT_CtoML(fd), INT_CtoML(resFlag));
-                resVec[i++] = item;
-            }
+            /* update the flag reference with the resulting bits */
+            ASSIGN(flagRef, INT_CtoML(flag));
         }
 
-        ASSERT(i == sts);
-
-        for (i = sts-1, l = LIST_nil;  i >= 0;  i--) {
-            item = resVec[i];
-            LIST_cons (msp, l, item, l);
-        }
-
-        FREE(resVec);
-
-        return l;
+        return ML_true;
     }
 
 } /* end of ML_Poll */

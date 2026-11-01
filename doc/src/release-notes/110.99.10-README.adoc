@@ -115,6 +115,9 @@ gforge bug tracker.
 
 // ***** include a list of unnumbered bugs here *****
 
+* Merged fix for development repository {dev-issue-base}/437[Issue #437 (Calling
+  `OS.IO.poll` function with duplicate descriptors can result in a crash)]
+
 * Merged fix for development repository {dev-issue-base}/453[Issue #453 `Math.pow`
   is unusually inaccurate)].
 
