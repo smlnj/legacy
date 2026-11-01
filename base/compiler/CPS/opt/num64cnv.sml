@@ -425,7 +425,7 @@ structure Num64Cnv : sig
 	      pure_arith32(P.ANDB, [lo1_or_lo2, not_lo], fn tmp1 =>
 	      pure_arith32(P.ANDB, [lo1, lo2], fn lo1_and_lo2 =>
 	      pure_arith32(P.ORB, [lo1_and_lo2, tmp1], fn tmp2 =>
-	      pure_arith32(P.RSHIFT, [tmp2, tagNum 31], fn carry =>
+	      pure_arith32(P.RSHIFTL, [tmp2, tagNum 31], fn carry =>
 	      join (hi,
 		to64(C.VAR hi, lo, k),
 		fn k' =>
@@ -462,16 +462,16 @@ structure Num64Cnv : sig
 	      pure_arith32(P.NOTB, [lo1], fn not_lo1 =>
 	      pure_arith32(P.ANDB, [not_lo1, lo2], fn tmp2 =>
 	      pure_arith32(P.ORB, [tmp1, tmp2], fn tmp3 =>
-	      pure_arith32(P.RSHIFT, [tmp3, tagNum 31], fn borrow =>
+	      pure_arith32(P.RSHIFTL, [tmp3, tagNum 31], fn borrow =>
 	      join (hi,
 		to64(C.VAR hi, lo, k),
 		fn k' =>
 		  sIf(P.LTE, hi1, hi2,
-		    iarith32(P.IADD, [hi1, hi2], fn tmp1 =>
-		    iarith32(P.IADD, [tmp1, borrow], k')),
+		    iarith32(P.ISUB, [hi1, hi2], fn tmp1 =>
+		    iarith32(P.ISUB, [tmp1, borrow], k')),
 		    (* else *)
-		    iarith32(P.IADD, [hi1, borrow], fn tmp2 =>
-		    iarith32(P.IADD, [tmp2, hi2], k'))))))))))))))
+		    iarith32(P.ISUB, [hi1, borrow], fn tmp2 =>
+		    iarith32(P.ISUB, [tmp2, hi2], k'))))))))))))))
 	  end
 
   (*

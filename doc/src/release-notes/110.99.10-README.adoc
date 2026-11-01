@@ -107,6 +107,9 @@ gforge bug tracker.
 | [.bugid]#380#
 | {pull-base}/380[properly initialize runtime system variables]
 | n.a.
+| [.bugid]#388#
+| {pull-base}/388[`Int64.+` and `Int64.-` get the carry and the borrow wrong]
+| n.a.
 | [.bugid]#392#
 | {pull-base}/392[Type checker unsoundness related to pattern matching]
 | n.a.
