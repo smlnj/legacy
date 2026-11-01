@@ -1,6 +1,6 @@
 (* check-gc.sml
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *
  * This module checks that no other values aside from

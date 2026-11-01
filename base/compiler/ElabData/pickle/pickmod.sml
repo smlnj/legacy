@@ -1,6 +1,6 @@
 (* pickmod.sml
  *
- * COPYRIGHT (c) 2016 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2016 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *
  * The revised pickler using the new "generic" pickling facility.

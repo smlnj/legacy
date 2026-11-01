@@ -1,6 +1,6 @@
 (* amd64-frame-layout.sml
  *
- * COPYRIGHT (c) 2021 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2021 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *
  * This module defines symbolic names for the stack-pointer offsets

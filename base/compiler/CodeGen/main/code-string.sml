@@ -1,6 +1,6 @@
 (* code-string.sml
  *
- * COPYRIGHT (c) 2020 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2020 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *
  * This file implements the MLRISC CODE_STRING interface.

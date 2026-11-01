@@ -1,6 +1,6 @@
 (* amd64gen.sml
  *
- * COPYRIGHT (c) 2020 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2020 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *
  * Machine-code generation for the AMD64 (aka x86-64) architecture.

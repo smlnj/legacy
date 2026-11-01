@@ -1,6 +1,6 @@
 (* amd64CpsRegs.sml
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *
  * CPS registers used on the AMD64.  See dev-notes/register-assignments.numbers

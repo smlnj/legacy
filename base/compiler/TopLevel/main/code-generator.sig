@@ -1,6 +1,6 @@
 (* code-generator.sig
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *
  * Generation of code from the FLINT intermediate form (after all FLINT passes

@@ -1,6 +1,6 @@
 (* basis-unix.sml
  *
- * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *
  * This file rebinds Unix-specific basis module names to their 2004 versions.

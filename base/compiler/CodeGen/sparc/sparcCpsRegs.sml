@@ -1,6 +1,6 @@
 (* sparcCpsRegs.sml
  *
- * COPYRIGHT (c) 2016 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2016 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *
  * CPS registerS used on the Sparc (32-bit)

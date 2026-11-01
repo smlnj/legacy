@@ -1,6 +1,6 @@
 (* basis.sml
  *
- * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *
  * This file rebinds various basis module names to their 2004 versions.

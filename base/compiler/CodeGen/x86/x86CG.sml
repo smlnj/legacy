@@ -1,6 +1,6 @@
 (* x86CG.sml
  *
- * COPYRIGHT (c) 2020 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2020 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *
  * X86 specific backend.  This one uses the new RA8 scheme.

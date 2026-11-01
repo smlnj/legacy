@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl COPYRIGHT (c) 2026 The Fellowship of SML/NJ (http://www.smlnj.org)
+dnl COPYRIGHT (c) 2026 The Fellowship of SML/NJ (https://smlnj.org)
 dnl All rights reserved.
 dnl
 dnl This the configuration script for autoconf version 2.60+.

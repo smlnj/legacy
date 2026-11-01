@@ -1,6 +1,6 @@
 (* num64cnv.sml
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *
  * This module supports the 64-bit int/word types on 32-bit machines

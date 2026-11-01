@@ -1,6 +1,6 @@
 (* alpha32CpsRegs.sml
  *
- * COPYRIGHT (c) 2016 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2016 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *
  * CPS registers used on the DEC Alpha (32-bit mode)

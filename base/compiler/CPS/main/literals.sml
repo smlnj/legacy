@@ -10,7 +10,7 @@
  * The implementation of the bytecode interpreter for the literal language
  * is in base/runtime/gc/old-literals.c.
  *
- * COPYRIGHT (c) 2017 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2017 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *
  * TODO:

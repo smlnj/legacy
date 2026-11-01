@@ -1,6 +1,6 @@
 (* alpha32gen.sml
  *
- * COPYRIGHT (c) 2020 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * COPYRIGHT (c) 2020 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *
  * Machine-code generation for the DEC Alpha architecture (32-bit mode).
