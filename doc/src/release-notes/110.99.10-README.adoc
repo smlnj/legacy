@@ -48,6 +48,8 @@ This release fixes a number of bugs and enables running on *Linux 7* and
 
 === Runtime System
 
+* changes to support Linux of PowerPC
+
 === Basis Library
 
 === SML/NJ Library
@@ -67,7 +69,17 @@ This release fixes a number of bugs and enables running on *Linux 7* and
 
 === Concurrent ML
 
-* ported various CML fixes from the development branch
+* Fixes to the `Barrier` module.
+
+* Fixed a scheduling issue in `recv`.
+
+* Fixed several issues in the `TraceCML` module.
+
+* Fixed the behavior of **CML**'s `OS.Process.terminate` to match the Basis Library
+  specification.
+
+* Fixed `TextIO.input1`, `TextIO.inputLine`, and `BinIO.input1` to restore the
+  `mVar` on end of file.
 
 === Documentation
 
