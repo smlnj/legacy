@@ -585,9 +585,11 @@ struct
 			       closeIt = BinIO.closeIn,
 			       work = work,
 			       cleanup = fn _ => () })
-	handle Format => (error ["file is corrupted (old version?)"];
-			  NONE)
-             | IO.Io _ => NONE
+	handle (exn as Format) => (
+            error ["file is corrupted (old version?)"];
+            List.app (fn s => error["    ", s, "\n"]) (SMLofNJ.exnHistory exn);
+            NONE)
+        | IO.Io _ => NONE
     end
 
     fun stabilize _ { group = GG.ERRORGROUP, ... } = NONE
