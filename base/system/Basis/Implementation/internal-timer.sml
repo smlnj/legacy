@@ -1,6 +1,6 @@
 (* internal-timer.sml
  *
- * COPYRIGHT (c) 2019 The Fellowship of SML/NJ (https://smlnj.org)
+ * COPYRIGHT (c) 2026 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.
  *)
 
@@ -8,6 +8,7 @@ structure InternalTimer : sig
 
     include TIMER
 
+    (* start the internal CPU and wall-clock timers *)
     val resetTimers : unit -> unit
 
   end = struct
@@ -23,15 +24,15 @@ structure InternalTimer : sig
     datatype real_timer = RealT of PB.time
 
     local
-      val gettime' : unit -> Int64.int * Int64.int * Int64.int =
+      val gettime' : unit -> Int64.int * Int64.int * Int64.int * Int64.int =
 	    CInterface.c_function "SMLNJ-Time" "gettime"
       fun mkTime ns = Time.fromNanoseconds (Int64Imp.toLarge ns)
     in
     fun getTime () = let
-	  val (usr, sys, gc) = gettime' ()
+	  val (usr, sys, gcUsr, gcSys) = gettime' ()
 	  in {
-	    nongc = { usr = mkTime usr, sys = mkTime sys },
-	    gc    = { usr = mkTime gc, sys = Time.zeroTime }
+	    nongc = { usr = mkTime(usr - gcUsr), sys = mkTime(sys - gcSys) },
+	    gc    = { usr = mkTime gcUsr, sys = mkTime gcSys }
 	  } end
     end (* local *)
 
@@ -39,8 +40,8 @@ structure InternalTimer : sig
     fun startRealTimer () = RealT (Time.now ())
 
     local
-	val initCPUTime = ref (startCPUTimer ())
-	val initRealTime = ref (startRealTimer ())
+      val initCPUTime = ref (startCPUTimer ())
+      val initRealTime = ref (startRealTimer ())
     in
     fun totalCPUTimer () = !initCPUTime
     fun totalRealTimer () = !initRealTime
@@ -50,24 +51,24 @@ structure InternalTimer : sig
     end (* local *)
 
     local
-	infix -- ++
-	fun usop timeop (t: time, t': time) =
-	    { usr = timeop (#usr t, #usr t'), sys = timeop (#sys t, #sys t') }
-	val op -- = usop Time.-
-	val op ++ = usop Time.+
+      infix -- ++
+      fun usop timeop (t: time, t': time) =
+          { usr = timeop (#usr t, #usr t'), sys = timeop (#sys t, #sys t') }
+      val op -- = usop Time.-
+      val op ++ = usop Time.+
     in
 
     fun checkCPUTimes (CPUT t) = let
 	val t' = getTime ()
-    in
-	{ nongc = #nongc t' -- #nongc t, gc = #gc t' -- #gc t }
-    end
+        in
+          { nongc = #nongc t' -- #nongc t, gc = #gc t' -- #gc t }
+        end
 
     fun checkCPUTimer tmr = let
 	val t = checkCPUTimes tmr
-    in
-	#nongc t ++ #gc t
-    end
+        in
+          #nongc t ++ #gc t
+        end
 
     fun checkGCTime (CPUT t) = Time.- (#usr (#gc (getTime ())), #usr (#gc t))
 

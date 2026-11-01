@@ -121,8 +121,13 @@ gforge bug tracker.
 * Merged fix for development repository {dev-issue-base}/453[Issue #453 `Math.pow`
   is unusually inaccurate)].
 
+* Merged fix for development repository {dev-issue-base}/456[Issue #456
+  (`Timer.checkCPUTimer` double-counts garbage collector time)]
+
 * Merged fix for development repository {dev-issue-base}/465[Issue #465 (Unbound
   exception identifier causes compiler bug)]
+
+* Fixed `Date.fromTimeUniv` and `Date.fromTimeLocal` on negative time values.
 
 == Supported systems
 
