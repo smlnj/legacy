@@ -110,12 +110,11 @@ gforge bug tracker.
 | [.bugid]#392#
 | {pull-base}/392[Type checker unsoundness related to pattern matching]
 | n.a.
-//| [.bugid]#@ID#
-//| {issue-base}/@ID[@DESCRIPTION]
-//| [old bug #@OLDID]
 |=======
 
 // ***** include a list of unnumbered bugs here *****
+* Merged fix for development repository {dev-issue-base}/387[Issue #387
+  (`Controls.mkOptionFlag` evaluates toggled value eagerly)]
 
 * Merged fix for development repository {dev-issue-base}/437[Issue #437 (Calling
   `OS.IO.poll` function with duplicate descriptors can result in a crash)]

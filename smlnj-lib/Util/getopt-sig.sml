@@ -27,7 +27,6 @@
  * The full generality of the latter does not seem justified.
  *)
 
-
 signature GET_OPT =
   sig
 
@@ -80,4 +79,3 @@ signature GET_OPT =
        *)
 
   end
-

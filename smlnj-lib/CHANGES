@@ -5,6 +5,21 @@ correspond to SML/NJ releases (past and future).
 SML/NJ 110.99.10
 -------------------
 
+[2026-11-01]
+        Ported more fixes for various issues from the development repository.
+        * Fixed `GetOpt`'s handling of bare `-` in the argument list.
+        * Removed deprecated functions from the `HashConsSet` structure.  The
+          removed functions are: `listItems`, `foldl`, and `foldr`.
+        * Fixed `BitArray.bits` to raise `Subscript` in certain edge cases.
+        * Fixed various edge cases in the `Base64.decode` function.
+        * Fixed various parsing issues in the `HTML4` library.
+        * Fixed `UUID.fromString` to properly reject certain ill-formed strings.
+        * Changed the `exists`, `all` and `find` functions in the splay-tree
+          implementation of sets to use an in-order traversal (instead of
+          pre-order).
+        * Some fixes to the XML library (case sensitivity and the handling of
+          escape sequences).
+
 [2026-10-03]
         Added the `Timestamp` module to the Utility library.  This module supports
         generating timestamps that respect the `SOURCE_DATE_EPOCH` environment
