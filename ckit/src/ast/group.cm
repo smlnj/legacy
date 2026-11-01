@@ -1,3 +1,9 @@
+(* group.cm
+ *
+ * COPYRIGHT (c) 2026 The Fellowship of SML/NJ (https://smlnj.org)
+ * All rights reserved.
+ *)
+
 Group
 is
 
@@ -94,7 +100,7 @@ is
 	initializer-normalizer.sml
 
 	(* top level *)
-	parse-to-ast-sig.sml 
+	parse-to-ast-sig.sml
         parse-to-ast.sml
 
         (* extensions *)

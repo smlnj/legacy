@@ -1,7 +1,8 @@
-Group is 
- 
-#if defined(NEW_CM)
-#if (SMLNJ_VERSION * 100 + SMLNJ_MINOR_VERSION >= 11029)
+(* sources.cm
+ *
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (https://smlnj.org)
+ * All rights reserved.
+ *)
 
         (* standard basis *)
         $/basis.cm

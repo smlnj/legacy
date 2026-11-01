@@ -1,3 +1,9 @@
+(* sources.cm
+ *
+ * COPYRIGHT (c) 2022 The Fellowship of SML/NJ (https://smlnj.org)
+ * All rights reserved.
+ *)
+
 Group is
 
 #if defined(NEW_CM)
@@ -61,16 +67,16 @@ Group is
 
 	parser-sig.sml
         parser.sml
-	parse-tree-sig.sml	
+	parse-tree-sig.sml
 	parse-tree.sml
 
         (* extensions *)
 #if (defined(d))
         extensions/d/parse-tree-ext-sig.sml
-        extensions/d/parse-tree-ext.sml        
+        extensions/d/parse-tree-ext.sml
 	grammar/d.grm
 #else
         extensions/c/parse-tree-ext-sig.sml
-        extensions/c/parse-tree-ext.sml        
+        extensions/c/parse-tree-ext.sml
 	grammar/c.grm
 #endif
