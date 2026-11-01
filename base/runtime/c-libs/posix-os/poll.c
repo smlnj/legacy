@@ -1,4 +1,4 @@
-/* poll.c
+/*! \file poll.c
  *
  * COPYRIGHT (c) 2026 The Fellowship of SML/NJ (https://smlnj.org)
  * All rights reserved.

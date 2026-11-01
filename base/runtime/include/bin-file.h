@@ -25,14 +25,12 @@
 #include "ml-base.h"
 #endif
 
-
 /** Persistent IDs **/
 #define PERID_LEN	16
 
 typedef struct {	    /* a persistent ID (PerID) */
     Byte_t	bytes[PERID_LEN];
 } pers_id_t;
-
 
 typedef struct {	    /* The header of a .bin file; note that the fields */
 			    /* are in big-endian representation. */
