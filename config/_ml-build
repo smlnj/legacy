@@ -1,99 +1,128 @@
 #!@SHELL@
 #
-# COPYRIGHT (c) 2019 The Fellowship of SML/NJ (https://smlnj.org)
+# COPYRIGHT (c) 2022 The Fellowship of SML/NJ (https://smlnj.org)
 # All rights reserved.
 #
-# usage: ml-build [-S setup] root-group [main-function [heapfile]]
+# usage: ml-build [options] root-group [main-function [heapfile]]
+#   options:
+#       -h              print this message
+#       -32             build 32-bit programs
+#       -64             build 64-bit programs
+#       -S setup
 #
 
+thisscript=$0
+
+usage() {
+  echo "usage: ml-build [options] root-group [main-function [heapfile]]"
+  echo "  options:"
+  echo "    -h            -- print this message"
+  echo "    -32           -- build 32-bit programs
+  echo "    -64           -- build 64-bit programs
+  echo "    -S setup      -- "
+  echo "    -C<ctl>=<v>   -- compiler control argument (passed to compile command)"
+  echo "    -D<sym>=<v>   -- CM-define argument (passed to compile command)"
+  echo "    -U<sym>       -- undefine CM argument (passed to compile command)"
+  exit $1
+}
+
+usage_error() {
+  echo ${thisscript}: $*
+  usage 1
+}
+
+error() {
+  echo ${thisscript}: $*
+  exit 1
+}
+
 if [ x${SMLNJ_HOME} = x ] ; then
-    BIN_DIR="@BINDIR@"
-    LIB_DIR="@LIBDIR@"
+  BIN_DIR="@BINDIR@"
+  LIB_DIR="@LIBDIR@"
 else
-    BIN_DIR=${SMLNJ_HOME}/bin
-    LIB_DIR=${SMLNJ_HOME}/lib
+  BIN_DIR=${SMLNJ_HOME}/bin
+  LIB_DIR=${SMLNJ_HOME}/lib
 fi
 
 if [ x"$CM_PATHCONFIG" = x ] ; then
-    CM_PATHCONFIG=${LIB_DIR}/pathconfig
-    export CM_PATHCONFIG
+  CM_PATHCONFIG=${LIB_DIR}/pathconfig
+  export CM_PATHCONFIG
 fi
 
 SML=$BIN_DIR/sml
 LINK=$BIN_DIR/.link-sml
 
-thisscript=$0
+dulist=''
+setup=
 
-xx=$$
+while [ $# != 0 ] ; do
+  case $1 in
+  -32) SIZE_OPT="-32"; shift ;;
+  -64) SIZE_OPT="-64"; shift ;;
+  -D*|-U*|-C*)
+    dulist="$dulist $1"
+    shift
+    ;;
+  -S)
+    shift
+    if [ $# = 0 ] ; then
+        usage missing argument for -S
+    fi
+    setup=$1
+    shift
+    ;;
+  *)
+    break
+    ;;
+  esac
+done
+
+if [ $# = 3 ] ; then
+  root=$1
+  main=$2
+  heap=$3
+elif [ $# = 2 ] ; then
+  root=$1
+  main=$2
+  heap=`basename "$root" .cm`
+elif [ $# = 1 ] ; then
+  root=$1
+  main=Main.main
+  heap=`basename "$root" .cm`
+else
+  usage_error "no CM description file specified"
+fi
+
+# we use a checksum of the CM file as a deterministic prefix
+# the "cksum" command is part of the IEEE 1003.2-1992 standard, so it should
+# be available.  It outputs "<checksum> <num-octets> <pathname>"; we use the
+# <checksum> for the prefix.
+#
+RES=$(cksum "$root" || error "error running cksum")
+# strip the "<num-octets> <pathname>" suffix
+ID=${RES%% *}
+xx="$ID"
+
 smlfile=$xx-export.sml
 cmfile=$xx-export.cm
 listfile=$xx-BOOTLIST
 linkargsfile=$xx-LINKARGS
 
-dulist=''
-
-trap 'rm -rf $smlfile $cmfile $listfile $linkargsfile @CMDIRARC@/*/$smlfile' 0 1 2 3 15
-
-usage() {
-    echo ${thisscript}: $*
-    echo Usage: $thisscript '[-32 | -64] [-S setup] root-group [main-function [heapfile]]'
-    exit 1
-}
-
-# the default size; this is set by the config/install.sh script
+# be paranoid and verify that we don't have any file-name collisions
 #
-SIZE_OPT="-"@SIZE@
-setup=
-
-while [ $# != 0 ] ; do
-    case $1 in
-    -32) SIZE_OPT="-32"; shift ;;
-    -64) SIZE_OPT="-64"; shift ;;
-    -D*|-U*|-C*)
-	dulist="$dulist $1"
-	shift
-	;;
-    -S)
-	shift
-	if [ $# = 0 ] ; then
-	    usage missing argument for -S
-	fi
-	setup=$1
-	shift
-	;;
-    *)
-	break
-	;;
-    esac
+for f in "$smlfile" "$cmfile" "$listfile" "$linkargsfile" ; do
+  if [ -f "$f" ] ; then
+    error "$f already exists; please remove and try again"
+  fi
 done
 
-if [ $# = 4 ] ; then
-  # assume that first argument is setup; e.g., "$smlnj-tdp/back-trace.cm"
-    if [ x"$setup" != x ] ; then
-        usage setup was already specified
-    fi
-    setup=$1
-    root=$2
-    main=$3
-    heap=$4
-elif [ $# = 3 ] ; then
-    root=$1
-    main=$2
-    heap=$3
-elif [ $# = 2 ] ; then
-    root=$1
-    main=$2
-    heap=`basename "$root" .cm`
-elif [ $# = 1 ] ; then
-    root=$1
-    # quick hack for now:
-    main=Test.main
-    heap=`basename "$root" .cm`
-else
-    usage no CM description file specified
-fi
+# remove temp files on error/termination
+#
+trap 'rm -rf $smlfile $cmfile $listfile $linkargsfile @CMDIRARC@/*/$smlfile' 0 1 2 3 15
 
-rare=XYZ_XXX_0123
+# a structure name that is unlikely to collide with any of the source
+# structure names
+rare="X_$ID"
 
 cat >$smlfile <<EOF
 structure ${rare} = struct val _ = SMLofNJ.exportFn ("${heap}", ${main}) end
@@ -109,9 +138,9 @@ EOF
 # (See src/cm/main/cm-boot.sml [function "mlbuild"] for details.)
 if "$SML" $SIZE_OPT $dulist @CMbuild $setup "$root" "$cmfile" "$heap" "$listfile" "$linkargsfile"
 then
-    if [ -r "$linkargsfile" ]; then
-	"$LINK" $SIZE_OPT `cat "$linkargsfile"`
-    fi
+  if [ -r "$linkargsfile" ]; then
+    "$LINK" $SIZE_OPT `cat "$linkargsfile"`
+  fi
 else
     exit $?
 fi
