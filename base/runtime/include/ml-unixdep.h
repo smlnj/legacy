@@ -184,6 +184,7 @@ extern char	*sys_errlist[];
 #  define HAS_ANON_MMAP
 #  define HAS_PARTIAL_MUNMAP
 #  define HAS_SELECT
+#  define HAS_UCONTEXT
 #  define HAS_STRERROR
 #  define HAS_MKSTEMP
 #  ifndef __USE_GNU
