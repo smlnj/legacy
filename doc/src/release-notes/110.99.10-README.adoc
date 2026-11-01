@@ -129,6 +129,8 @@ gforge bug tracker.
 
 * Fixed `Date.fromTimeUniv` and `Date.fromTimeLocal` on negative time values.
 
+* fixed various boundary cases in the `Array2` structure.
+
 == Supported systems
 
 We believe that SML/NJ will build and run on the following systems, but have only
